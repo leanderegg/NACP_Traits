@@ -1,0 +1,288 @@
+############ README File fore NACP analysis Project ###########
+Initiated 03/22/16 by LDLA
+
+
+Observations to date:
+
+### About Traits:
+1) SLA_HSA much better than SLA_PSA (way fewer NAs)
+2) only real traits I can analyze are SLA_HSA, LEAF_CN, and LEAF_LIFE
+--->>> Also looks like total LEAF_C and total LEAF_N are worth analyzing!!! (maybe ask Bev and Logan about this??) - they both decrease with leaf lifespan across species.
+3) on average, a little under 3 measurements per plot.
+4) I can get TONS of SLA from TRY, not very many C/N and even fewer Leaf Lifespan traits.
+5) JunOcc doesn't have LEAF_LIFE because scales...
+  - Arbutus.menziesii & Calocedrus.decurrens also lack leaf lifespan info. 
+
+### About Species:
+1) 12 species with >20 records, but Purshia tridentata (tridentate in the data) was only measured at 2 sites, so removed it for a final of 11 species
+
+                    GE.SP nplots nsamples naLAI naHeight naSLA_PSA anSLA_HSA  naCN naLIFE
+1          Abies.amabilis      9       25     5        0         0         0     0      0
+2          Abies.concolor     33       89     0        0         0         0     0      0
+3           Abies.grandis     30      101     8        3         0         0    31      5
+4           Abies.procera      8       22     2        0         0         0     0      0
+5  Juniperus.occidentalis     11       68     0       10         0         0     0     68
+6        Picea.sitchensis     10       27     9        9         0         0     0      0
+7          Pinus.contorta     19       40     3        6        37         0     0      0
+8          Pinus.jeffreyi     17       45     0        0        45         0     0      0
+9         Pinus.ponderosa     54      267     5       47       129         0     0     82
+10  Pseudotsuga.menziesii    113      311    28       12         1         1    58      5
+11     Tsuga.heterophylla     33       82    22       11         0         0     0      0
+
+This leaves me with 4 firs, 3 pines, and 4 random conifers.
+
+
+## UPDATE 3/22/16 : it seems like dropping the requirement down to >10 measurements (not HUGE, but maybe worth?) keeps in an additional pine & an additional fir, so I'm moving to that instead.
+
+NEW TABLE:
+                    GE.SP nplots nsamples naLAI naHeight naSLA_PSA anSLA_HSA  naCN naLIFE
+1          Abies.amabilis      9       25     5        0         0         0     0      0
+2          Abies.concolor     33       89     0        0         0         0     0      0
+3           Abies.grandis     30      101     8        3         0         0    31      5
+4         Abies.magnifica      6       11     0        0         0         0     0      0
+5           Abies.procera      8       22     2        0         0         0     0      0
+6       Arbutus.menziesii     11       16     0        0         7         0     0     16
+7    Calocedrus.decurrens     10       18     0        0         1         0     0     17
+8  Juniperus.occidentalis     11       68     0       10         0         0     0     68
+9       Picea.engelmannii      6       11     2        0         0         0     0      0
+10       Picea.sitchensis     10       27     9        9         0         0     0      0
+11         Pinus.contorta     19       40     3        6        37         0     0      0
+12         Pinus.jeffreyi     17       45     0        0        45         0     0      0
+13        Pinus.monticola      6       11     0        0        11         0     0      0
+14        Pinus.ponderosa     54      267     5       47       129         0     0     82
+15  Pseudotsuga.menziesii    113      311    28       12         1         1    58      5
+16     Tsuga.heterophylla     33       82    22       11         0         0     0      0
+
+16 SPECIES (after removal of Purshia tridentata)
+
+## UPDATE 02/14/17 : it seems like dropping the requirement down to >5 measurements (not HUGE, but maybe worth?) keeps some broad leafed trees (total of 23) measured at multiple sites. Assuming that these are stand averages and not individual measurements, this seems reasonable to keep these extra 8 spp 
+
+
+
+### About patterns:
+1) a lot of (apparently) hump shaped relationships suggests combinations of climate variables interacting.
+2) LEAF_LIFE and LEAF_CN might show more relationships than SLA
+3) No traits show broadly consistent signs of relationships across all species, and some species show visible trends in one variable but rarely the same viarable across species.
+
+*** 4) Trait relationships with each other:
+- LEAF_LIFE & LEAF_CN seem to be related only in TSHE and ABGR
+- LEAF_LIFE and SLA may be related in true firs and doug fir
+- SLA & LEAF_CN: nothing obvious except maybe a negative relationship in TSHE
+- LEAF_CARBON and LEAF_NITROGEN both show strong and consistent decreasing patterns with LEAF_LIFE. These do not show up in LEAF_CN
+  --> however, there don't seem to be any CARBON or NITROGEN relationships with SLA, except maybe N w/ SLA in TSHE
+
+SPECIFIC SPECIES:
+Pseudotsuga menziesii - shows a strong interaction between PPT, T and SLA
+  - positive in hot places and negative in cold places!!!!!
+** This also holds true if we pool all species and analyze the entire traits.common data set with or without PSME!!!
+
+
+*Some thing I probably need to worry about:
+Some of these projects were selected for young and regenerating stands, and might have weird values for some stuff.
+--For example: LEAF_CARBON shows a general decrease with AG_FGROWTH (above ground foliage growth), in the EPA project (where most LEAF_CARBON values come from that also have AG_GROWTH), but it shows a positive relationship for ORCA, which has 37 values...
+--LEAF_CARBON wildly different between the four projects that collected Pinus ponderosa
+
+
+***NOTE: COHO and EPA seem to have consistently higher LEAF_CARBON values for all species compared to ORCA and COHO. I probably need to use this as a fixed effect, since I don't actually have that many different projects
+
+***NOTE: from Poorter, Lambers & Evans 2013 in New Phyt = LES is on per mass basis, but need to also consider per area basis?
+
+### 11.07.16 ###
+Throwing down a quick PCA to see how things fall out. Prob on PSME and second most represented tw spp?
+## Climate PCs:
+  # PC1 (72% of variance) - Water supply (ppt, soil moist). + = more water
+  # PC2 (18% of variance) - Tave. + = warmer.
+  # PC3 (7% of variance) - vpd. + = more evap demand
+
+Lessons from quick pairplots of 5 most common species (PSME, TSHE, PIPO, ABIGRA, ABICON)
+  - not really strong trait~climate relationships.
+  - relationships vary quite a bit by species
+  - the PCs aren't orthogonal for any particular species.
+  - leaf Life seems to be one of the strongest trait-trait, trait-clim, and trait-growth relationships.
+  - Growth and AGB typically pretty related, so prob need to standardize for AGB (OR BA?)
+
+
+## played around with Leaf Mass : Stem Mass and SLA
+# plus SLA and Growth vs RGR (growth/Biomass)
+  -SLA shows no pattern with L:S biomass
+  -SLA stays constant (many species) or increases (couple species + overall) with GROWTH
+  -**BUT SLA DECREASES with either RGR or LnRGR in almost all species....
+  ****** THIS IS COMPLICATED AND NEEDS MORE THOUGHT ******
+  ** I should also probably only do this for stands that are dominanted by the species (mostly single species sites)
+
+
+## as part of the NIRv stuff, I made community weighted traits using only plot values.
+** only community weighted SLA and NITROGEN are related. LEAFLIFE is not 
+** LEAF_LIFE and SLA increase with stand LAI_O, but NITROGEN shows not relationship
+** SLA increases with production, NITRGEN might increase a smidge, no LEAF_LIFE difference
+
+
+
+##### Notes on making Community Weighted Trait means ##########
+- 265 plots total
+- 222 have LAI_O, 226 have total NPP
+- 221 have both LAI & NPP
+- 141 have all traits and NPP in first pass dataset (somehow only 130 get passed through to biomass2)
+
+
+
+##### 01.14.17 #####
+cleaned (sort of) the soil csv. I'm still not sure if there's consistency in how plots with only 2 layers name the second layer, so just pulled the 'top' layer and added that to my traits data frame.
+  # topsoil N generally increases with P, and increases with MAT at high P, and increases with topsoil depth at high P
+
+  # most species have increased foliar N with increased soil N. Doesn't really matter if multiplied by topsoil depth.
+  
+OUTSOURCED: NIRv analysis to a code in that project directory
+- ggplot helper functions to my R General Functions foulder and sourced it
+
+added in some prelim plots to investigate how different traits are in the different projects. Def need a random intercept for LEAF_CARBON, but probably ok for other traits.
+
+
+#01.15.17 ------ Leaf Economic Spectrum work -------------
+grabbed the GLOPNET trait data from Wright et al. 2004
+
+Tried to compare LES dataset and traits, but
+  # LES: things are log10, not ln in this dataset!
+  # LES: LMA is g/m2, and SLA in traits is cm2/gC
+  # -> so to convert I have to recalculate SLA w/ leaf dry wt, then multiply by 1/100^2, then take 1/SLAnew
+  # also turns out that many EPA don't report LEAF_DRY_WT or LEAF_HSA. so I'll have to back calculate it from SLA_HSA and %C
+
+* Noticed that METOFIRE are missing LEAF_CARBON when I recalculate LMA as 1/(SLA_HSA * %C /100^2). (i.e. it yeilded 89 NAs, 1 EPA and all the METOFIRE, which have LMA normally)
+  That's because METOFIRE has Carbon_wt but not the elemental analysis. 
+SOOOOO, I can get some more %C by dividing METOFIRE LEAF_CARBON_WT by LEAF_DRY_WT
+
+
+# leaf lifespan for many decid species in traits is pegged at 1 year. for deciduous species:
+[1] "Purshia.tridentate"        "Alnus.rubra"           "Chrysolepis.chrysophylla" 
+ [4] "Ceanothus.velutinus"       "Ribes.divaricatum"         "Acer.circinatum"      
+ [7] "Rhododendron.macrophyllum" "Acer.macrophyllum"         "Holodiscus.discolor"  
+[10] "Corylus.cornuta"           "Frangula.purshiana"        "Quercus.garryana"     
+[13] "Quercus.kelloggii"         "Larix.occidentalis"        "Cornus.unknown"       
+[16] "Lithocarpus.densiflorus"   "Quercus.chrysolepis"  
+
+### Leaf Lifespan = NA for 
+1      Arbutus.menziesii
+2    Cercocarpus.unknown
+3 Juniperus.occidentalis
+4         Pinus.flexilis
+
+
+# It also looks like conifer LMA with HSA rather than PSA is lower than the conifers in the LES dataset.
+
+
+
+
+######## 01.16.17 ######
+started the beginnins of a baysian hierarchical model to 
+1) model the mean intraspecific slope
+2) model species mean trait values 
+3) model the grand slope across species means (and maybe w/in genera? family?)
+
+The first simple model was pretty simple, converged well, and passed model diagnostics. Doesn't look quite identical to the ML estimate, but reasonably close
+       mu.a        mu.b     sigma.a     sigma.b sigma.resid 
+ 0.34005436 -0.15130194  0.03341625  0.02313526  0.07573965  
+ 
+####### ML estimate ##########
+ summary(lmer(log.Nmass~log.LMA + (1|SP.ID) + (0 + log.LMA|SP.ID), traits.Nclean))
+Linear mixed model fit by REML t-tests use Satterthwaite approximations to degrees
+  of freedom [lmerMod]
+Formula: log.Nmass ~ log.LMA + (1 | SP.ID) + (0 + log.LMA | SP.ID)
+   Data: traits.Nclean
+
+REML criterion at convergence: -2392.8
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.5100 -0.6136  0.0426  0.6431  3.1503 
+
+Random effects:
+ Groups   Name        Variance  Std.Dev.
+ SP.ID    (Intercept) 0.0000000 0.00000 
+ SP.ID.1  log.LMA     0.0006589 0.02567 
+ Residual             0.0057288 0.07569 
+Number of obs: 1056, groups:  SP.ID, 16
+
+Fixed effects:
+             Estimate Std. Error        df t value Pr(>|t|)    
+(Intercept)   0.36655    0.05926 977.30000   6.186 9.08e-10 ***
+log.LMA      -0.16271    0.02638 640.90000  -6.169 1.22e-09 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+        (Intr)
+log.LMA -0.968
+
+
+####### 01.24.17
+worked in importing the TRY traits
+- had to remove some duplicates
+- also had to change some unicode issues
+All told (if things are working as I think), I've only got:
+505 - LL & Nit
+8587 - SLA & Nit
+708 - SLA & LL
+--> not huge.
+
+In full dataset, 
+2744 spp appear in the dataset >4 times
+1294 spp appear in the dataset >10 times
+572 spp appear >20 times
+43 spp appear >43 times
+
+##### 
+I played around with TRY data, and they're very much not all in the same units.
+- not sure it's even worth fucking around with this as much
+
+# Instead, I worked on assigning the LES species to families
+- used the {taxize} package to search itis and ncbi.
+- this resulted in ~500 missing family values
+- I also found genera with different families ascribed to them. Often this was a relic of old taxonomy, but sometimes it just straight screwed up.
+  -after fixing the genera with multiple families, I only have 448 entries sans family
+  ** I really should go through these and figure out what they are synanymns for, and fix them. But for the time being i'm forging forward
+  
+Plotted relationships at different taxonomic scales, and also created LES datasets averaged to different scales
+  - things to think about: ~ 520 entries were duplicate species, so LESspp has 2021 rows.
+  - I'm not sure whether it's more defensible to average log(trait) values, or to average raw trait values and log them. I did both in the LESspp, LESgen, LESfam datasets, and it doesn't really change the correlations, but it does move means upward in log(trait) space because mean(log(x)) < log(mean(x))
+  - I also realied that I really need to be working with correlations rather than linear regressions, because major axix regression is what I'm looking for.
+  - found some papers on this and other trait stuff (now in the LES folder), and papers about missing trait biases, imputation, etc. Shit gets complicated in a hurry. But I did find some code for Bayesian Correlation at: https://www.r-bloggers.com/bayesian-estimation-of-correlation-now-robust/
+  
+My new goal: build a hierarchical correlation analysis in JAGs
+- got the model to reconstruct the negative correlation between lma and Nmass
+- but haven't worked on the missing data issue. Need to read how to do that.
+I got the bivariate relationship to work. But when I throw in 3 variables, I have major issues with the error:
+Error: RUNTIME ERROR:
+Cannot invert matrix: not positive definite
+
+From snooping around the internet, I have concluded that the problem is that the uniform(-1,1) prior ends up with bivariate correlations that are too large and somehow that ends up with things not being positive definite. 
+Depending on what I read on the internet, the solution might be to reparameterize this so I don't have to invert the covariance matrix, or maybe try different priors or something? 
+I can also just restric my rho priors to [-.5,.5], and shit works, but the covariance estimate that I come up with is not quite like what I get from a cov(lma,Nmass,LL). all the correlations end up being right at the edge of my priors (-.494, .491, -.493). and my sigmas end up a bit off.  Not sure exactly what to do here, but it's fucking strange.
+This seems almost relevant:
+http://www.talkstats.com/showthread.php/52832-Trouble-specifying-correlation-matrix-in-rjags
+main takehome seems to be that I can't have independant uniform priors unless I restrict them. But I'm not exactly sure how to specify an inverse wisheart
+
+
+
+
+
+###### Data exploration that has arisen while reading LES stuff:
+- the precip interaction with the LL vs LMA interaction found in Wright et al. 2002 shows the opposite trend in PSME. Only marginally significant MAP * LMA interaction, but visibly very impactful.
+However, this doesn't really seem to play out all that consistently with other species. This is partly because other species don't show strong LL v LMA relationships. Partly because other species don't show strong LL MAP relationships.
+  - seems consistent but not significant with PINPON, consistent ofset with TSUHET, consistent but not sig with ABIGRA, and consistent but no offset with ABICON
+Saved a figure of this. In a hierarchical model, I'd bet that the main intercept and interaction terms are significant.
+
+I'd say, if there is a trend, it's for dry to be higher LL than wet, for there to be a negative relationship between LL and LMA, and for this relationship to get slightly more negative with decreasing precip.
+
+
+
+
+
+
+
+
+
+############# USEFUL PACKAGES ########################
+TR8 for pulling life history, height, growth form, etc. data from various databases.
+see vignette("TR8")
+
+{traits} pulls random trait data, but points you to BETYdb (biofuels). but BETYdb might have some useful leaf traits???
