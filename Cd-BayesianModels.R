@@ -907,7 +907,7 @@ commonfam <- names(which(xtabs(~Family, LES)>5))
 
 
 #### averaging things up to spp level ########
-LESspp <- LES %>% group_by(Species, GE.SP, Genus, Family) %>% summarise(GrForm = unique(GF)[1], DecidEver = unique(Decid.E.green)[1], NeedleBroad = unique(Needle.Broad.lf)[1], C3.C4 = unique(C3C4)[1], slog.LL = mean(log.LL, na.rm=T), slog.LMA = mean(log.LMA, na.rm=T), slog.Nmass = mean(log.Nmass, na.rm=T)
+LESspp <- LES %>% group_by(Species, GE.SP, Genus, Family) %>% summarise(GrForm = unique(GF)[1], DecidEver = unique(Decid.E.green)[1], NeedleBroad = unique(Needle.Broad.lf)[1], C3.C4 = unique(C3C4)[1], slog.LL = mean(log.LL, na.rm=T), slog.LMA = mean(log.LMA, na.rm=T), slog.Nmass = mean(log.Nmass, na.rm=T),slog.Narea = mean(log.Narea, na.rm=T)
                                                                         ,rslog.LL = log(mean(10^log.LL, na.rm=T),base=10), rslog.LMA = log(mean(10^log.LMA, na.rm=T),base=10), rslog.Nmass = log(mean(10^log.Nmass, na.rm=T),base=10) )
 # have to rename things slog to keep for summarise, but want them just as log
 colnames(LESspp) <- gsub("slog", "log", colnames(LESspp))
@@ -918,7 +918,7 @@ colnames(LESspp) <- gsub("slog", "log", colnames(LESspp))
 # LESgenprobs <- LESspp %>% group_by(Genus) %>% summarise(nFam= length(unique(na.omit(Family))))
 # prob.gen <- LESgenprobs$Genus[which(LESgenprobs$nFam>1)]                                                   
 # tmp <- LESspp[which(LESspp$Genus %in% prob.gen),]
-traitsspp <- traits %>% group_by(GE.SP, GENUS, Family) %>% summarise(slog.LL = mean(log.LL, na.rm=T), slog.LMA = mean(log.LMA, na.rm=T), slog.Nmass = mean(log.Nmass, na.rm=T)
+traitsspp <- traits %>% group_by(GE.SP, GENUS, Family) %>% summarise(slog.LL = mean(log.LL, na.rm=T), slog.LMA = mean(log.LMA, na.rm=T), slog.Nmass = mean(log.Nmass, na.rm=T),slog.Narea = mean(log.Narea, na.rm=T)
                                                                         ,rslog.LL = log(mean(10^log.LL, na.rm=T),base=10), rslog.LMA = log(mean(10^log.LMA, na.rm=T),base=10), rslog.Nmass = log(mean(10^log.Nmass, na.rm=T),base=10))
 traitsspp$Species <- gsub("\\."," ", traitsspp$GE.SP)
 traitsspp$GrForm <- rep("T", times=nrow(traitsspp))
@@ -937,10 +937,10 @@ colnames(traitsspp) <- gsub("slog", "log", colnames(traitsspp))
 traitsspp <- traitsspp[,match(colnames(LESspp), colnames(traitsspp))]
 ### combine LES species means and traits species means
 allspp <- rbind(data.frame(LESspp), data.frame(traitsspp))
-
+  #*** This has a handful of duplicate spp. But I haven't solved it yet.
 
 #### Genus mean dataframe ####
-LESgen <- allspp %>% group_by(Genus)  %>% summarise(Fam = sort(unique(Family))[1], Needle.Broad = unique(na.omit(NeedleBroad))[1], glog.LL = mean(log.LL, na.rm=T), glog.LMA = mean(log.LMA, na.rm=T), glog.Nmass = mean(log.Nmass, na.rm=T)
+LESgen <- allspp %>% group_by(Genus)  %>% summarise(Fam = sort(unique(Family))[1], Needle.Broad = unique(na.omit(NeedleBroad))[1], glog.LL = mean(log.LL, na.rm=T), glog.LMA = mean(log.LMA, na.rm=T), glog.Nmass = mean(log.Nmass, na.rm=T),glog.Narea = mean(log.Narea, na.rm=T)
                                                     ,rglog.LL = log(mean(10^rlog.LL, na.rm=T),base=10), rglog.LMA = log(mean(10^rlog.LMA, na.rm=T),base=10), rglog.Nmass = log(mean(10^rlog.Nmass, na.rm=T),base=10), nspp = n() )
   # taking mean of raw values or logged values doesn't matter all that much yet
 colnames(LESgen) <- gsub("glog", "log", colnames(LESgen))
@@ -948,7 +948,7 @@ colnames(LESgen)[2] <- "Family"
 
 
 #### Family Mean dataframe ####
-LESfam <- LESgen %>% group_by(Family) %>% summarise(flog.LL = mean(log.LL, na.rm=T), flog.LMA = mean(log.LMA, na.rm=T), flog.Nmass = mean(log.Nmass, na.rm=T)
+LESfam <- LESgen %>% group_by(Family) %>% summarise(flog.LL = mean(log.LL, na.rm=T), flog.LMA = mean(log.LMA, na.rm=T), flog.Nmass = mean(log.Nmass, na.rm=T),flog.Narea = mean(log.Narea, na.rm=T)
                                                   ,rflog.LL = log(mean(10^rlog.LL, na.rm=T),base=10), rflog.LMA = log(mean(10^rlog.LMA, na.rm=T),base=10), rflog.Nmass = log(mean(10^rlog.Nmass, na.rm=T),base=10)
                                                  , tnspp = sum(nspp), ngen=n() )
 colnames(LESfam) <- gsub("flog", "log", colnames(LESfam))
@@ -1146,7 +1146,7 @@ for(i in 1:length(unique(spp.data$Species))){
   spp.results[i,1] <- species
   spp.results[i,2:8] <- res
 }
-
+  # Seems to be working!!!
 
 ############ .Genus level analysis #####################
 
@@ -1198,9 +1198,9 @@ famcorr.all <- cor(x=fam.data[,c("log.LL","log.LMA","log.Nmass")], use = "pairwi
 famcorr.clean <- cor(x=fam.dataclean[,c("log.LL","log.LMA","log.Nmass")], use = "pairwise.complete.obs")
 
 fam.res_LMA.N <- c("fam.all", fit.MAR(xvar='log.LMA',yvar="log.Nmass",data=fam.data),"Fam")
-#names(fam.res) <- c("Int","Slope","Rho","r.sq", "n")
+names(fam.res_LMA.N) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass","Type")
 fam.resclean_LMA.N <- c("fam.clean", fit.MAR(xvar='log.LMA',yvar="log.Nmass",data=fam.dataclean), "Fam.clean")
-#names(fam.resclean) <- c("Int","Slope","Rho","r.sq", "n")
+names(fam.resclean_LMA.N) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass","Type")
 
 
 ###### .Combining Results into one dataframe #####
@@ -1214,7 +1214,7 @@ colnames(spp.results)[1] <- "Taxo.Unit"
 colnames(gen.results)[1] <- "Taxo.Unit"
 colnames(sppinfam.results)[1] <- "Taxo.Unit"
 colnames(geninfam.results)[1] <- "Taxo.Unit"
-all.results.LMAN <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results)#, fam.res, fam.resclean)
+all.results.LMAN <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_LMA.N, fam.resclean_LMA.N)
 all.results.LMAN$Type <- factor(all.results.LMAN$Type)
 levels(all.results.LMAN$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean")
 
@@ -1308,9 +1308,9 @@ famcorr.all <- cor(x=fam.data[,c("log.LL","log.LMA","log.LL")], use = "pairwise.
 famcorr.clean <- cor(x=fam.dataclean[,c("log.LL","log.LMA","log.LL")], use = "pairwise.complete.obs")
 
 fam.res_LMA.LL <- c("fam.all", fit.MAR(xvar='log.LMA',yvar="log.LL",data=fam.data),"Fam")
-#names(fam.res) <- c("Int","Slope","Rho","r.sq", "n")
+names(fam.res_LMA.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass","Type")
 fam.resclean_LMA.LL <- c("fam.clean", fit.MAR(xvar='log.LMA',yvar="log.LL",data=fam.dataclean), "Fam.clean")
-#names(fam.resclean) <- c("Int","Slope","Rho","r.sq", "n")
+names(fam.resclean_LMA.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass","Type")
 
 
 
@@ -1326,7 +1326,7 @@ colnames(spp.results)[1] <- "Taxo.Unit"
 colnames(gen.results)[1] <- "Taxo.Unit"
 colnames(sppinfam.results)[1] <- "Taxo.Unit"
 colnames(geninfam.results)[1] <- "Taxo.Unit"
-all.results.LMALL <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results)#, fam.res, fam.resclean)
+all.results.LMALL <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_LMA.LL, fam.resclean_LMA.LL)
 all.results.LMALL$Type <- factor(all.results.LMALL$Type)
 levels(all.results.LMALL$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean")
 
@@ -1426,9 +1426,9 @@ famcorr.all <- cor(x=fam.data[,c("log.LMA","log.Nmass","log.LL")], use = "pairwi
 famcorr.clean <- cor(x=fam.dataclean[,c("log.LMA","log.Nmass","log.LL")], use = "pairwise.complete.obs")
 
 fam.res_N.LL <- c("fam.all", fit.MAR(xvar='log.Nmass',yvar="log.LL",data=fam.data),"Fam")
-#names(fam.res) <- c("Int","Slope","Rho","r.sq", "n")
+names(fam.res_N.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass","Type")
 fam.resclean_N.LL <- c("fam.clean", fit.MAR(xvar='log.Nmass',yvar="log.LL",data=fam.dataclean), "Fam.clean")
-#names(fam.resclean) <- c("Int","Slope","Rho","r.sq", "n")
+names(fam.res_N.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass","Type")
 
 
 
@@ -1444,31 +1444,228 @@ colnames(spp.results)[1] <- "Taxo.Unit"
 colnames(gen.results)[1] <- "Taxo.Unit"
 colnames(sppinfam.results)[1] <- "Taxo.Unit"
 colnames(geninfam.results)[1] <- "Taxo.Unit"
-all.results.NmassLL <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results)#, fam.res, fam.resclean)
+all.results.NmassLL <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_N.LL, fam.resclean_N.LL)
 all.results.NmassLL$Type <- factor(all.results.NmassLL$Type)
 levels(all.results.NmassLL$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean")
 
 
 
-########### ** Combining all results into 1 df ** ######
 
-colnames(all.results.LMALL)[2:6] <- paste(colnames(all.results.LMALL)[2:6],"LMA.LL", sep="_")
-colnames(all.results.LMAN)[2:6] <- paste(colnames(all.results.LMAN)[2:6],"LMA.N", sep="_")
-colnames(all.results.NmassLL)[2:6] <- paste(colnames(all.results.NmassLL)[2:6],"N.LL", sep="_")
-all.results <- cbind(all.results.LMALL, all.results.LMAN[,-c(1,7)], all.results.NmassLL[,-c(1,7)])
+
+
+####### ***LMA and Narea!!!*** #####################
+
+
+
+spp.results <- data.frame(matrix(NA, nrow=length(unique(spp.data$Species)), ncol=8))
+colnames(spp.results) <- c("Species", "Int","Slope","Rho","r.sq","n","varLMA","varNarea")
+for(i in 1:length(unique(spp.data$Species))){
+  species <- levels(spp.data$Species)[i]
+  print(species)
+  dataz <- spp.data[which(spp.data$Species==species),]
+  res <- fit.MAR(xvar='log.LMA',yvar="log.Narea",data=dataz)
+  spp.results[i,1] <- species
+  spp.results[i,2:8] <- res
+}
+
+
+############ .Genus level analysis #####################
+
+# currently just working with LES until I combine the PACNW dataset into this.
+gen.data <- LESspp[which(LESspp$Genus %in% names(which(xtabs(~Genus,LESspp)>5))),]
+# 634 measurements of 51 genera
+gen.data$Genus <- factor(gen.data$Genus) # get rid of unused levels
+
+gen.results <- data.frame(matrix(NA, nrow=length(unique(gen.data$Genus)), ncol=8))
+colnames(gen.results) <- c("Genus", "Int","Slope","Rho","r.sq","n","varLMA","varNarea")
+for(i in 1:length(unique(gen.data$Genus))){
+  genus <- levels(gen.data$Genus)[i]
+  print(genus)
+  dataz <- gen.data[which(gen.data$Genus==genus),]
+  gen.results[i,1] <- genus
+  res <- fit.MAR(xvar='log.LMA',yvar="log.Narea",data=dataz)
+  gen.results[i,2:8] <- res 
+  
+}
+
+
+
+############ .spp w/in Family level analysis #####################
+
+# currently just working with LES until I combine the PACNW dataset into this.
+sppinfam.data <- LESspp[which(LESspp$Family %in% names(which(xtabs(~Family,LESspp)>5))),]
+# 1374 measurements of 62 Families
+sppinfam.data$Family <- factor(sppinfam.data$Family) # get rid of unused levels
+
+sppinfam.results <- data.frame(matrix(NA, nrow=length(unique(sppinfam.data$Family)), ncol=8))
+colnames(sppinfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLMA","varNarea")
+for(i in 1:length(unique(sppinfam.data$Family))){
+  family <- levels(sppinfam.data$Family)[i]
+  print(family)
+  dataz <- sppinfam.data[which(sppinfam.data$Family==family),]
+  res <- fit.MAR(xvar='log.LMA',yvar="log.Narea",data=dataz)
+  sppinfam.results[i,1] <- family
+  sppinfam.results[i,2:8] <- res
+}
+
+
+
+
+
+############ .gen w/in Family level analysis #####################
+
+# currently just working with LES until I combine the PACNW dataset into this.
+geninfam.data <- LESgen[which(LESgen$Family %in% names(which(xtabs(~Family,LESgen)>5))),]
+# 1374 measurements of 62 Families
+geninfam.data$Family <- factor(geninfam.data$Family) # get rid of unused levels
+
+geninfam.results <- data.frame(matrix(NA, nrow=length(unique(geninfam.data$Family)), ncol=8))
+colnames(geninfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLMA","varNarea")
+for(i in 1:length(unique(geninfam.data$Family))){
+  family <- levels(geninfam.data$Family)[i]
+  print(family)
+  dataz <- geninfam.data[which(geninfam.data$Family==family),]
+  res <- fit.MAR(xvar='log.LMA',yvar="log.Narea",data=dataz)
+  geninfam.results[i,1] <- family
+  geninfam.results[i,2:8] <- res
+}
+
+
+
+
+
+############ .Family level analysis #####################
+
+# currently just working with LES until I combine the PACNW dataset into this.
+
+# fam.data <- LESfam # 189 families
+# fam.dataclean <- LESfam[which(LESfam$tnspp>2),] # 97 families
+
+# famcorr.all <- cor(x=fam.data[,c("log.LMA","log.Nmass","log.Narea")], use = "pairwise.complete.obs")
+# famcorr.clean <- cor(x=fam.dataclean[,c("log.LMA","log.Nmass","log.Narea")], use = "pairwise.complete.obs")
+
+fam.res_LMA.Narea <- c("fam.all", fit.MAR(xvar='log.LMA',yvar="log.Narea",data=fam.data),"Fam")
+names(fam.res_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varLMA","Type")
+fam.resclean_LMA.Narea <- c("fam.clean", fit.MAR(xvar='log.LMA',yvar="log.Narea",data=fam.dataclean), "Fam.clean")
+names(fam.res_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varLMA","Type")
+
+
+
+###### .Combining Results into one dataframe #####
+
+# first add a "Type" column
+spp.results$Type <- rep("w/inSpp", times=nrow(spp.results))
+gen.results$Type <- rep("w/inGen", times=nrow(gen.results))
+sppinfam.results$Type <- rep("Sppw/inFam", times=nrow(sppinfam.results))
+geninfam.results$Type <- rep("Genw/inFam", times=nrow(geninfam.results))
+# now make the column names all match
+colnames(spp.results)[1] <- "Taxo.Unit"
+colnames(gen.results)[1] <- "Taxo.Unit"
+colnames(sppinfam.results)[1] <- "Taxo.Unit"
+colnames(geninfam.results)[1] <- "Taxo.Unit"
+all.results.LMANarea <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_LMA.Narea, fam.resclean_LMA.Narea)
+all.results.LMANarea$Type <- factor(all.results.LMANarea$Type)
+levels(all.results.LMANarea$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean")
+
+
+
+
+
+########### ** Combining all ANALYSES into 1 df ** ######
+
+LMALL <- all.results.LMALL
+colnames(LMALL)[2:6] <- paste(colnames(all.results.LMALL)[2:6],"LMA.LL", sep="_")
+LMAN <- all.results.LMAN
+colnames(LMAN)[2:6] <- paste(colnames(all.results.LMAN)[2:6],"LMA.N", sep="_")
+NmassLL <- all.results.NmassLL
+colnames(NmassLL)[2:6] <- paste(colnames(all.results.NmassLL)[2:6],"N.LL", sep="_")
+LMANarea <- all.results.LMANarea
+colnames(LMANarea)[2:6] <- paste(colnames(all.results.LMANarea)[2:6],"LMA.Narea", sep="_")
+
+all.results <- cbind(LMALL, LMAN[,-c(1,7,9)], NmassLL[,-c(1,7,8,9)], LMANarea[,-c(1,7,9)]) # drop the duplicate 'var' columns
 
 #write.csv(all.results, "Results_SimpleMAreg_v1_030817.csv")
+#write.csv(all.results, "Results_SimpleMAreg_v2_031417.csv")
 
 modtest <- lm(AG_TGROWTH~LAI_O + MAT + ASA, traits[which(traits$SP.ID=="PSEMEN"),])
 
 
 
+
+
 ############# Plotting Slopes of diff taxo levels #################
 
-all.results <- read.csv("Results_SimpleMAreg_v1_030817.csv", row.names = 1)
+all.results <- read.csv("Results_SimpleMAreg_v2_031417.csv", row.names = 1)
+levels(all.results$Type) <- list(w.inSpp = "w.inSpp", w.inGen = "w.inGen", Sppw.inFam= "Sppw.inFam",Genw.inFam="Genw.inFam", Fam="Fam",Famclean="Famclean")
+
+######## Funnel Plots #######
+quartz(width=8,height=5)
+par(mar=c(3,3,1,1), mgp=c(2,1,0),mfrow=c(2,3), oma=c(0,0,2,0))
+### Rho
+plot(Rho~n, all.results.LMALL, pch=16, col=Type, main="LMA ~ LL")
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.LMALL$Rho[which(all.results.LMALL$Taxo.Unit=="fam.all")])
+plot(Rho~n, all.results.NmassLL, pch=16, col=Type, main="Nmass ~ LL")
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.NmassLL$Rho[which(all.results.NmassLL$Taxo.Unit=="fam.all")])
+plot(Rho~n, all.results.LMAN, pch=16, col=Type, main="LMA ~ Nmass")
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.LMAN$Rho[which(all.results.LMAN$Taxo.Unit=="fam.all")])
+legend('topright', legend = levels(all.results.LMAN$Type), pch=16, col=mypal, bty ="n")
 
 
-########### LMA vs Nmass ###########
+### MA slopes
+plot(Slope~n, all.results.LMALL, pch=16, col=Type, main="LMA ~ LL")
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.LMALL$Slope[which(all.results.LMALL$Taxo.Unit=="fam.all")])
+plot(Slope~n, all.results.NmassLL, pch=16, col=Type, main="Nmass ~ LL")
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.NmassLL$Slope[which(all.results.NmassLL$Taxo.Unit=="fam.all")])
+plot(Slope~n, all.results.LMAN, pch=16, col=Type, main="LMA ~ Nmass")
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.LMAN$Slope[which(all.results.LMAN$Taxo.Unit=="fam.all")])
+legend('topright', legend = levels(all.results.LMAN$Type), pch=16, col=mypal, bty ="n")
+
+
+### Slopes as f(varLMA/LL)
+plot(Slope~varLMA, all.results.LMALL, pch=16, col=Type)
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.LMALL$Slope[which(all.results.LMALL$Taxo.Unit=="fam.all")])
+plot(Slope~varNmass, all.results.NmassLL, pch=16, col=Type)
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.NmassLL$Slope[which(all.results.NmassLL$Taxo.Unit=="fam.all")])
+plot(Slope~varLMA, all.results.LMAN, pch=16, col=Type)
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.LMAN$Slope[which(all.results.LMAN$Taxo.Unit=="fam.all")])
+
+### Rho 
+plot(Rho~varLMA, all.results.LMALL, pch=16, col=Type)
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.LMALL$Rho[which(all.results.LMALL$Taxo.Unit=="fam.all")])
+plot(Rho~varNmass, all.results.NmassLL, pch=16, col=Type)
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.NmassLL$Rho[which(all.results.NmassLL$Taxo.Unit=="fam.all")])
+plot(Rho~varLMA, all.results.LMAN, pch=16, col=Type)
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.LMAN$Rho[which(all.results.LMAN$Taxo.Unit=="fam.all")])
+
+quartz(width=3,height=4.5)
+par(mar=c(4,4,0,1), mfrow=c(2,1), mgp=c(2.5,1,0), oma=c(0,0,2,0))
+plot(Rho~varNmass, all.results.LMAN, pch=16, col=Type, xlab="")
+#mtext( text="Nmass v LMA", side=3, line=0, font=2)
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.LMAN$Rho[which(all.results.LMAN$Taxo.Unit=="fam.all")])
+legend('topright', legend = levels(all.results.LMAN$Type), pch=16, col=mypal, bty ="n", cex=.7)
+plot(Rho~varNmass, all.results.NmassLL, pch=16, col=Type, xlab="Var. in %N")
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.NmassLL$Rho[which(all.results.NmassLL$Taxo.Unit=="fam.all")])
+
+
+
+#_______________________
+##### Boxplots 
+#_______________________
+
 quartz(width=3, height=4.5)
 par(mfrow=c(2,1), mar=c(4,4,2,1), oma=c(2,0,0,0))
 boxplot(Slope_LMA.N~Type, all.results, ylim=c(-2,1.5),las=3, main="log(LMA)~log(Nmass", ylab="MA Slope")
@@ -1591,8 +1788,67 @@ abline(h=0, lty=2)
 
 
 
+###### LMA v Narea !! ########
+quartz(width=3, height=4.5)
+par(mfrow=c(2,1), mar=c(4,4,2,1), oma=c(2,0,0,0))
+boxplot(Slope_LMA.Narea~Type, all.results,las=3,ylim=c(-1.5,2), main="log(LMA)~log(Narea)", ylab="MA Slope")
+points(y=rep(as.numeric(fam.res_LMA.Narea[3]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
+points(y=rep(as.numeric(fam.resclean_LMA.Narea[3]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
+abline(h=0, lty=2)
+boxplot(Rho_LMA.Narea~Type, all.results, ylim=c(-1,1),las=3, ylab="Rho")
+points(y=rep(as.numeric(fam.res_LMA.Narea[4]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
+points(y=rep(as.numeric(fam.resclean_LMA.Narea[4]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
+abline(h=0, lty=2)
 
 
+#### Trimming to only well represented taxa (10 or more)
+quartz(width=3, height=4.5)
+par(mfrow=c(2,1), mar=c(4,4,2,1), oma=c(2,0,0,0))
+boxplot(Slope_LMA.Narea~Type, all.results[which(all.results$n_LMA.Narea>9),], ylim=c(-1.5,2),las=3, main="log(LMA)~log(Narea) strict", ylab="MA Slope")
+points(y=rep(as.numeric(fam.res_LMA.Narea[3]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
+points(y=rep(as.numeric(fam.resclean_LMA.Narea[3]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
+abline(h=0, lty=2)
+boxplot(Rho_LMA.Narea~Type, all.results[which(all.results$n_LMA.Narea>9),], ylim=c(-1,1),las=3, ylab="Rho")
+points(y=rep(as.numeric(fam.res_LMA.Narea[4]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
+points(y=rep(as.numeric(fam.resclean_LMA.Narea[4]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
+abline(h=0, lty=2)
+
+
+## only things with reasonable correlations 
+quartz(width=3, height=4.5)
+par(mfrow=c(2,1), mar=c(4,4,2,1), oma=c(2,0,0,0))
+boxplot(Slope_LMA.Narea~Type, all.results[which(abs(all.results$Rho_LMA.Narea)>.3),], ylim=c(-1.5,2),las=3, main="log(LMA)~log(Narea) Hcor", ylab="MA Slope")
+points(y=rep(as.numeric(fam.res_LMA.Narea[3]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
+points(y=rep(as.numeric(fam.resclean_LMA.Narea[3]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
+abline(h=0, lty=2)
+boxplot(Rho_LMA.Narea~Type, all.results[which(all.results$n_LMA.Narea>9),], ylim=c(-1,1),las=3, ylab="Rho")
+points(y=rep(as.numeric(fam.res_LMA.Narea[4]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
+points(y=rep(as.numeric(fam.resclean_LMA.Narea[4]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
+abline(h=0, lty=2)
+
+
+
+####### Plotting the LMA vs Narea scaling in unit rather than log space ######
+plot(Narea~LMA, LES, col="grey", pch=16)
+xs <- seq(1,1000, by=10)
+## plotting w/in species slopes
+for(i in which(all.results$Type=="w.inSpp")){
+  ys <- 10^all.results$Int_LMA.Narea[i] * xs^ all.results$Slope_LMA.Narea[i]
+  lines(ys~xs, col="darkblue", lwd=.5)
+}
+## plotting w/in genera slopes
+for(i in which(all.results$Type=="w.inGen")){
+  ys <- 10^all.results$Int_LMA.Narea[i] * xs^ all.results$Slope_LMA.Narea[i]
+  lines(ys~xs, col="darkgreen")
+}
+## plotting w/in fams
+for(i in which(all.results$Type=="Genw.inFam")){
+  ys <- 10^all.results$Int_LMA.Narea[i] * xs^ all.results$Slope_LMA.Narea[i]
+  lines(ys~xs, col="darkred")
+}
+## grand across family relationship
+ys <- 10^all.results$Int_LMA.Narea[184] * xs^ all.results$Slope_LMA.Narea[184]
+lines(ys~xs, lwd=3)
 
 ####### some analysis? ##########
 
@@ -1627,6 +1883,11 @@ NmassLL <- lm(Slope_N.LL~Type, weights = n_N.LL, all.results)
 nmassll <- aov(Slope_N.LL~Type, all.results,weights=n_N.LL)
 TukeyHSD(nmassll)
 # with super conservative TukeyHSD, nothing is significantly different, though w/spp is close
+
+LMA.Narea <- lm(Slope_LMA.Narea~Type, weights = n_LMA.Narea, all.results)
+# Everything's different from w.inSpp. and increasingly different at higher Taxon scales...
+lmanarea <- aov(Slope_LMA.Narea~Type, all.results,weights=n_N.LL)
+TukeyHSD(lmanarea)
 
 
 

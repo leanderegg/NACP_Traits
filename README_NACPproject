@@ -274,6 +274,34 @@ Saved a figure of this. In a hierarchical model, I'd bet that the main intercept
 I'd say, if there is a trend, it's for dry to be higher LL than wet, for there to be a negative relationship between LL and LMA, and for this relationship to get slightly more negative with decreasing precip.
 
 
+##### NEW COMMIT  3.14.17 ####### 
+
+turns out, I hadn't committed in for ever. just did.
+Recently, I:
+- made some 'funnel plots' to make sure that spp SMA slopes weren't a function of sample size or variance
+- this required adding a variance column to all of my outputs from fitMAR
+- this revealed that I no longer get the same answer as I did the first time I created "Results_SimpleMAreg_v1_030817.csv"
+- in trying to fix this, I stopped to add traits species means in to LES. created a couple duplicate species..
+[1] "Abies.lasiocarpa"      "Arbutus.menziesii"     "Holodiscus.discolor"   "Picea.sitchensis"     
+[5] "Pinus.flexilis"        "Pinus.jeffreyi"        "Pinus.ponderosa"       "Pseudotsuga.menziesii"
+******Haven't dealt with that yet...**********
+- But I did realize that in creating spp.data out of traits.common5 and LES, I was using LMA_PSA for traits.common5
+- this lead to problems because many pines didn't have a PSA_to_HSA number, so were kicking out NAs
+- I had to infill this number and recalculate. 
+
+GOING to rm(list=ls()) this and try again. Wish me luck...
+
+
+
+Notes from funnel plots:
+Nmass vs LL - Rho looks same against both var(Nmass) and var(LL), and suggests it's just a variance thing
+
+
+
+### variance decompostion in the PNW dataset:
+Why is w/in spp variation smaller in Dominant Conifers that in all datasets?
+  It looks like the problem is that raw trait values are VERY non-normal in the global dataset. So the variance estimates are probably pretty inaccurate.
+*******  Not sure how to deal with this. NEED TO FIX..... **********
 
 
 
