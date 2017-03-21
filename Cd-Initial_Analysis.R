@@ -278,7 +278,7 @@ growthmod <- lm(AG_PROD_TREE_TOTAL_AS_CARBON~AG_BIOMASS_TREE_TOTAL_AS_CARBON, da
 growthmod2 <- gam(AG_PROD_TREE_TOTAL_AS_CARBON~s(AG_BIOMASS_TREE_TOTAL_AS_CARBON), data=biomass)
 growthmod3 <- gam(AG_PROD_TREE_TOTAL_AS_CARBON~s(log(AG_BIOMASS_TREE_TOTAL_AS_CARBON)), data=biomass)
 biomass$logAG_BIOMASS <- log(biomass$AG_BIOMASS_TREE_TOTAL_AS_CARBON)
-growthmod4 <- gls(AG_PROD_TREE_TOTAL_AS_CARBON~logAG_BIOMASS, data=biomass, weights = varExp(~logAG_BIOMASS))
+# growthmod4 <- gls(AG_PROD_TREE_TOTAL_AS_CARBON~logAG_BIOMASS, data=biomass, weights = varExp(~logAG_BIOMASS))
   # there's actually a better relationship between log(biomass) than regular biomass
 biomass$BIOstGROWTH[which(biomass$AG_PROD_TREE_TOTAL_AS_CARBON>-5)] <- resid(growthmod)
 biomass$BIOstGROWTHgam[which(biomass$AG_PROD_TREE_TOTAL_AS_CARBON>-5)] <- resid(growthmod2)
@@ -333,15 +333,16 @@ traits$log.LMA_PSA <- log(traits$LMA_PSA, base=10)
 
 
 traits$FullSpecies <- paste(traits$GENUS, traits$SPECIES, sep=" ")
-PNWspecies <- sort(unique((traits$FullSpecies)))
-PNWfams <- tax_name(PNWspecies, get="family", db="itis")
-PNWfams$family[grep("Cercocarpus", PNWfams$query)] <- "Rosaceae"
-PNWfams$family[grep("Cornus", PNWfams$query)] <- "Cornaceae"
-PNWfams$family[grep("Frangula", PNWfams$query)] <- "Rhamnaceae" # actually genus Rhamnus
-PNWfams$family[grep("Purshia tridentate", PNWfams$query)] <- "Rosaceae" # actually tridentata
+# PNWspecies <- sort(unique((traits$FullSpecies)))
+# PNWfams <- tax_name(PNWspecies, get="family", db="itis")
+# PNWfams$family[grep("Cercocarpus", PNWfams$query)] <- "Rosaceae"
+# PNWfams$family[grep("Cornus", PNWfams$query)] <- "Cornaceae"
+# PNWfams$family[grep("Frangula", PNWfams$query)] <- "Rhamnaceae" # actually genus Rhamnus
+# PNWfams$family[grep("Purshia tridentate", PNWfams$query)] <- "Rosaceae" # actually tridentata
+# 
+# write.csv(PNWfams, "PNWfams_031717.csv")
 
-
-
+PNWfams <- read.csv("PNWfams_031717.csv")
 traits$Family <- PNWfams$family[match(traits$FullSpecies, PNWfams$query)]
 
 
@@ -375,7 +376,7 @@ common.genera <- genera$GENUS[which(genera$nspp>1)]
 
 ### pull out common species (>10 records)
 common.species10 <- names(which(xtabs(~GE.SP, traits)>10)) # species with >20 records (12), >50 (7), >10 (16), 
-common.species5 <- names(which(xtabs(~GE.SP, traits)>5)) # 23 spp
+common.species5 <- names(which(xtabs(~GE.SP, traits)>=5)) # 23 spp
 #lesscommon.species <- names(which(xtabs(~GE.SP, traits)>10)) # species with >20 records (12), >50 (7), >10 (16), 
 #traits.lesscommon <- subset(traits, subset=GE.SP %in% lesscommon.species)
 
@@ -822,6 +823,9 @@ legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw G
 
 
 
+
+
+
 #-----------------------------------------------------------------------------
 ################ VARIANCE DECOMPOSITION of only common needle leafed conifers ####################
 #-----------------------------------------------------------------------------
@@ -830,6 +834,85 @@ conifers <- names(which(xtabs(~SPP_O1_ABBREV, biomass)>1))
 traits.conifers <- subset(traits, subset=SP.ID %in% conifers) # 1099 trait measurements
 conifers <- c("Abies","Picea","Pinus","Pseudotsuga","Thuja","Tsuga") # 1065 trait measurements
 traits.conifers <- subset(traits, subset=GENUS %in% conifers)
+
+traits.conifers$SP.ID <- factor(traits.conifers$SP.ID)
+
+variance.decomp <- function(dataz, lab){
+  
+  #### logged trait values
+  SLAvar2 <- lmer(SLA_HSA~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+  LMAvar2 <- lmer(log.LMA~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+  LeafLifevar2 <- lmer(log.LL~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+  LeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+  LeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+  LeafNitvar2 <- lmer(log.Nmass~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+  Nareavar2 <- lmer(log.Narea~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+  
+  SLAvariance <- data.frame(VarCorr(SLAvar2))
+  LMAvariance <- data.frame(VarCorr(LMAvar2))
+  LeafLifevariance <- data.frame(VarCorr(LeafLifevar2))
+  LeafCNvariance <- data.frame(VarCorr(LeafCNvar2))
+  LeafCarvariance <- data.frame(VarCorr(LeafCarbvar2))
+  LeafNitvariance <- data.frame(VarCorr(LeafNitvar2))
+  Nareavariance <- data.frame(VarCorr(Nareavar2))
+  
+  traitvars <- data.frame(LMAvariance[,4], LeafLifevariance[,4], LeafNitvariance[,4], Nareavariance[,4], LeafCarvariance[,4], LeafCNvariance[,4])
+  colnames(traitvars) <- c("log.LMA", "log.LL","log.Nmass","log.Narea","Cmass", "LEAF_CN")
+  rownames(traitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
+  traitvars_scaled <- traitvars  
+  for(i in 1:ncol(traitvars)){
+    traitvars_scaled[,i] <- traitvars[,i]/sum(traitvars[,i])
+  }
+  # reorder appropriately so that it plots with w.inPlots on top and btw Genera on bottom.
+  traitvars_scaled1 <- traitvars_scaled[c(3,2,1,4),]
+  
+  
+  quartz(width=5, height=4, "logged")
+  cols <- brewer.pal(11, "PRGn")[c(1,3,9,11)]
+  barplot(as.matrix(traitvars_scaled1),beside=F,legend.text = F,xpd = T, names.arg = c("log\n(LMA)", "log\n(LL)","log\n(Nm)","log\n(Na)", "%C","C/N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab=lab)
+  # almost works: expression(paste("log\n","(",N[mass],")", sep="")) # except it offsets the upper and lower lines
+  legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,2,1)], ncol=2, bty="n",  cex=1.2)
+  
+  
+  #### raw values
+  rLMAvar2 <- lmer(LMA~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+  rLeafLifevar2 <- lmer(LEAF_LIFE~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+  rLeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+  rLeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+  rLeafNitvar2 <- lmer(LEAF_NITROGEN~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+  rNareavar2 <- lmer(Narea~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+  
+  #rSLAvariance <- data.frame(VarCorr(rSLAvar2))
+  rLMAvariance <- data.frame(VarCorr(rLMAvar2))
+  rLeafLifevariance <- data.frame(VarCorr(rLeafLifevar2))
+  rLeafCNvariance <- data.frame(VarCorr(rLeafCNvar2))
+  rLeafCarvariance <- data.frame(VarCorr(rLeafCarbvar2))
+  rLeafNitvariance <- data.frame(VarCorr(rLeafNitvar2))
+  rNareavariance <- data.frame(VarCorr(rNareavar2))
+  
+  rtraitvars <- data.frame(rLMAvariance[,4], rLeafLifevariance[,4], rLeafNitvariance[,4], rNareavariance[,4], rLeafCarvariance[,4], rLeafCNvariance[,4])
+  colnames(rtraitvars) <- c("LMA", "LEAF_Life", "Nmass","Narea","Cmass","LEAF_CN")
+  rownames(rtraitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
+  rtraitvars_scaled <- rtraitvars  
+  for(i in 1:ncol(rtraitvars)){
+    rtraitvars_scaled[,i] <- rtraitvars[,i]/sum(rtraitvars[,i])
+  }
+  rtraitvars_scaled1 <- rtraitvars_scaled[c(3,2,1,4),]
+  
+  quartz(width=5, height=4, "raw")
+  cols <- brewer.pal(11, "PRGn")[c(1,3,9,11)]
+  barplot(as.matrix(rtraitvars_scaled1),beside=F,legend.text = F,xpd = T, names.arg = c("LMA", "Leaf\nLife",expression(N[mass]),expression(N[area]), "%C","C/N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab=lab)
+  legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,2,1)], ncol=2, bty="n",  cex=1.2)
+  
+  return(list(raw = rtraitvars_scaled1, logged = traitvars_scaled1))
+  
+}
+
+variance.decomp(dataz=traits.common, lab="traits.common")
+variance.decomp(dataz=traits.dominants, lab="traits.dominants")
+variance.decomp(dataz=traits.conifers, lab="traits.conifers")
+traits.domcon <- traits.dominants[-which(traits.dominants$SP.ID=="QUECHR"),]
+domconvars <- variance.decomp(dataz=traits.domcon, lab="traits.domcon")
 
 SLAvar <- lmer(SLA_HSA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.conifers)
 SLAvar2 <- lmer(SLA_HSA~ (1|GENUS/SPECIES/PLOT_ID), traits.conifers)
@@ -890,7 +973,7 @@ barplot(as.matrix(traitvars_scaled),beside=F,legend.text = F,xpd = T, names.arg 
 legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,1,2)], ncol=2, bty="n",  cex=1.2)
 
 
-quartz(width=5, height=4)
+quartz(width=5, height=4, )
 cols <- brewer.pal(11, "PRGn")[c(1,3,9,11)]
 barplot(as.matrix(traitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("LMA", "Leaf\nLife","C/N","%C","%N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab="dominants")
 legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,2,1)], ncol=2, bty="n",  cex=1.2)
@@ -908,6 +991,11 @@ par(mar=c(3,3,1,1))
 plot(LL~LMA, LES, col="grey", pch=16, ylab="log Leaf Lifespan (months)", xlab="log LMA (g/m^2)", xlim=c(0,800))
 points(LLmonths~LMA, traits.conifers, col=SP.ID)
 
+
+
+
+
+
 #-----------------------------------------------------------------------------
 ############### VARIANCE DECOMPOSITION of only dominant species in the biomass dataset ####################
 #-----------------------------------------------------------------------------
@@ -919,12 +1007,71 @@ traits.dominants <- subset(traits, subset=SP.ID %in% dominants)
 SLAvar <- lmer(SLA_HSA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
 SLAvar2 <- lmer(SLA_HSA~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
 ## These two are slightly different formulations??? but they give roughly the same answers.
+rLMAvar <- lmer(LMA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants) # uses LMA_HSA rather than PSA
+rLMAvar2 <- lmer(LMA~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
 LMAvar <- lmer(LMA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants) # uses LMA_HSA rather than PSA
 LMAvar2 <- lmer(LMA~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
 
 
-LeafLifevar <- lmer(LEAF_LIFE~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
-LeafLifevar2 <- lmer(LEAF_LIFE~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+rLeafLifevar <- lmer(LEAF_LIFE~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+rLeafLifevar2 <- lmer(LEAF_LIFE~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+
+## probably need better models for these.
+rLeafCNvar <- lmer(LEAF_CN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+rLeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+
+rLeafCarbvar <- lmer(LEAF_CARBON~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+rLeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+
+rLeafNitvar <- lmer(LEAF_NITROGEN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+rLeafNitvar2 <- lmer(LEAF_NITROGEN~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+
+rNareavar2 <- lmer(Narea~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+
+rSLAvariance <- data.frame(VarCorr(rSLAvar2))
+rLMAvariance <- data.frame(VarCorr(rLMAvar2))
+rLeafLifevariance <- data.frame(VarCorr(rLeafLifevar2))
+rLeafCNvariance <- data.frame(VarCorr(rLeafCNvar2))
+rLeafCarvariance <- data.frame(VarCorr(rLeafCarbvar2))
+rLeafNitvariance <- data.frame(VarCorr(rLeafNitvar2))
+rNareavariance <- data.frame(VarCorr(rNareavar2))
+
+
+## dataframe with SLA
+rtraitvars <- data.frame(rSLAvariance[,4], rLeafLifevariance[,4], rLeafCNvariance[,4], rLeafCarvariance[,4], rLeafNitvariance[,4])
+colnames(rtraitvars) <- c("SLA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN")
+rownames(rtraitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
+## dataframe with LMA
+rtraitvars2 <- data.frame(rLMAvariance[,4], rLeafLifevariance[,4], rLeafCNvariance[,4], rLeafCarvariance[,4], rLeafNitvariance[,4], rNareavariance[,4])
+colnames(rtraitvars2) <- c("LMA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN", "Narea")
+rownames(rtraitvars2) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
+
+
+rtraitvars_scaled <- rtraitvars  
+for(i in 1:ncol(rtraitvars)){
+  rtraitvars_scaled[,i] <- rtraitvars[,i]/sum(rtraitvars[,i])
+}
+
+rtraitvars_scaled2 <- rtraitvars2  
+for(i in 1:ncol(rtraitvars2)){
+  rtraitvars_scaled2[,i] <- rtraitvars2[,i]/sum(rtraitvars2[,i])
+}
+
+######## making stacked bar plots with intra-specific variation highlighted
+rtraitvars_scaled <- traitvars_scaled[c(3,2,1,4),]
+rtraitvars_scaled2 <- traitvars_scaled2[c(3,2,1,4),]
+
+
+####### Logged trait variance decomp of dominant conifers ####
+SLAvar <- lmer(SLA_HSA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+SLAvar2 <- lmer(SLA_HSA~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+## These two are slightly different formulations??? but they give roughly the same answers.
+LMAvar <- lmer(log.LMA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants) # uses LMA_HSA rather than PSA
+LMAvar2 <- lmer(log.LMA~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+
+
+LeafLifevar <- lmer(log.LL~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+LeafLifevar2 <- lmer(log.LL~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
 
 ## probably need better models for these.
 LeafCNvar <- lmer(LEAF_CN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
@@ -933,8 +1080,12 @@ LeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
 LeafCarbvar <- lmer(LEAF_CARBON~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
 LeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
 
-LeafNitvar <- lmer(LEAF_NITROGEN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
-LeafNitvar2 <- lmer(LEAF_NITROGEN~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+LeafNitvar <- lmer(log.Nmass~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+LeafNitvar2 <- lmer(log.Nmass~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+
+Nareavar <- lmer(log.Narea~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+Nareavar2 <- lmer(log.Narea~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+
 
 SLAvariance <- data.frame(VarCorr(SLAvar2))
 LMAvariance <- data.frame(VarCorr(LMAvar2))
@@ -942,14 +1093,15 @@ LeafLifevariance <- data.frame(VarCorr(LeafLifevar2))
 LeafCNvariance <- data.frame(VarCorr(LeafCNvar2))
 LeafCarvariance <- data.frame(VarCorr(LeafCarbvar2))
 LeafNitvariance <- data.frame(VarCorr(LeafNitvar2))
+Nareavariance <- data.frame(VarCorr(Nareavar2))
 
 ## dataframe with SLA
 traitvars <- data.frame(SLAvariance[,4], LeafLifevariance[,4], LeafCNvariance[,4], LeafCarvariance[,4], LeafNitvariance[,4])
 colnames(traitvars) <- c("SLA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN")
 rownames(traitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
 ## dataframe with LMA
-traitvars2 <- data.frame(LMAvariance[,4], LeafLifevariance[,4], LeafCNvariance[,4], LeafCarvariance[,4], LeafNitvariance[,4])
-colnames(traitvars2) <- c("LMA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN")
+traitvars2 <- data.frame(LMAvariance[,4], LeafLifevariance[,4], LeafCNvariance[,4], LeafCarvariance[,4], LeafNitvariance[,4], Nareavariance[,4])
+colnames(traitvars2) <- c("LMA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN","Narea")
 rownames(traitvars2) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
 
 
@@ -967,16 +1119,35 @@ for(i in 1:ncol(traitvars2)){
 traitvars_scaled <- traitvars_scaled[c(3,2,1,4),]
 traitvars_scaled2 <- traitvars_scaled2[c(3,2,1,4),]
 
-## making stacked bar plots of variance decomposition:
+#..........
+
+
+
+## RAW TRAITS making stacked bar plots of variance decomposition:
+
+quartz(width=5, height=4)
+cols <- brewer.pal(11, "RdBu")[c(11,9,1, 6)]
+barplot(as.matrix(rtraitvars_scaled),beside=F,legend.text = F,xpd = T, names.arg = c("SLA", "Leaf\nLife","C/N","%C","%N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab="dominants")
+legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,1,2)], ncol=2, bty="n",  cex=1.2)
+
+
+quartz(width=5, height=4, title = "Raw traits")
+cols <- brewer.pal(11, "PRGn")[c(1,3,9,11)]
+barplot(as.matrix(rtraitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("LMA", "Leaf\nLife","C/N","%C","%N","Narea"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab="dominants")
+legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,2,1)], ncol=2, bty="n",  cex=1.2)
+
+
+
+## Logged traits making stacked bar plots of variance decomposition:
 quartz(width=5, height=4)
 cols <- brewer.pal(11, "RdBu")[c(11,9,1, 6)]
 barplot(as.matrix(traitvars_scaled),beside=F,legend.text = F,xpd = T, names.arg = c("SLA", "Leaf\nLife","C/N","%C","%N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab="dominants")
 legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,1,2)], ncol=2, bty="n",  cex=1.2)
 
 
-quartz(width=5, height=4)
+quartz(width=5, height=4, title="logged traits")
 cols <- brewer.pal(11, "PRGn")[c(1,3,9,11)]
-barplot(as.matrix(traitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("LMA", "Leaf\nLife","C/N","%C","%N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab="dominants")
+barplot(as.matrix(traitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("LMA", "Leaf\nLife","C/N","%C","%N","Narea"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab="dominants")
 legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,2,1)], ncol=2, bty="n",  cex=1.2)
 
 
@@ -1883,29 +2054,60 @@ ggplot(traits.common, aes(x=log(LLmonths), y=BIOST_TGROWTH, col=SP.ID)) + geom_p
 ggplot(traits.common, aes(x=log(LLmonths), y=BIOST_TGROWTHgam, col=SP.ID)) + geom_point() + geom_smooth(method="lm", se=F)
   ## LL is related to RGR, and BIOST_TGROWTHgam, but not to raw growth...
 
+
+############## Growth v traits, only in dominants ########################################
+### Let's look only at the traits from the dominant species in each plot
+traits.mono <- traits[which(as.character(traits$SP.ID)==as.character(traits$FOREST_TYPE)),]
+  # lose about half of traits n=756
+  # let's also get rid of anything without 3 or more stands
+reps <- traits.mono %>% group_by(SP.ID) %>% summarise(nSites = length(unique(PLOT_ID)))
+traits.mono <- traits.mono[which(traits.mono$SP.ID %in% reps$SP.ID[which(reps$nSites>2)] & traits.mono$dominance>75),]
+  # drops down to 719, 625 have >50% dominance, 578 have >60% dominance, 497 have >75% dominance
+traits.mono$SP.ID <- factor(traits.mono$SP.ID) #drop unused species levels
+
+
 ### not really a relationship between RGR and log LMA
 options(na.action="na.omit")
-modLMAvRGR <- lmer(RGR~log.LMA + (log.LMA|SP.ID), traits.common)
-modLMAvRGRnull <- lmer(RGR~1 + (log.LMA|SP.ID), traits.common)
-anova(modLMAvRGRnull, modLMAvRGR) # LRT p=0.3557
-summary( lmer(log.LMA~RGR + (RGR|SP.ID), traits.common))
+modLMAvRGR <- lmer(RGR~log.LMA + (log.LMA|SP.ID), traits.mono, REML=F)
+modLMAvRGRnull <- lmer(RGR~1 + (log.LMA|SP.ID), traits.mono, REML=F)
+anova(modLMAvRGRnull, modLMAvRGR) # LRT p=0.3557 with full dataset, p=.21 with .mono, p=0.346 with restricted traits.mono, p=0.52 .mono75%, p=0.586 logRGR .mono75%
+#summary( lmer(log.LMA~RGR + (RGR|SP.ID), traits.mono))
 
 ### nearly marginally significant relationship between RGR and log Nmass
 # modNmassvRGR <- lmer(RGR~log.Nmass + (log.Nmass|SP.ID), traits.common)
 # modNmassvRGRnull <-lmer(RGR~1 + (log.Nmass|SP.ID), traits.common)
 # anova(modNmassvRGRnull, modNmassvRGR) # p = 0.1306
 # summary( lmer(log.Nmass~RGR + (RGR|SP.ID), traits.common))
-modNareavRGR <- lmer(RGR~log.Narea + (log.Narea|SP.ID), traits.common)
-modNareavRGRnull <-lmer(RGR~1 + (log.Narea|SP.ID), traits.common)
-anova(modNareavRGRnull, modNareavRGR) # p = 0.054
-summary( lmer(log.Narea~RGR + (RGR|SP.ID), traits.common))
+modNareavRGR <- lmer(log(RGR)~log.Narea + (log.Narea|SP.ID), traits.mono, REML=F)
+modNareavRGRnull <-lmer(log(RGR)~1 + (log.Narea|SP.ID), traits.mono, REML=F)
+anova(modNareavRGRnull, modNareavRGR) # p = 0.054, # p=0.8 with traits.mono, p=0.543 with restricted traits.mono, p=0.29 .mono75%, p=0.046 logRGR .mono75%
+summary( lmer(log.Narea~RGR + (RGR|SP.ID), traits.mono))
 
 
-### significant relationship between RGR and log LL
-modLLvRGR <- lmer(RGR~log.LL + (log.LL|SP.ID), traits.common)
-modLLvRGRnull <- lmer(RGR~1 + (log.LL|SP.ID), traits.common)
-anova(modLLvRGRnull, modLLvRGR) # p = 0.01564
-summary( lmer(log.LL~RGR + (RGR|SP.ID), traits.common))
+### significant relationship between log(RGR) and log LL
+modLLvRGR <- lmer(log(RGR)~log.LL + (log.LL|SP.ID), traits.mono)
+modLLvRGRnull <- lmer(log(RGR)~1 + (log.LL|SP.ID), traits.mono)
+anova(modLLvRGRnull, modLLvRGR) # p = 0.0058 all traits.common, p=0.032 with traits.mono ,p= 0.047 with restricted traits.mono, p=0.005 .mono75%
+summary( lmer(log.LL~RGR + (RGR|SP.ID), traits.mono))
+modLLvRGR <- glmer(RGR~log.LL + (log.LL|SP.ID), traits.mono,family=(gaussian(link='log')))
+modLLvRGRnull <- glmer(RGR~1 + (log.LL|SP.ID), traits.mono,family=(gaussian(link='log')))
+anova(modLLvRGRnull, modLLvRGR) # p = 0.0058 all traits.common, p=0.032 with traits.mono ,p= 0.047 with restricted traits.mono, p=0.005 .mono75%
+
+
+
+## with different biomass...
+modLMAvRGR <- lmer(BIOST_TGROWTHgam~log.LMA + (log.LMA|SP.ID), traits.mono)
+modLMAvRGRnull <- lmer(BIOST_TGROWTHgam~1 + (log.LMA|SP.ID), traits.mono)
+anova(modLMAvRGRnull, modLMAvRGR) # LRT p=0.78 .common, p=0.944 .mono, p=0.75 with only spp w/ >=3 plots, p=0.1427 .mono75%
+
+modNareavRGR <- lmer(BIOST_TGROWTHgam~log.Narea + (log.Narea|SP.ID), traits.mono)
+modNareavRGRnull <-lmer(BIOST_TGROWTHgam~1 + (log.Narea|SP.ID), traits.mono)
+anova(modNareavRGRnull, modNareavRGR) # p=0.0478 .common,  p = 0.044 # p=0.105 with only spp w >=3 plots, p=0.098 .mono75%
+
+modLLvRGR <- lmer(BIOST_TGROWTHgam~log.LL + (log.LL|SP.ID), traits.mono)
+modLLvRGRnull <- lmer(BIOST_TGROWTHgam~1 + (log.LL|SP.ID), traits.mono)
+anova(modLLvRGRnull, modLLvRGR) # p=0.0146 .common,  p=0.0121 # p=0.0752 with only spp w >=3 plots, p=0.05224 .mono 75%
+
 
 
 
@@ -1920,13 +2122,13 @@ quartz(width=7.1, height=3)
 par(mar=c(4,2,1.2,1), oma=c(0,2,0,0),mfrow=c(1,3), cex=1.1,mgp=c(2.5,1,0))
 
 ### plotting Leaf Lifespan v RGR
-f0LL <- predict(modLLvRGR, re.form=NA)
-f1LL <- fitted(modLLvRGR)
+f0LL <- predict(modLLvRGR, re.form=NA, type="response")
+f1LL <- predict(modLLvRGR, type="response")
 # sort lma values so lines draw right
-I <- order(traits.common$log.LL[-which(is.na(traits.common$RGR) | is.na(traits.common$log.LL))])
-LLs <- sort(traits.common$log.LL[-which(is.na(traits.common$RGR) | is.na(traits.common$log.LL))])
-spid <- traits.common$SP.ID[-which(is.na(traits.common$RGR) | is.na(traits.common$log.LL))][I]
-plot(RGR~log.LL, traits.common, col="gray", pch=16, cex=.4, xlab="log(Leaf Lifespan)")
+I <- order(traits.mono$log.LL[-which(is.na(traits.mono$RGR) | is.na(traits.mono$log.LL))])
+LLs <- sort(traits.mono$log.LL[-which(is.na(traits.mono$RGR) | is.na(traits.mono$log.LL))])
+spid <- traits.mono$SP.ID[-which(is.na(traits.mono$RGR) | is.na(traits.mono$log.LL))][I]
+plot(RGR~log.LL, traits.mono, col="gray", pch=16, cex=.4, xlab="log(Leaf Lifespan)")
 mtext("Relative Growth Rate", side=2, line=2.5, cex=1.1)
 for(i in levels(spid)){
   lines(LLs[which(spid==i)], f1LL[I][which(spid==i)],  col=spid[which(spid==i)], lwd=2)
@@ -1939,10 +2141,10 @@ mtext("a)", side=3, adj=0)
 f0lma <- predict(modLMAvRGR, re.form=NA)
 f1lma <- fitted(modLMAvRGR)
 # sort lma values so lines draw right
-I <- order(traits.common$log.LMA[-which(is.na(traits.common$RGR) | is.na(traits.common$log.LMA))])
-LMAs <- sort(traits.common$log.LMA[-which(is.na(traits.common$RGR) | is.na(traits.common$log.LMA))])
-spid <- traits.common$SP.ID[-which(is.na(traits.common$RGR) | is.na(traits.common$log.LMA))][I]
-plot(RGR~log.LMA, traits.common, col="gray", pch=16, cex=.4, xlab="log(LMA)")
+I <- order(traits.mono$log.LMA[-which(is.na(traits.mono$RGR) | is.na(traits.mono$log.LMA))])
+LMAs <- sort(traits.mono$log.LMA[-which(is.na(traits.mono$RGR) | is.na(traits.mono$log.LMA))])
+spid <- traits.mono$SP.ID[-which(is.na(traits.mono$RGR) | is.na(traits.mono$log.LMA))][I]
+plot(RGR~log.LMA, traits.mono, col="gray", pch=16, cex=.4, xlab="log(LMA)")
 for(i in levels(spid)){
   lines(LMAs[which(spid==i)], f1lma[I][which(spid==i)],  col=spid[which(spid==i)], lwd=2)
 }
@@ -1954,16 +2156,75 @@ mtext("b)", side=3, adj=0)
 f0Narea <- predict(modNareavRGR, re.form=NA)
 f1Narea <- fitted(modNareavRGR)
 # sort lma values so lines draw right
-I <- order(traits.common$log.Narea[-which(is.na(traits.common$RGR) | is.na(traits.common$log.Narea))])
-Nareas <- sort(traits.common$log.Narea[-which(is.na(traits.common$RGR) | is.na(traits.common$log.Narea))])
-spid <- traits.common$SP.ID[-which(is.na(traits.common$RGR) | is.na(traits.common$log.Narea))][I]
-plot(RGR~log.Narea, traits.common, col="gray", pch=16, cex=.4, xlab="log(Narea)")
+I <- order(traits.mono$log.Narea[-which(is.na(traits.mono$RGR) | is.na(traits.mono$log.Narea))])
+Nareas <- sort(traits.mono$log.Narea[-which(is.na(traits.mono$RGR) | is.na(traits.mono$log.Narea))])
+spid <- traits.mono$SP.ID[-which(is.na(traits.mono$RGR) | is.na(traits.mono$log.Narea))][I]
+plot(RGR~log.Narea, traits.mono, col="gray", pch=16, cex=.4, xlab="log(Narea)")
 for(i in levels(spid)){
   lines(Nareas[which(spid==i)], f1Narea[I][which(spid==i)],  col=spid[which(spid==i)], lwd=2)
 }
 lines(Nareas, f0Narea[I], lwd=4, lty=1)
 mtext(text = "p=0.054", side=3, adj = .2, line=-1 )
 mtext("c)", side=3, adj=0)
+
+
+
+
+####### Figure reploted with traits.mono and biost_growth instead of RGR.
+quartz(width=7.1, height=3)
+par(mar=c(4,2,1.2,1), oma=c(0,2,0,0),mfrow=c(1,3), cex=1.1,mgp=c(2.5,1,0))
+
+### plotting Leaf Lifespan v RGR
+f0LL <- predict(modLLvRGR, re.form=NA)
+f1LL <- fitted(modLLvRGR)
+# sort lma values so lines draw right
+I <- order(traits.mono$log.LL[-which(is.na(traits.mono$BIOST_TGROWTHgam) | is.na(traits.mono$log.LL))])
+LLs <- sort(traits.mono$log.LL[-which(is.na(traits.mono$BIOST_TGROWTHgam) | is.na(traits.mono$log.LL))])
+spid <- traits.mono$SP.ID[-which(is.na(traits.mono$BIOST_TGROWTHgam) | is.na(traits.mono$log.LL))][I]
+plot(BIOST_TGROWTHgam~log.LL, traits.mono, col="gray", pch=16, cex=.4, xlab="log(Leaf Lifespan)")
+mtext("Relative Growth Rate", side=2, line=2.5, cex=1.1)
+for(i in levels(spid)){
+  lines(LLs[which(spid==i)], f1LL[I][which(spid==i)],  col=spid[which(spid==i)], lwd=2)
+}
+lines(LLs, f0LL[I], lwd=4, lty=1)
+mtext(text = "p=0.015", side=3, adj = .8, line=-1, font=2 )
+mtext("a)", side=3, adj=0)
+
+### plotting LMA v BIOST_TGROWTHgam
+f0lma <- predict(modLMAvRGR, re.form=NA)
+f1lma <- fitted(modLMAvRGR)
+# sort lma values so lines draw right
+I <- order(traits.mono$log.LMA[-which(is.na(traits.mono$BIOST_TGROWTHgam) | is.na(traits.mono$log.LMA))])
+LMAs <- sort(traits.mono$log.LMA[-which(is.na(traits.mono$BIOST_TGROWTHgam) | is.na(traits.mono$log.LMA))])
+spid <- traits.mono$SP.ID[-which(is.na(traits.mono$BIOST_TGROWTHgam) | is.na(traits.mono$log.LMA))][I]
+plot(BIOST_TGROWTHgam~log.LMA, traits.mono, col="gray", pch=16, cex=.4, xlab="log(LMA)")
+for(i in levels(spid)){
+  lines(LMAs[which(spid==i)], f1lma[I][which(spid==i)],  col=spid[which(spid==i)], lwd=2)
+}
+lines(c(min(LMAs), max(LMAs)), c(min(f0lma), max(f0lma)), lwd=4, lty=3)
+mtext(text = "p=0.35", side=3, adj = .2, line=-1 )
+mtext("b)", side=3, adj=0)
+
+### plotting Narea v BIOST_TGROWTHgam
+f0Narea <- predict(modNareavRGR, re.form=NA)
+f1Narea <- fitted(modNareavRGR)
+# sort lma values so lines draw right
+I <- order(traits.mono$log.Narea[-which(is.na(traits.mono$BIOST_TGROWTHgam) | is.na(traits.mono$log.Narea))])
+Nareas <- sort(traits.mono$log.Narea[-which(is.na(traits.mono$BIOST_TGROWTHgam) | is.na(traits.mono$log.Narea))])
+spid <- traits.mono$SP.ID[-which(is.na(traits.mono$BIOST_TGROWTHgam) | is.na(traits.mono$log.Narea))][I]
+plot(BIOST_TGROWTHgam~log.Narea, traits.mono, col="gray", pch=16, cex=.4, xlab="log(Narea)")
+for(i in levels(spid)){
+  lines(Nareas[which(spid==i)], f1Narea[I][which(spid==i)],  col=spid[which(spid==i)], lwd=2)
+}
+lines(Nareas, f0Narea[I], lwd=4, lty=1)
+mtext(text = "p=0.054", side=3, adj = .2, line=-1 )
+mtext("c)", side=3, adj=0)
+
+
+
+
+
+
 
 
 #_______________________________________________________________________
@@ -2374,10 +2635,11 @@ nareaimps$trait <- rep("Narea", times=nrow(nareaimps))
 
 importances <- rbind(llimps, lmaimps, nareaimps)
 colnames(importances) <- c("climPC1", "climPC2","soil_N","Stand_Age","LAI","Growth", "SP.ID", "trait")
+# write.csv(importances, "Trait_models/VariableImportances_wide_041617aiccuttoff.csv")
 
+
+importances <- read.csv("Trait_models/VariableImportances_wide_041617aiccuttoff.csv", row.names = 1)
 impslong <- melt(importances, id.vars = c("SP.ID","trait"))
-write.csv(importances, "Trait_models/VariableImportances_wide_041617aiccuttoff.csv")
-
 
 p1 <- ggplot(impslong, aes(x=variable, y=value, col=variable)) + geom_boxplot() + 
   geom_abline(slope = 0, intercept = 0) + facet_grid(trait~.) +
@@ -2396,7 +2658,9 @@ nareaavgmods$trait <- rep("Narea", times=nrow(nareaavgmods))
 
 avgmods <- rbind(llavgmods, lmaavgmods, nareaavgmods)[,-1]
 colnames(avgmods) <- c("climPC1", "climPC2","soil_N","Stand_Age","LAI","Growth", "SP.ID", "trait")
-write.csv(avgmods, "Trait_models/Model_Averages_wide_031617aiccuttoff.csv")
+#write.csv(avgmods, "Trait_models/Model_Averages_wide_031617aiccuttoff.csv")
+
+avgmods <- read.csv("Trait_models/Model_Averages_wide_031617aiccuttoff.csv", row.names = 1)
 avglong <- melt(avgmods, id.vars = c("SP.ID","trait"))
 
 (p2 <- ggplot(avglong, aes(x=variable, y=value, col=variable)) + geom_boxplot() + 

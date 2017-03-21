@@ -305,6 +305,33 @@ Why is w/in spp variation smaller in Dominant Conifers that in all datasets?
 
 
 
+-I added a lot of environmental modeling code to do model selection for all spp in the PNW with decent replication.
+I then made a couple nifty ways of visualizing this data and threw a fatty table in the manuscript.
+
+
+##### NEW COMMIT  3.17.17 ####### 
+I'm about to update all analyses to include species with 5, rather than 6 trait values. Currently, both PNW and globnet were reduced to <5, and I think I should use <=5 instead to really jack up my sample size.
+  # doesn't really change anything all that much
+  
+- but I do still need to includ coffee in. This will make my plot look quite a bit more flushed out, but really won't change my conclusion that the slope is much steeper (MA slope = 1.03 for coffee and averages 1.13 for all intra-specifics)
+* Note: arabidopsis doesn't seem to show this NEARLY as strongly...
+
+
+
+- Variance Decompositions: 
+I replotted the PNW variance decomp with green=ITV and purple = btw species var.
+Couldn't really decide how to subset the dataset. I could either go for 
+1) dominants - anything that comes up as a SPP_O1 in biomass
+2) common conifers - things in the common conifer genera (e.g. no Juniperus)
+3) things that dominate at least 2 plots - turns out this is actually the same as 1?
+4) anything that could conceivabily be lumped into 'needle leafed conifer'
+
+
+
+
+
+
+
 
 
 

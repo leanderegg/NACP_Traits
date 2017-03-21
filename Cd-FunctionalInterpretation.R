@@ -1,10 +1,18 @@
 ### arabidopsis data from Blonder et al. 2016
-arab <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Blonder2015Arabidopsis.csv",header=T)
+arab <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/Blonder2015Arabidopsis.csv",header=T)
 colnames(arab)<- c("Type","ID","Genotype","LL","LMA","Nmass","Amass","VD","LDMC")
 arab$SLA <- 1/arab$LMA
 arab$Aarea <- arab$Amass * arab$LMA
-arab$Narea <- arab$Nmass * arab$LMA
+arab$Narea <- arab$Nmass/100 * arab$LMA
+head(arab)
+arab$LLmonths <- arab$LL/30
+arab$log.LL <- log(arab$LLmonths, base=10)
+arab$log.LMA <- log(arab$LMA, base=10)
+arab$log.Narea <- log(arab$Narea, base=10)
 
+plot(LMA~Narea, LES)
+points(LMA~Narea, arab, col=Type)
+plot()
 
 
 ##### Coffee data from Martin et al. 2016

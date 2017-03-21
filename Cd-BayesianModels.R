@@ -896,14 +896,18 @@ mcmcplot(fit.corr_all.mcmc)
 
 
 ############################################################
-############ **Maximum Likelihood easy models** ################
+############ **Maximum Likelihood easy models** ###############################################################
 ############################################################
+
+
+
+########### Breaking Data up by Taxonomic Level#####################
 levels(LES$Needle.Broad.lf) <- list(B="B",N="N",unknown="")
 
 ### common spp and genera and families in GLOPNET
-commonspp <- names(which(xtabs(~Species, LES)>5)) # 6 have >5 records, 14 have >4 records, 36 have >3 records
-commongen <- names(which(xtabs(~Genus, LES)>8))
-commonfam <- names(which(xtabs(~Family, LES)>5))
+commonspp <- names(which(xtabs(~Species, LES)>=5)) # 6 have >5 records, 14 have >4 records, 36 have >3 records
+commongen <- names(which(xtabs(~Genus, LES)>=5))
+commonfam <- names(which(xtabs(~Family, LES)>=5))
 
 
 #### averaging things up to spp level ########
@@ -1058,7 +1062,7 @@ ggplot(arab, aes(x=log(LMA), y=log(Narea), col=Type)) + geom_point()
 ###### Data preperation: #########
 
 ##### combined common spp from PACNW and LES datasets
-commonspp <- names(which(xtabs(~Species, LES)>5)) # 6 have >5 records, 14 have >4 records, 36 have >3 records
+commonspp <- names(which(xtabs(~Species, LES)>=5)) # 6 have >5 records, 14 have >4 records, 36 have >3 records
 ## NOTE: I orginally was using log.LMA_PSA, but as of 3.14.17, I had some NAs in the traits dataset. I had to fill them in.
 spp.data1 <- traits.common5 %>% select(FullSpecies,log.Nmass, log.LL, log.LMA_PSA, GENUS, Family, log.Narea)
 colnames(spp.data1)[c(1,4,5)]<- c("Species","log.LMA", "Genus")
@@ -1077,7 +1081,7 @@ spp.data$Species <- factor(spp.data$Species)
 #gen.data <- LESspp[which(LESspp$Genus %in% names(which(xtabs(~Genus,LESspp)>5))),]
 # 634 measurements of 51 genera
 # update 03.14.17, added traits spp to LES
-gen.data <- allspp[which(allspp$Genus %in% names(which(xtabs(~Genus, allspp)>5))),]
+gen.data <- allspp[which(allspp$Genus %in% names(which(xtabs(~Genus, allspp)>=5))),]
 # 659 measurements of 52 genera. Added Abies, but evidently that was the only additional genus...
 gen.data$Genus <- factor(gen.data$Genus) # get rid of unused levels
 
@@ -1086,13 +1090,13 @@ gen.data$Genus <- factor(gen.data$Genus) # get rid of unused levels
 # currently just working with LES until I combine the PACNW dataset into this.
 # ppinfam.data <- LESspp[which(LESspp$Family %in% names(which(xtabs(~Family,LESspp)>5))),]
 # 1374 measurements of 62 Families
-sppinfam.data <- allspp[which(allspp$Family %in% names(which(xtabs(~Family,allspp)>5))),]
+sppinfam.data <- allspp[which(allspp$Family %in% names(which(xtabs(~Family,allspp)>=5))),]
 sppinfam.data$Family <- factor(sppinfam.data$Family) # get rid of unused levels
 # 1418 measurements of 63 Families. Added a family!
 
 #### gen in Family level data
 # currently just working with LES until I combine the PACNW dataset into this. # good to use LESgen, because it's been updated with allspp above
-geninfam.data <- LESgen[which(LESgen$Family %in% names(which(xtabs(~Family,LESgen)>5))),]
+geninfam.data <- LESgen[which(LESgen$Family %in% names(which(xtabs(~Family,LESgen)>=5))),]
 # 556 measurements of 40 Families , added 2 Families from last batch, and probably quite a few obs (old n_LMA.N = 459)
 geninfam.data$Family <- factor(geninfam.data$Family) # get rid of unused levels
 geninfam.data$Genus <- factor(geninfam.data$Genus)
@@ -1100,6 +1104,16 @@ geninfam.data$Genus <- factor(geninfam.data$Genus)
 #### Family Means:
 fam.data <- LESfam # 189 families
 fam.dataclean <- LESfam[which(LESfam$tnspp>2),] # 97 families
+
+
+nsp <- spp.data %>% group_by (Species) %>% summarise(nLL = length(which(!is.na(log.LL))), nLMA = length(which(!is.na(log.LMA))), nN = length(which(!is.na(log.Nmass))))
+# apply(nsp[,2:4],MARGIN = 2, FUN=mean)
+ngen <- gen.data %>% group_by (Genus) %>% summarise(nLL = length(which(!is.na(log.LL))), nLMA = length(which(!is.na(log.LMA))), nN = length(which(!is.na(log.Nmass))))
+# apply(ngen[,2:4],MARGIN = 2, FUN=mean)
+nfam <- sppinfam.data %>% group_by (Family) %>% summarise(nLL = length(which(!is.na(log.LL))), nLMA = length(which(!is.na(log.LMA))), nN = length(which(!is.na(log.Nmass))))
+# apply(nfam[,2:4],MARGIN = 2, FUN=mean)
+nfamg <- geninfam.data %>% group_by (Family) %>% summarise(nLL = length(which(!is.na(log.LL))), nLMA = length(which(!is.na(log.LMA))), nN = length(which(!is.na(log.Nmass))))
+# apply(nfamg[,2:4],MARGIN = 2, FUN=mean)
 
 
 #### Function for fitting MARs
@@ -1586,8 +1600,9 @@ all.results <- cbind(LMALL, LMAN[,-c(1,7,9)], NmassLL[,-c(1,7,8,9)], LMANarea[,-
 
 #write.csv(all.results, "Results_SimpleMAreg_v1_030817.csv")
 #write.csv(all.results, "Results_SimpleMAreg_v2_031417.csv")
+#write.csv(all.results, "Results_SimpleMAreg_v3_031717.csv")
 
-modtest <- lm(AG_TGROWTH~LAI_O + MAT + ASA, traits[which(traits$SP.ID=="PSEMEN"),])
+#all.resultsold <- read.csv("Results_SimpleMAreg_v2_031417.csv")
 
 
 
@@ -1595,7 +1610,7 @@ modtest <- lm(AG_TGROWTH~LAI_O + MAT + ASA, traits[which(traits$SP.ID=="PSEMEN")
 
 ############# Plotting Slopes of diff taxo levels #################
 
-all.results <- read.csv("Results_SimpleMAreg_v2_031417.csv", row.names = 1)
+all.results <- read.csv("Results_SimpleMAreg_v3_031717.csv", row.names = 1)
 levels(all.results$Type) <- list(w.inSpp = "w.inSpp", w.inGen = "w.inGen", Sppw.inFam= "Sppw.inFam",Genw.inFam="Genw.inFam", Fam="Fam",Famclean="Famclean")
 
 ######## Funnel Plots #######
@@ -1649,12 +1664,27 @@ plot(Rho~varLMA, all.results.LMAN, pch=16, col=Type)
 abline(h=0, col="grey", lty=2)
 abline(h=all.results.LMAN$Rho[which(all.results.LMAN$Taxo.Unit=="fam.all")])
 
+
+### two panel of correlation of Nmass things with varNmass
 quartz(width=3,height=4.5)
 par(mar=c(4,4,0,1), mfrow=c(2,1), mgp=c(2.5,1,0), oma=c(0,0,2,0))
 plot(Rho~varNmass, all.results.LMAN, pch=16, col=Type, xlab="")
 #mtext( text="Nmass v LMA", side=3, line=0, font=2)
 abline(h=0, col="grey", lty=2)
 abline(h=all.results.LMAN$Rho[which(all.results.LMAN$Taxo.Unit=="fam.all")])
+legend('topright', legend = levels(all.results.LMAN$Type), pch=16, col=mypal, bty ="n", cex=.7)
+plot(Rho~varNmass, all.results.NmassLL, pch=16, col=Type, xlab="Var. in %N")
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.NmassLL$Rho[which(all.results.NmassLL$Taxo.Unit=="fam.all")])
+
+
+### 4 panel of Slope/Rho of LMA-LL things with varLL and varLMA
+quartz(width=4.5,height=4.5)
+par(mar=c(4,4,0,1), mfrow=c(2,2), mgp=c(2.5,1,0), oma=c(0,0,2,0))
+plot(Rho_LMA.LL~varLMA, all.results, pch=16, col=Type, xlab="")
+#mtext( text="Nmass v LMA", side=3, line=0, font=2)
+abline(h=0, col="grey", lty=2)
+abline(h=all.results$Rho_LMA.LL[which(all.results$Taxo.Unit=="fam.all")])
 legend('topright', legend = levels(all.results.LMAN$Type), pch=16, col=mypal, bty ="n", cex=.7)
 plot(Rho~varNmass, all.results.NmassLL, pch=16, col=Type, xlab="Var. in %N")
 abline(h=0, col="grey", lty=2)
@@ -1678,17 +1708,31 @@ points(y=rep(as.numeric(fam.resclean_LMA.N[4]), times=7),x=seq(5.7,6.3, by=.1), 
 abline(h=0, lty=2)
 
 
-#### Trimming to only well represented taxa (10 or more)
-quartz(width=3, height=4.5)
-par(mfrow=c(2,1), mar=c(4,4,2,1), oma=c(2,0,0,0))
-boxplot(Slope_LMA.N~Type, all.results[which(all.results$n_LMA.N>9),], ylim=c(-2,1.5),las=3, main="log(LMA)~log(Nmass) strict", ylab="MA Slope")
-points(y=rep(as.numeric(fam.res_LMA.N[3]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
-points(y=rep(as.numeric(fam.resclean_LMA.N[3]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
+####LMA v Nmass: Trimming to only well represented taxa (10 or more)
+quartz(width=3, height=4.5,title = "LMA v Nmass")
+par(mfrow=c(2,1), mar=c(0,4,0,1), oma=c(6,0,2,0))
+p <- boxplot(Slope_LMA.N~Type, all.results[which(all.results$n_LMA.N>5),]
+        , ylim=c(-2.2,1.5),las=3, ylab="MA Slope" #, main="log(LMA)~log(Nmass) strict"
+        , col=paste0(mypal[1:6],"66"), boxcol=paste0(mypal[1:6],"66")
+        ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[1:6],"AA")
+        , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[1:6]
+        , boxwex=.7, xaxt="n")
 abline(h=0, lty=2)
-boxplot(Rho_LMA.N~Type, all.results[which(all.results$n_LMA.N>9),], ylim=c(-1,1),las=3, ylab="Rho")
-points(y=rep(as.numeric(fam.res_LMA.N[4]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
-points(y=rep(as.numeric(fam.resclean_LMA.N[4]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
+#text(y=par()$usr[3]+.2, x=c(1,2,3,4,5,6), labels = p$n)
+#text(y=par()$usr[4]-.2,x=.5, labels = "a)")
+mtext(text = "b)", side = 3, adj=0, line=.2)
+mtext(text= "LMA vs Nmass", side=3, line=.2)
+p <- boxplot(Rho_LMA.N~Type, all.results[which(all.results$n_LMA.N>5),]
+             , ylim=c(-1,1.1),las=3, ylab="Rho"
+             , col=paste0(mypal[1:6],"66"), boxcol=paste0(mypal[1:6],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[1:6],"AA")
+             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[1:6]
+             , boxwex=.7)
 abline(h=0, lty=2)
+text(y=par()$usr[4]-.2, x=c(1,2,3,4,5,6), labels = p$n)
+#text(y=par()$usr[4]-.2,x=.5, labels = "b)")
+
+
 
 
 ## only things with reasonable correlations 
@@ -1762,16 +1806,44 @@ points(y=rep(as.numeric(fam.res_N.LL[4]), times=7),x=seq(4.7,5.3, by=.1), pch=15
 points(y=rep(as.numeric(fam.resclean_N.LL[4]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
 abline(h=0, lty=2)
 
-quartz(width=3, height=4.5)
-par(mfrow=c(2,1), mar=c(4,4,2,1), oma=c(2,0,0,0))
-boxplot(Slope_N.LL~Type, all.results[which(all.results$n_N.LL>9),], ylim=c(-3,2.5),las=3, main="log(LL)~log(Nmass) strict", ylab="MA Slope")
-points(y=rep(as.numeric(fam.res_N.LL[3]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
-points(y=rep(as.numeric(fam.resclean_N.LL[3]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
+# quartz(width=3, height=4.5)
+# par(mfrow=c(2,1), mar=c(4,4,2,1), oma=c(2,0,0,0))
+# boxplot(Slope_N.LL~Type, all.results[which(all.results$n_N.LL>9),], ylim=c(-3,2.5),las=3, main="log(LL)~log(Nmass) strict", ylab="MA Slope")
+# points(y=rep(as.numeric(fam.res_N.LL[3]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
+# points(y=rep(as.numeric(fam.resclean_N.LL[3]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
+# abline(h=0, lty=2)
+# boxplot(Rho_N.LL~Type, all.results[which(all.results$n_N.LL>9),], ylim=c(-1,1),las=3, ylab="Rho")
+# points(y=rep(as.numeric(fam.res_N.LL[4]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
+# points(y=rep(as.numeric(fam.resclean_N.LL[4]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
+# abline(h=0, lty=2)
+
+
+####LL v Nmass: Trimming to only well represented taxa (10 or more)
+quartz(width=3, height=4.5, title="LL v Nmass")
+par(mfrow=c(2,1), mar=c(0,4,0,1), oma=c(6,0,2,0))
+p <- boxplot(Slope_N.LL~Type, all.results[which(all.results$n_N.LL>5),]
+             , ylim=c(-3.5,3),las=3, ylab="MA Slope" #, main="log(LMA)~log(Nmass) strict"
+             , col=paste0(mypal[1:6],"66"), boxcol=paste0(mypal[1:6],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[1:6],"AA")
+             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[1:6]
+             , boxwex=.7, xaxt="n")
 abline(h=0, lty=2)
-boxplot(Rho_N.LL~Type, all.results[which(all.results$n_N.LL>9),], ylim=c(-1,1),las=3, ylab="Rho")
-points(y=rep(as.numeric(fam.res_N.LL[4]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
-points(y=rep(as.numeric(fam.resclean_N.LL[4]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
+#text(y=par()$usr[3]+.2, x=c(1,2,3,4,5,6), labels = p$n)
+#text(y=par()$usr[4]-.2,x=.5, labels = "b)")
+mtext(text = "b)", side = 3, adj=0, line=.2)
+mtext(text= "LL vs Nmass", side=3, line=.2)
+
+p <- boxplot(Rho_N.LL~Type, all.results[which(all.results$n_N.LL>5),]
+             , ylim=c(-1,1.1),las=3, ylab="Rho"
+             , col=paste0(mypal[1:6],"66"), boxcol=paste0(mypal[1:6],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[1:6],"AA")
+             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[1:6]
+             , boxwex=.7)
 abline(h=0, lty=2)
+text(y=par()$usr[4]-.2, x=c(1,2,3,4,5,6), labels = p$n)
+#text(y=par()$usr[4]-.2,x=.5, labels = "b)")
+
+
 
 
 ## only things with reasonable correlations 
@@ -1863,6 +1935,7 @@ lman <- aov(Rho_LMA.N~Type, all.results,weights=n_LMA.N)
 TukeyHSD(lman)
   # everything different from w/in spp. but above spp not different
 
+
 NmassLL <- lm(Rho_N.LL~Type, weights = n_N.LL, all.results)
   # w.inGen not different from w/.in spp, but everything else is...
 nmassll <- aov(Rho_N.LL~Type, all.results,weights=n_N.LL)
@@ -1875,10 +1948,122 @@ TukeyHSD(nmassll)
 LMALL <- lm(Slope_LMA.LL~Type, weights = n_LMA.LL, all.results)
 # so Spp are significantly negative
 # and every level above spp is positive and significantly different from w/in.spp
-LMAN <- lm(Slope_LMA.N~Type, weights = n_LMA.N, all.results)
-# they're all negative, and essentially identical.
 
+
+
+#### SLOPE LMA v LL
+LMALL <- lm(Slope_LMA.LL~Type, all.results)
+LMALLnull <- lm(Slope_LMA.LL~1, all.results)
+anova(LMALL, LMALLnull) # p=0.044
+LMALL <- lm(Slope_LMA.LL~Type, weights = n_LMA.LL, all.results)
+LMALLnull <- lm(Slope_LMA.LL~1, weights = n_LMA.LL, all.results)
+anova(LMALL, LMALLnull) # p<0.0001
+LMALL <- lm(Slope_LMA.LL~Type, weights = varLL, all.results)
+LMALLnull <- lm(Slope_LMA.LL~1, weights = varLL, all.results)
+anova(LMALL, LMALLnull) # p=0.002
+LMALL <- lm(Slope_LMA.LL~Type, weights = varLMA, all.results)
+LMALLnull <- lm(Slope_LMA.LL~1, weights = varLMA, all.results)
+anova(LMALL, LMALLnull) # p=0.031
+# Rho LMA v Nmass
+LMALL <- lm(Rho_LMA.LL~Type, all.results)
+LMALLnull <- lm(Rho_LMA.LL~1, all.results)
+anova(LMALL, LMALLnull) # p=0.007
+LMALL <- lm(Rho_LMA.LL~Type, weights = n_LMA.LL, all.results)
+LMALLnull <- lm(Rho_LMA.LL~1, weights = n_LMA.LL, all.results)
+anova(LMALL, LMALLnull) # p<0.0001
+LMALL <- lm(Rho_LMA.LL~Type, weights = varLL, all.results)
+LMALLnull <- lm(Rho_LMA.LL~1, weights = varLL, all.results)
+anova(LMALL, LMALLnull) # p<0.0001
+LMALL <- lm(Rho_LMA.LL~Type, weights = varLMA, all.results)
+LMALLnull <- lm(Rho_LMA.LL~1, weights = varLMA, all.results)
+anova(LMALL, LMALLnull) # p=0.0019
+
+
+#### SLOPE LMA v Nmass
+LMAN <- lm(Slope_LMA.N~Type, all.results)
+LMANnull <- lm(Slope_LMA.N~1, all.results)
+anova(LMAN, LMANnull) # p=0.736
+LMAN <- lm(Slope_LMA.N~Type, weights = n_LMA.N, all.results)
+LMANnull <- lm(Slope_LMA.N~1, weights = n_LMA.N, all.results)
+anova(LMAN, LMANnull) # p=0.96
+LMAN <- lm(Slope_LMA.N~Type, weights = varNmass, all.results)
+LMANnull <- lm(Slope_LMA.N~1, weights = varNmass, all.results)
+anova(LMAN, LMANnull) # p=0.899
+LMAN <- lm(Slope_LMA.N~Type, weights = varLMA, all.results)
+LMANnull <- lm(Slope_LMA.N~1, weights = varLMA, all.results)
+anova(LMAN, LMANnull) # p=0.437
+# Rho LMA v Nmass
+LMAN <- lm(Rho_LMA.N~Type, all.results)
+LMANnull <- lm(Rho_LMA.N~1, all.results)
+anova(LMAN, LMANnull) # p=0.0273
+LMAN <- lm(Rho_LMA.N~Type, weights = n_LMA.N, all.results)
+LMANnull <- lm(Rho_LMA.N~1, weights = n_LMA.N, all.results)
+anova(LMAN, LMANnull) # p<0.001
+LMAN <- lm(Rho_LMA.N~Type, weights = varNmass, all.results)
+LMANnull <- lm(Rho_LMA.N~1, weights = varNmass, all.results)
+anova(LMAN, LMANnull) # p=0.186
+LMAN <- lm(Rho_LMA.N~Type, weights = varLMA, all.results)
+LMANnull <- lm(Rho_LMA.N~1, weights = varLMA, all.results)
+anova(LMAN, LMANnull) # p=0.0008
+
+
+
+#### SLOPE LL v Nmass
+NmassLL <- lm(Slope_N.LL~Type, all.results)
+NmassLLnull <- lm(Slope_N.LL~1, all.results)
+anova(NmassLL, NmassLLnull) # p=0.897
 NmassLL <- lm(Slope_N.LL~Type, weights = n_N.LL, all.results)
+NmassLLnull <- lm(Slope_N.LL~1, weights=n_N.LL, all.results)
+anova(NmassLL, NmassLLnull) # p=0.0878
+NmassLL <- lm(Slope_N.LL~Type, weights=varNmass, all.results)
+NmassLLnull <- lm(Slope_N.LL~1, all.results, weights=varNmass)
+anova(NmassLL, NmassLLnull) # p=0.61
+NmassLL <- lm(Slope_N.LL~Type, weights=varLL, all.results)
+NmassLLnull <- lm(Slope_N.LL~1, all.results, weights=varLL)
+anova(NmassLL, NmassLLnull) # p=0.31
+#### Rho LL v Nmass
+NmassLL <- lm(Rho_N.LL~Type, all.results)
+NmassLLnull <- lm(Rho_N.LL~1, all.results)
+anova(NmassLL, NmassLLnull) # p=0.018
+NmassLL <- lm(Rho_N.LL~Type, weights = n_N.LL, all.results)
+NmassLLnull <- lm(Rho_N.LL~1, weights=n_N.LL, all.results)
+anova(NmassLL, NmassLLnull) # p<0.0001
+NmassLL <- lm(Rho_N.LL~Type, weights=varNmass, all.results)
+NmassLLnull <- lm(Rho_N.LL~1, all.results, weights=varNmass)
+anova(NmassLL, NmassLLnull) # p=0.005
+NmassLL <- lm(Rho_N.LL~Type, weights=varLL, all.results)
+NmassLLnull <- lm(Rho_N.LL~1, all.results, weights=varLL)
+anova(NmassLL, NmassLLnull) # p<0.0001
+
+
+
+#### SLOPE LMA v Narea
+LMANarea <- lm(Slope_LMA.Narea~Type, all.results)
+LMANareanull <- lm(Slope_LMA.Narea~1, all.results)
+anova(LMANarea, LMANareanull) # p=0.0632
+LMANarea <- lm(Slope_LMA.Narea~Type, weights = n_LMA.Narea, all.results)
+LMANareanull <- lm(Slope_LMA.Narea~1, weights=n_LMA.Narea, all.results)
+anova(LMANarea, LMANareanull) # p<0.0001
+LMANarea <- lm(Slope_LMA.Narea~Type, weights=varNarea, all.results)
+LMANareanull <- lm(Slope_LMA.Narea~1, all.results, weights=varNarea)
+anova(LMANarea, LMANareanull) # p=0.549
+LMANarea <- lm(Slope_LMA.Narea~Type, weights=varLMA, all.results)
+LMANareanull <- lm(Slope_LMA.Narea~1, all.results, weights=varLMA)
+anova(LMANarea, LMANareanull) # p=0.135
+#### Rho LMA v Narea
+LMANarea <- lm(Rho_LMA.Narea~Type, all.results)
+LMANareanull <- lm(Rho_LMA.Narea~1, all.results)
+anova(LMANarea, LMANareanull) # p=0.98
+LMANarea <- lm(Rho_LMA.Narea~Type, weights = n_LMA.Narea, all.results)
+LMANareanull <- lm(Rho_LMA.Narea~1, weights=n_LMA.Narea, all.results)
+anova(LMANarea, LMANareanull) # p<0.45
+LMANarea <- lm(Rho_LMA.Narea~Type, weights=varNarea, all.results)
+LMANareanull <- lm(Rho_LMA.Narea~1, all.results, weights=varNarea)
+anova(LMANarea, LMANareanull) # p=0.609
+LMANarea <- lm(Rho_LMA.Narea~Type, weights=varLMA, all.results)
+LMANareanull <- lm(Rho_LMA.Narea~1, all.results, weights=varLMA)
+anova(LMANarea, LMANareanull) # p<0.20
+
 # w.inGen not different from w/.in spp, but everything else is...
 nmassll <- aov(Slope_N.LL~Type, all.results,weights=n_N.LL)
 TukeyHSD(nmassll)
@@ -1886,10 +2071,14 @@ TukeyHSD(nmassll)
 
 LMA.Narea <- lm(Slope_LMA.Narea~Type, weights = n_LMA.Narea, all.results)
 # Everything's different from w.inSpp. and increasingly different at higher Taxon scales...
+lmanarea <- aov(Slope_LMA.Narea~Type, all.results)
+TukeyHSD(lmanarea)
 lmanarea <- aov(Slope_LMA.Narea~Type, all.results,weights=n_N.LL)
 TukeyHSD(lmanarea)
-
-
+lmanarea <- aov(Slope_LMA.Narea~Type, all.results,weights=varLMA)
+TukeyHSD(lmanarea)
+lmanarea <- aov(Slope_LMA.Narea~Type, all.results,weights=varNarea)
+TukeyHSD(lmanarea)
 
 ### plotting two things at once...
 ggplot(data=NULL,aes(x=all.results.LMAN$Rho, y=all.results.NmassLL$Rho, col=all.results.NmassLL$Type, size=all.results.NmassLL$n)) + geom_point()
