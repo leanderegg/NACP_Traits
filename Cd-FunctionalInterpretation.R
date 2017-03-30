@@ -10,26 +10,144 @@ arab$log.LL <- log(arab$LLmonths, base=10)
 arab$log.LMA <- log(arab$LMA, base=10)
 arab$log.Narea <- log(arab$Narea, base=10)
 
-plot(LMA~Narea, LES)
-points(LMA~Narea, arab, col=Type)
-plot()
 
+
+
+
+
+################### IMPORT and COMBINE ################
+###### combining all the other datasets into something I can add to LES and traits for Variance Decomp and covariance analysis
+
+## arabidposis dataset from Blonder et al. 2015, not going to add because growth chamber
 
 ##### Coffee data from Martin et al. 2016
 coffee <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/Martin2016Coffee.csv",header=T)
 coffee$Narea <- coffee$leafn * coffee$lma_g_m2
 coffee$log.LMA <- log(coffee$lma_g_m2, base=10)
 coffee$log.Narea <- log(coffee$Narea/100, base=10)
+coffee$Species <- "Coffea arabica"
+# averaged to individual rather than branch
+coffee.ind <- coffee %>% group_by(Species, tree_unique, site) %>% summarise(LMA = mean(lma_g_m2, na.rm=T), Narea = mean(Narea/100, na.rm=T), Nmass=mean(leafn/100, na.rm=T))
+coffee.ind$log.LMA <- log(coffee.ind$LMA, base=10)
+coffee.ind$log.Narea <- log(coffee.ind$Narea, base=10)
+coffee.ind$log.Nmass <- log(coffee.ind$Nmass, base=10)
+coffee.ind$LL <- NA
+coffee.ind$log.LL <- NA
+coffee.ind$Genus <- "Coffea"
+coffee.ind$Family <- "Rubiacaea"
+coffee.ind$Project <- "coffee"
+colnames(coffee.ind)[2:3] <- c("Indiv", "Site")
 
-LES$LMA <- 10^LES$log.LMA
-LES$Nmass <- 10^LES$log.Nmass
-LES$Amass <- 10^LES$log.Amass
-LES$Aarea <- 10^LES$log.Aarea
-traits$SLA_drymass <- 1/traits$LMA
+
+####### LDLA unpublished eucaluptus data from Tasmania
+  #already averaged to individual
+# Bring in Tasmanian Euc data, preliminary for OVAT and OBLI as pf 03.29.17
+Euc <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/LDLA_TasiEucs_initial032917.csv", header=T, row.names=1)
+colnames(Euc)[29] <- "Nmass"
+Euc$LMAold <- Euc$LMA
+Euc$LMA <- Euc$LMAold * 10000
+Euc$SLA <- 1/Euc$LMA
+Euc$log.LMA <- log(Euc$LMA, base=10)
+Euc$log.Nmass <- log(Euc$Nmass/100, base=10)
+Euc$Narea <- Euc$Nmass/100 * Euc$LMA
+Euc$log.Narea <- log(Euc$Narea, base=10)
+Euc$SP.ID <- Euc$Species
+Euc$Species <- "Eucalyptus obliqua"
+Euc$Species[which(Euc$SP.ID=="OVAT")] <- "Eucalyptus ovata"
+euc.ind <- Euc %>% select(Species, Treetag.x, Site, LMA, Narea, Nmass, log.LMA, log.Narea, log.Nmass)
+euc.ind$LL <- NA
+euc.ind$log.LL <- NA
+euc.ind$Genus <- "Eucalyptus"
+euc.ind$Family <- "Myrtacaea"
+euc.ind$Project <- "Eucs"
+colnames(euc.ind)[2]<- "Indiv"
+
+######## WRL Anderegg unpublished Quercus gambelii data from CO
+quga_branch <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/QUGA_Dryweights_wLL.csv", header=T)
+quga_branch$bLMA <- quga_branch$LEAFMASS/quga_branch$AREA * 1000000
+quga <- quga_branch %>% group_by (SPECIES,ELEV,STAND,TREE) %>% summarise(LMA=mean(bLMA),LLmonths=mean(LLmonths)) 
+quga$log.LL<- log(quga$LLmonths, base=10)
+# quga leaf area is in mm2
+quga$SLA <- 1/quga$LMA
+quga$log.LMA <- log(quga$LMA, base=10)
+quga$Narea <- NA
+quga$Nmass <- NA
+quga$log.Narea <- NA
+quga$log.Nmass <- NA
+quga$Species <- "Quercus gambelii"
+quga$treetag <- with(quga,paste(SPECIES,ELEV,STAND,TREE, sep="-"))
+quga$standtag <- with(quga, paste(SPECIES,ELEV,STAND, sep="-"))
+quga.ind <- data.frame(quga) %>% select(Species,treetag,standtag, LMA, Narea, Nmass, log.LMA, log.Narea,log.Nmass, LLmonths, log.LL) 
+quga.ind$Genus <- "Quercus"
+quga.ind$Family <- "Fagaceae"
+quga.ind$Project <- "CO"
+colnames(quga.ind)[c(2,3,10)] <- c("Indiv","Site","LL")
+
+## average to the stand level for trait covariation analysis
+mquga <- quga %>% group_by(Species, standtag) %>% summarise(LMA = mean(LMA), Narea = mean(Narea), Nmass=mean(Nmass), LL = mean(LLmonths))
 
 
-LES$SLA <- 1/LES$LMA
-plot(SLA~Nmass, LES)
+####### LDLA & JHRL 2015 data for Populus Tremuloides in CO
+COpotr <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/LDLA_JHRL_Traits_all_final_10_25_15.csv", header=T)
+COpotrll <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/CO_POTR-LL_033017.csv", header=T)
+potr <- COpotr %>% filter(Species=="POTR") %>% select(Species, Elev, Plot, Tree, TreeTag,PlotUn, Lat, Long, ElevPlot, SLA)
+potr$SP.ID <- potr$Species
+potr$Species <- "Populus tremuloides"
+## SLA is in cm2 rather than m2
+potr$SLAcm2 <- potr$SLA
+potr$SLA <- potr$SLAcm2 / 10000
+potr$LMA <- 1/potr$SLA
+potr$log.LMA <- log(potr$LMA, base=10)
+# these are the LL lifespans from the AVHRR pixels.
+potr$LLdays <- COpotrll$mean_growing[match(potr$PlotUn, COpotrll$Plot.Name)]
+# but average elevation LL might be the best I can really do...
+# also, I believe the average AVHRR growing season length of low elevation (195 days) and mid elevation (176 days),
+# but I don't believe the H elevation (179 days) because it's probably mostly conifer pixels... So I'll remove them
+potr$LLdayselev <- 195 # the average L
+potr$LLdayselev[which(potr$Elev=="M")] <- 176
+potr$LLdayselev[which(potr$Elev=="H")] <- NA
+potr$LLmonths <- potr$LLdays/30
+potr$LLmonthselev <- potr$LLdayselev/30
+potr$log.LL <- log(potr$LLmonths, base=10)
+potr$log.LLelev <- log(potr$LLmonthselev, base=10)
+potr$Narea <- NA
+potr$Nmass <- NA
+potr$log.Narea <- NA
+potr$log.Nmass <- NA
+potr.ind <- potr %>% select(Species, TreeTag, PlotUn, LMA, Narea, Nmass, log.LMA, log.Narea, log.Nmass, LLmonthselev,log.LLelev)
+potr.ind$Genus <- "Populus"
+potr.ind$Family <- "Salicaceae"
+potr.ind$Project <- "CO"
+colnames(potr.ind)[c(2,3,10,11)]<- c("Indiv","Site","LL","log.LL")
+# stand level averages
+mpotr <- potr %>% group_by(PlotUn) %>% summarise(LMA=mean(LMA, na.rm=T), LLmonths=mean(LLmonthselev))
+mpotr$log.LMA <- log(mpotr$LMA, base=10)
+mpotr$log.LL <- log(mpotr$LLmonths, base=10)
+
+
+
+
+######## Combine individual level data for all supplemental datasets ########
+suppdata <- rbind(data.frame(coffee.ind), data.frame(euc.ind), data.frame(quga.ind), data.frame(potr.ind))
+write.csv(suppdata,"/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/OtherData_Combined_033017.csv")
+
+
+
+### bill's weird potr values
+# bll <- c(244.375,209.1818182,176.6666667,179.6153846,168.6153846,191.9230769,182.3076923,180.1538462,192.8461538)
+# bsla <- c(0.009281022,0.007095145,0.007528245,0.006679047,0.002422823,0.009146608,0.005097827,0.002286325,0.006019923)
+# blma <- 1/bsla
+# bllmonths <- bll/30
+# blog.LMA <- log(blma, base=10)
+# blog.LL <- log(bllmonths, base=10)
+# 
+# plot(log.LL~log.LMA, LES, pch=16, col='grey')
+# points(log.LLelev~log.LMA, potr, pch=16)
+# points(log.LL~log.LMA, LES[which(LES$Species=="Populus tremuloides"),], pch=16, col='blue')
+# points(blog.LL~blog.LMA)
+# legend("topleft", pch=c(16,16,1), col=c('blue','black','black'), legend = c("GLOPNET","Lee","Bill"))
+
+
 
 
 plot(SLA~Nmass, LES, col=Acats, pch=16)

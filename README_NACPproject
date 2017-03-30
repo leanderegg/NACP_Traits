@@ -329,7 +329,21 @@ Couldn't really decide how to subset the dataset. I could either go for
 
 
 
+######## New Commit: 03.20.17 ##############
+committing changes before outsourcing ML methods from the Bayesian Models code
 
+- Outsourced ML methods to
+Cd-TaxonomicAnalysis.R
+
+- also outsourced some plotting to Fig-ManuscriptFigures
+
+03.30.17
+cleaned up and imported Tassie Euc data, Martin 2015 coffee data, my CO aspen data, and Bill's CO quga data
+created suppdata, with everything averaged to the individual. saved this in /Intra data
+about to commit everything, and then rerun all my variane decomps
+If that works, I'll rerun my taxo analysis.
+*** note: for adding these extra spp into var decomp, I probably need to exclude Project=="CO" for LL, because
+these LLs come from AVHRR and are averaged to stand. So they might screw up the variance.
 
 
 

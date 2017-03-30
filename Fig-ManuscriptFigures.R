@@ -261,6 +261,7 @@ abline(h=all.results$Slope_LMA.LL[which(all.results$Taxo.Unit=="fam.all")])
 mtext(text = "a)", side = 3, adj=0, line=.2)
 points(Slope_LMA.LL~varLMA, all.results[c(nrow(all.results)-1,nrow(all.results)),], pch=c(24,25), cex=1.4, bg=mypal[5:6])
 abline(h=mean(all.results$Slope_LMA.LL[which(all.results$Type=="w.inSpp")], na.rm=T), col=mypal[1])
+legend('bottomright', legend = levels(all.results$Type), pch=c(16,16,16,16,24,25), ncol=2, col=c(mypal[1:4], "black","black"), pt.bg= mypal[1:6], bty ="n", cex=.7)
 
 
 plot(Rho_LMA.LL~varLMA, all.results, pch=16, col=Type, xlab="Var. in LMA", ylab="Rho   (LMA v LL)")
@@ -272,18 +273,50 @@ points(Rho_LMA.LL~varLMA, all.results[c(nrow(all.results)-1,nrow(all.results)),]
 abline(h=mean(all.results$Rho_LMA.LL[which(all.results$Type=="w.inSpp")], na.rm=T), col=mypal[1])
 
 
-plot(Slope_LMA.LL~n_LMA.LL, all.results, pch=16, col=Type, xlab="Var. in LL", ylab="Slope   (LMA v LL)")
+plot(Slope_LMA.LL~varLL, all.results, pch=16, col=Type, xlab="Var. in LL", ylab="Slope   (LMA v LL)")
 abline(h=0, col="grey", lty=2)
 abline(h=all.results$Slope_LMA.LL[which(all.results$Taxo.Unit=="fam.all")])
 mtext(text = "c)", side = 3, adj=0, line=.2)
 points(Slope_LMA.LL~n_LMA.LL, all.results[c(nrow(all.results)-1,nrow(all.results)),], pch=c(24,25), cex=1.4, bg=mypal[5:6])
 abline(h=mean(all.results$Slope_LMA.LL[which(all.results$Type=="w.inSpp")], na.rm=T), col=mypal[1])
 
-plot(Rho_LMA.LL~n_LMA.LL, all.results, pch=16, col=Type, xlab="Var. in LL", ylab="Rho   (LMA v LL)")
+plot(Rho_LMA.LL~varLL, all.results, pch=16, col=Type, xlab="Var. in LL", ylab="Rho   (LMA v LL)")
 abline(h=0, col="grey", lty=2)
 abline(h=all.results$Rho_LMA.LL[which(all.results$Taxo.Unit=="fam.all")])
-legend('bottomright', legend = levels(all.results$Type), pch=c(16,16,16,16,24,25), ncol=2, col=c(mypal[1:4], "black","black"), pt.bg= mypal[1:6], bty ="n", cex=.7)
+#legend('bottomright', legend = levels(all.results$Type), pch=c(16,16,16,16,24,25), ncol=2, col=c(mypal[1:4], "black","black"), pt.bg= mypal[1:6], bty ="n", cex=.7)
 mtext(text = "d)", side = 3, adj=0, line=.2)
 points(Rho_LMA.LL~n_LMA.LL, all.results[c(nrow(all.results)-1,nrow(all.results)),], pch=c(24,25), cex=1.4, bg=mypal[5:6])
 abline(h=mean(all.results$Rho_LMA.LL[which(all.results$Type=="w.inSpp")], na.rm=T), col=mypal[1])
 
+
+
+
+
+
+
+
+###### testing out leaf lifespan vs Narea relations, I think they'll be ns ########
+
+####### Plotting the LMA vs Narea scaling in unit rather than log space ######
+plot(log.Narea~log.LL, LES, col="grey", pch=16, ylab="log(Narea)", xlab="log(LL)")
+
+tax <- "w.inSpp"
+for (i in as.character(all.results$Taxo.Unit[which(all.results$Type==tax & all.results$n_LMA.LL>5)])){
+  plot.MAR(xvar = "log.LL", yvar = "log.Narea",data= spp.data[which(spp.data$Species==i),], linecol = mypal[1])
+}
+
+tax <- "w.inGen"
+for (i in as.character(all.results$Taxo.Unit[which(all.results$Type==tax & all.results$n_LMA.LL>5)])){
+  plot.MAR(xvar = "log.LL", yvar = "log.Narea",data= gen.data[which(gen.data$Genus==i),], linecol = mypal[2])
+}
+
+tax <- "Genw.inFam"
+for (i in as.character(all.results$Taxo.Unit[which(all.results$Type==tax & all.results$n_LMA.LL>5)])){
+  plot.MAR(xvar = "log.LL", yvar = "log.Narea",data= geninfam.data[which(geninfam.data$Family==i),], linecol = mypal[4])
+}
+
+
+plot.MAR(xvar="log.LL", yvar="log.Narea", data= fam.data, linecol = mypal[5], lwd=2)
+
+plot.MAR(xvar="log.LL", yvar="log.Narea", data= LES, linecol = "black", lwd=2)
+mtext(text = "b)", side = 3, adj=0, line=.2)
