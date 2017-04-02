@@ -347,6 +347,19 @@ these LLs come from AVHRR and are averaged to stand. So they might screw up the 
 
 
 
+######## New Commit: 03.30.17 ##############
+UPDATING Variance Decomposition!!!
+
+- started by rm(list=ls()) the environment to make sure everything works clean.
+
+I spent the day cleaning the taxonomy. jesus h christ. I got it down to only 47 entries with NA for family.
+I also realized that I should have been saving the new species names for posterity when I matched them with 
+the function tnrs() from Taxize. What I should probably do is write a function that takes the whole dataset, and then querries all names in chunks of 10 and saves the accepted name and genus in a new column. This function will take hours to run though.
+
+
+####### New Commit: 04.02.17 ###################
+After updating the datasets completely (taxonomic cleaning and unifying everything into one dataset for Variance Decomp, then allspp, allgen, allfam w/ all the means and gen.data, spp.data, etc for the within-taxon trait covariations. Trying to commit before I update the taxnomic analysis to have a global and then update my boxplots.
+
 
 
 

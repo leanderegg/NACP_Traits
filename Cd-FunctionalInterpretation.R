@@ -12,7 +12,12 @@ arab$log.Narea <- log(arab$Narea, base=10)
 
 
 
+resN <- resid(lm(log.Nmass~log.LMA, LES))
 
+plot(resN~log.LL, LES[-which(is.na(LES$log.Nmass) | is.na(LES$log.LMA)),])
+
+ITresN <- resid(lm(log.Nmass~log.LMA, traits.common5))
+plot(ITresN~log.LL, traits.common5[-which(is.na(traits.common5$log.Nmass) | is.na(traits.common5$log.LMA)),], col=SP.ID)
 
 
 ################### IMPORT and COMBINE ################
@@ -22,12 +27,12 @@ arab$log.Narea <- log(arab$Narea, base=10)
 
 ##### Coffee data from Martin et al. 2016
 coffee <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/Martin2016Coffee.csv",header=T)
-coffee$Narea <- coffee$leafn * coffee$lma_g_m2
+coffee$Narea <- coffee$leafn/100 * coffee$lma_g_m2
 coffee$log.LMA <- log(coffee$lma_g_m2, base=10)
-coffee$log.Narea <- log(coffee$Narea/100, base=10)
+coffee$log.Narea <- log(coffee$Narea, base=10)
 coffee$Species <- "Coffea arabica"
 # averaged to individual rather than branch
-coffee.ind <- coffee %>% group_by(Species, tree_unique, site) %>% summarise(LMA = mean(lma_g_m2, na.rm=T), Narea = mean(Narea/100, na.rm=T), Nmass=mean(leafn/100, na.rm=T))
+coffee.ind <- coffee %>% group_by(Species, tree_unique, site) %>% summarise(LMA = mean(lma_g_m2, na.rm=T), Narea = mean(Narea, na.rm=T), Nmass=mean(leafn, na.rm=T))
 coffee.ind$log.LMA <- log(coffee.ind$LMA, base=10)
 coffee.ind$log.Narea <- log(coffee.ind$Narea, base=10)
 coffee.ind$log.Nmass <- log(coffee.ind$Nmass, base=10)
@@ -48,7 +53,7 @@ Euc$LMAold <- Euc$LMA
 Euc$LMA <- Euc$LMAold * 10000
 Euc$SLA <- 1/Euc$LMA
 Euc$log.LMA <- log(Euc$LMA, base=10)
-Euc$log.Nmass <- log(Euc$Nmass/100, base=10)
+Euc$log.Nmass <- log(Euc$Nmass, base=10) #in the GLOPNET dataset, Nmass is in log.% not log g/g
 Euc$Narea <- Euc$Nmass/100 * Euc$LMA
 Euc$log.Narea <- log(Euc$Narea, base=10)
 Euc$SP.ID <- Euc$Species
@@ -129,7 +134,8 @@ mpotr$log.LL <- log(mpotr$LLmonths, base=10)
 
 ######## Combine individual level data for all supplemental datasets ########
 suppdata <- rbind(data.frame(coffee.ind), data.frame(euc.ind), data.frame(quga.ind), data.frame(potr.ind))
-write.csv(suppdata,"/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/OtherData_Combined_033017.csv")
+#write.csv(suppdata,"/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/OtherData_Combined_033017.csv")
+write.csv(suppdata,"/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/OtherData_Combined_040117.csv")
 
 
 

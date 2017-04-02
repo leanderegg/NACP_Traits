@@ -42,7 +42,9 @@ palette(mypal)
 #write.csv(biomass, "PACNW_Biomass_plus_traits_111916.csv")
 
 
-####### LOAD DATA ########
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+####### **LOAD DATA** ########
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ## public TRY traits 
 # TRY <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Try_public_LES traits/TRY_publicLES_011717.csv")
@@ -121,49 +123,364 @@ tmp1$SpeciesName <- factor(tmp1$SpeciesName)
 
 
 ###### updated dataframe w/ taxonomy #####
-LES <- read.csv("Writght2004_LESdata_taxonomy012517.csv", header=T)[,-1]
-#### LES site climate
+# LES <- read.csv("Writght2004_LESdata_taxonomy012517.csv", header=T)[,-1]
+# #### LES site climate
+# LESclim <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Wright2004_sitedata.csv")
+# 
+# ##### Code for fixing problem spp that result in problem genera (genera w/ multiple families)
+# # some Acers classified in old family - Aceraceae
+# LES$Family[which(LES$Genus=="Acer" & LES$Family != "Sapindaceae")] <- "Sapindaceae"                                                   
+# # one Atriplex in old family - Chenopodiaceae
+# LES$Family[which(LES$Genus=="Atriplex")] <- "Amaranthaceae"
+# # misnamed Betula and Lycaenidae
+# LES[which(LES$Species=="Betula pumilla"), c("Species","GE.SP")] <- t(gsub(pattern = "ll", replacement = "l", x = t(LES[which(LES$Species=="Betula pumilla"), c("Species","GE.SP")]))) 
+# LES$Family[which(LES$Genus=="Betula")] <- "Betulaceae"
+# # misnamed Carex Asteraceae (Carex dimorphotheca also a synonymn for Carex stenophylla subsp. stenophylloides)
+# LES$Family[which(LES$Genus=="Carex")] <- "Cyperaceae"
+# # Diospyros mislabeld Fabaceae
+# LES$Family[which(LES$Genus=="Diospyros")] <- "Ebenaceae"
+# # Eugenia mislabeld a lot
+# LES$Family[which(LES$Genus=="Eugenia")] <- "Myrtaceae"
+# # Ficus mislabeled Agridae
+# LES$Family[which(LES$Genus=="Ficus")] <- "Moraceae"
+# # Grevillea often mislabeled
+# LES$Family[which(LES$Genus=="Grevillea")] <- "Proteaceae"
+# # Hakea often mislabeled
+# LES$Family[which(LES$Genus=="Hakea")] <- "Proteaceae"
+# # Hibbertia usually mislabeled
+# LES$Family[which(LES$Genus=="Hibbertia")] <- "Dilleniaceae"
+# # Ilex
+# LES$Family[which(LES$Genus=="Ilex")] <- "Aquifoliaceae"
+# # Luzula
+# LES$Family[which(LES$Genus=="Luzula")] <- "Juncaceae"
+# # Miconia
+# LES$Family[which(LES$Genus=="Miconia")] <- "Melastomataceae"
+# #Olea Oleaceae -> note: a couple spp have subspp that don't get pooled.
+# LES$Family[which(LES$Genus=="Olea")] <- "Oleaceae"
+# # Salix --> SALIX IS CLEAN
+# LES$Species[which(LES$Species=="Salix alba fraxinus")] <- "Salix alba"
+# LES$GE.SP[which(LES$Species=="Salix.alba fraxinus")] <- "Salix.alba"
+# LES$Species[which(LES$Species=="Salix dasyclados phylicifolia")] <- "Salix dasyclados"
+# LES$GE.SP[which(LES$Species=="Salix.dasyclados phylicifolia")] <- "Salix.dasyclados"
+# LES$Species[which(LES$Species=="Salix fragilus")] <- "Salix fragilis"
+# LES$GE.SP[which(LES$Species=="Salix.fragilus")] <- "Salix.fragilis"
+# LES$Family[which(LES$Genus=="Salix")] <- "Salicaceae"
+# # Make the Leucadendrons all proteaceae, which gets screwed up by the (m&f) bit 
+# LES$Family[which(LES$Genus=="Leucadendron")] <- "Proteaceae"
+# # Fix Meterosideros polymorpha ph, which should be Metrosideros polymorpha
+# LES$Genus <- as.character(LES$Genus)
+# LES$Family <- as.character(LES$Family)
+# LES$Genus[which(LES$Genus=="Meterosideros")] <- "Metrosideros"
+# LES$Family[which(LES$Genus=="Metrosideros")] <- "Myrtaceae"
+# # Fix couple Acacias
+# LES$Family[which(LES$Genus=="Acacia")] <- "Fabaceae"
+# LES$Family[which(LES$Genus=="Aster")] <- "Asteraceae"
+# LES$Family[which(LES$Genus=="Allophylus")] <- "Sapindaceae"
+# LES$Family[which(LES$Genus=="Andropogon")] <- "Poaceae"
+# LES$Family[which(LES$Genus=="Astragalus")] <- "Fabaceae"
+# LES$Family[which(LES$Genus=="Aulax")] <- "Proteaceae"
+# LES$Family[which(LES$Genus=="Baccaurea")] <- "Phyllanthaceae"
+# LES$Family[which(LES$Genus=="Bauhinia")] <- "Fabaceae"
+# LES$Family[which(LES$Genus=="Beureria")] <- "Boraginaceae" # should actually be Bourreria?, found it both ways
+# LES$Family[which(LES$Genus== "Bromus")] <- "Poaceae"
+# LES$Family[which(LES$Genus== "Buchanania")] <- "Anacardiaceae"
+# LES$Family[which(LES$Genus=="Calytrix" )] <- "Myrtaceae"
+# LES$Family[which(LES$Genus== "Capparis")] <- "Capparaceae"
+# LES$Family[which(LES$Genus== "Carissa")] <- "Apocynaceae"
+# LES$Family[which(LES$Genus== "Cerastium")] <- "Caryophyllaceae"
+# LES$Family[which(LES$Genus== "Chionanthus")] <- "Oleaceae"
+# LES$Family[which(LES$Genus== "Cistus")] <- "Cistaceae"
+# LES$Family[which(LES$Genus== "Cochlospermum" )] <- "Bixaceae"
+# LES$Family[which(LES$Genus== "Comprosma")] <- "Rubiaceae"
+# LES$Genus[which(LES$Genus=="Comprosma" )] <- "Coprosma"
+# LES$Family[which(LES$Genus== "Culcitium")] <- "Asteraceae"
+# LES$Family[which(LES$Genus== "Curtissia")] <- "Curtisiaceae"
+# LES$Genus[which(LES$Genus== "Curtissia")] <-"Curtisia"
+# LES$Family[which(LES$Genus== "Dichostemma")] <- "Asparagaceae"
+# LES$Genus[which(LES$Genus== "Dichostemma")] <- "Dichelostemma"
+# LES$Family[which(LES$Genus== "Didymopanax")] <- "Araliaceae"
+# LES$Genus[which(LES$Genus== "Didymopanax")] <- "Schefflera"
+# LES$Family[which(LES$Genus== "Dodonaea")] <- "Sapindaceae"
+# LES$Family[which(LES$Genus== "Eremophila")] <- "Scrophulariaceae"
+# LES$Family[which(LES$Genus== "Erigeron")] <- "Asteraceae"
+# LES$Family[which(LES$Genus== "Erythrina")] <- "Fabaceae"
+# LES$Family[which(LES$Genus== "Erythroxylum")] <- "Erythroxylaceae"
+# LES$Species[which(LES$Species=="Eucalyptus tetradonta")] <- "Eucalyptus tetrodonta"
+# LES$Family[which(LES$Species=="Eucalyptus tetrodonta")]  <- "Myrtaceae"
+# LES$Species <- as.character(LES$Species)
+# LES$Species[which(LES$Species=="Eucalyptus nesophilla")] <- "Eucalyptus nesophila"
+# LES$Family[which(LES$Species=="Eucalyptus nesophila")]  <- "Myrtaceae"
+# LES$Species[which(LES$Species=="Eucalyptus haemostoma")] <- "Eucalyptus haemastoma"
+# LES$Family[which(LES$Species=="Eucalyptus haemastoma")]  <- "Myrtaceae"
+# # write this current csv for some editing in google's openRefine
+# write.csv(LES, "LES_taxocleaning_033117.csv")
+
+
+## Updated file 03.31.17 with some clean taxonomic stuff
+# new file that I edited in google's OpenRefine
+# LES <- read.csv("/Users/leeanderegg/Desktop/LES_taxocleaning_033117-csv.csv", row.names=1)
+# LES$Genus[which(LES$Genus=="Schyzachyrium")] <- "Schizachyrium"
+# LES$Genus[which(LES$Genus=="Chamerion")] <- "Chamaenerion"
+# # that only cleaned a handful...
+# #missedfamilies <- tax_name(LES$Species[which(is.na(LES$Family))],get="family",db="both")
+# missedfams <- missedfamilies$family[which(missedfamilies$db=="itis")]
+# missedfams1 <- missedfamilies$family[which(missedfamilies$db=="ncbi")]
+# missedfams[which(is.na(missedfams) & !is.na(missedfams1))] <- missedfams1[which(is.na(missedfams) & !is.na(missedfams1))]
+# LES$Family <- as.character(LES$Family)
+# LES$Family[which(is.na(LES$Family))] <- missedfams
+# corymbias <- c("Eucalyptus clavigera", "Eucalyptus conferiflora","Eucalyptus terminalis")
+# LES$Genus[which(LES$Species %in% corymbias)] <- "Corymbia"
+# LES$Family[which(LES$Species %in% corymbias)] <- "Myrtaceae"
+# LES$Species <- as.character(LES$Species)
+# LES$Species[which(LES$Species %in% corymbias)] <- gsub("Eucalyptus", replacement = "Corymbia", LES$Species[which(LES$Species %in% corymbias)])
+# LES$Species <- factor(LES$Species)
+#   # still 339 NAs
+# write.csv(LES, "/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/LES_taxocleaning_033117_v2.csv")
+names(which(xtabs(~factor(LES$Genus[which(is.na(LES$Family))]))>1))[1]
+
+
+
+
+# going back to the old cleaning...
+# LES <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/LES_taxocleaning_033117_v2.csv", row.names=1)
+# LES$Family <- as.character(LES$Family)
+# LES$Family[which(LES$Genus=="Fraxinus" )] <- "Oleaceae"
+# LES$Family[which(LES$Genus=="Gompholobium")]<- "Fabaceae"
+# LES$Family[which(LES$Genus=="Hebe")] <- "Plantaginaceae"
+# LES$Family[which(LES$Genus=="Isoglossa")] <-"Acanthaceae"
+# LES$Family[which(LES$Genus=="Ixora")] <- "Rubiaceae"
+# LES$Family[which(LES$Genus=="Laurelia")] <- 	"Atherospermataceae"
+# LES$Family[which(LES$Genus=="Lepidosperma")] <- "Cyperaceae"
+# LES$Family[which(LES$Genus=="Lonicera")] <- "Caprifoliaceae"
+# LES$Family[which(LES$Genus=="Maytenus")] <- "Celastraceae"
+# LES$Family[which(LES$Genus=="Melaleuca")] <- "Myrtaceae"
+# LES$Family[which(LES$Genus=="Nephrolepsis")] <- "Nephrolepidaceae"
+# LES$Family[which(LES$Genus== "Ocotea")] <- "Lauraceae"
+# LES$Family[which(LES$Genus== "Olearia")] <- "Asteraceae"
+# LES$Family[which(LES$Genus== "Oxytropis")] <- "Fabaceae"
+# LES$Family[which(LES$Genus== "Pentaphylloides")] <- "Rosaceae" # contested genus with Dasiphora
+# LES$Family[which(LES$Genus== "Persoonia")] <- "Proteaceae"
+# LES$Family[which(LES$Genus== "Petalostemum")] <- "Fabaceae"
+# LES$Family[which(LES$Genus== "Philotheca")] <- "Rutaceae"
+# LES$Family[which(LES$Genus== "Picea")] <- "Pinaceae"
+# LES$Species <- as.character(LES$Species)
+# LES$Species[which(LES$Species=="Picea engelmanii")] <- "Picea engelmannii"
+# LES$Family[which(LES$Genus== "Pithecellobium")] <- "Fabaceae"
+# LES$Family[which(LES$Genus== "Plantago")] <- "Plantaginaceae"
+# LES$Species[which(LES$Species=="Plantago lanceloata")] <- "Plantago lanceolata"
+# LES$Family[which(LES$Genus== "Potentilla")] <- "Rosaceae"
+# LES$Family[which(LES$Genus== "Protium")] <- "Burseraceae"
+# LES$Family[which(LES$Genus== "Psoralea")] <- "Fabaceae"
+# LES$Family[which(LES$Genus== "Psychotria")] <- "Rubiaceae"
+# LES$Genus <- as.character(LES$Genus)
+# LES$Genus[which(LES$Genus== "Pultenea")] <- "Pultenaea"
+# LES$Family[which(LES$Genus== "Pultenaea")] <- "Fabaceae"
+# LES$Family[which(LES$Genus== "Pyrus")] <- "Rosaceae"
+# LES$Family[which(LES$Genus== "Quararibea")]  <- "Malvaceae"
+# LES$Species[which(LES$Species=="Quercus hemispherica")] <- "Quercus hemisphaerica"
+# LES$Species[which(LES$Species=="Quercus keloggii")] <- "Quercus kelloggii"
+# # Quercus prinus could evidently be either montana or Q. mixhauxii
+# LES$Family[which(LES$Genus== "Quercus")] <- "Facaeae"
+# LES$Family[which(LES$Genus== "Ranunculus")] <- "Ranunculaceae"
+# LES$Family[which(LES$Genus== "Rhodognaphalopsis")] <- "Malvaceae"
+# LES$Family[which(LES$Genus== "Rosa")] <- "Rosaceae"
+# LES$Family[which(LES$Genus== "Rubus")] <- "Rosaceae"
+# LES$Family[which(LES$Genus== "Salacia")] <- "Celastraceae"
+# LES$Family[which(LES$Genus== "Serruria")]  <- "Proteaceae"
+# LES$Family[which(LES$Genus== "Solanum")] <- "Solanaceae"
+# LES$Family[which(LES$Genus== "Sterculia")] <- "Malcaceae"
+# LES$Family[which(LES$Genus== "Syzygium")] <- "Myrtaceae"
+# LES$Family[which(LES$Genus== "Taraxacum")] <- "Asteraceae"
+# LES$Family[which(LES$Genus== "Terminalia")] <- "Combretaceae"
+# LES$Family[which(LES$Genus== "Tristaniopsis")] <- "Myrtaceae"
+# LES$Family[which(LES$Genus== "Vepris")] <- "Rutaceae"
+# LES$Family[which(LES$Genus== "Viola")] <- "Violaceae"
+# LES$Family[which(LES$Genus== "Vismia")] <- "Hypericaceae"
+# LES$Family[which(LES$Genus=="Werneria" )] <- "Asteraceae"
+# LES$Family[which(LES$Genus== "Xanthostemon")] <- "Myrtaceae"
+# LES$Family[which(LES$Genus== "Zanthoxylum")] <- "Rutacea"
+# 
+# 
+# test50 <- classification(LES$Genus[which(is.na(LES$Family))][1:50],db="itis")
+# missed50 <- rep(NA, times=50)
+# for(i in 1:50){
+#   if(is.na(test50[[i]])){missed50[i] <- NA}
+#   else{
+#     if(dim(test50[[i]])[1]<2){
+#       missed50[i] <- NA
+#     }
+#     else{
+#       missed50[i] <- test50[[i]]$name[which(test50[[i]]$rank=="family")]
+#     }
+#   }
+# }
+# 
+# test100 <- classification(LES$Genus[which(is.na(LES$Family))][c(51:100)],db="itis")
+# missed100 <- rep(NA, times=50)
+# for(i in 1:50){
+#   if(is.na(test100[[i]])){missed100[i] <- NA}
+#   else{
+#     if(dim(test100[[i]])[1]<2){
+#       missed100[i] <- NA
+#     }
+#     else{
+#       missed100[i] <- test100[[i]]$name[which(test100[[i]]$rank=="family")]
+#     }
+#   }
+# }
+# 
+# 
+# test150 <- classification(LES$Genus[which(is.na(LES$Family))][c(101:150)],db="itis")
+# missed150 <- rep(NA, times=50)
+# for(i in 1:50){
+#   if(is.na(test150[[i]])){missed150[i] <- NA}
+#   else{
+#     if(dim(test150[[i]])[1]<2){
+#       missed150[i] <- NA
+#     }
+#     else{
+#       missed150[i] <- test150[[i]]$name[which(test150[[i]]$rank=="family")]
+#     }
+#   }
+# }
+# 
+# 
+# test216 <- classification(LES$Genus[which(is.na(LES$Family))][c(151:216)],db="itis")
+# missed216 <- rep(NA, times=66)
+# for(i in 1:50){
+#   if(is.na(test216[[i]])){missed216[i] <- NA}
+#   else{
+#     if(dim(test216[[i]])[1]<2){
+#       missed216[i] <- NA
+#     }
+#     else{
+#       missed216[i] <- test216[[i]]$name[which(test216[[i]]$rank=="family")]
+#     }
+#   }
+# }
+# 
+# missed <- c(missed50,missed100,missed150,missed216)
+# 
+# LES$Family[which(is.na(LES$Family))] <- missed
+#   # now only 92 missed families!!!
+# write.csv(LES, "/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/LES_taxocleaning_033117_v3.csv")
+
+# LES <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/LES_taxocleaning_033117_v3.csv", row.names=1)
+# 
+# LES$Family <- as.character(LES$Family)
+# LES$Genus <- as.character(LES$Genus)
+# LES$Species <- as.character(LES$Species)
+# LES$Family[which(LES$Genus== "Pelea")] <- "Rutaceae"
+# LES$Family[which(LES$Genus== "Brussaisia")] <- "Hydrangeaceae"
+# LES$Genus[which(LES$Genus== "Brussaisia")] <- "Broussaissia"
+# LES$Family[which(LES$Species=="Cymbopetalum baillonii")] <- "Annonaceae"
+# 
+# 
+# 
+# testncbi <- classification(LES$Genus[which(is.na(LES$Family))],db="ncbi")
+# missedncbi <- rep(NA, times=89)
+# for(i in 1:89){
+#   if(is.na(testncbi[[i]])){missedncbi[i] <- NA}
+#   else{
+#     if(dim(testncbi[[i]])[1]<3){
+#       missedncbi[i] <- NA
+#     }
+#     else{
+#       missedncbi[i] <- testncbi[[i]]$name[which(testncbi[[i]]$rank=="family")]
+#     }
+#   }
+# }
+# LES$Family[which(is.na(LES$Family))] <- missedncbi
+#   # now only missing 23
+# write.csv(LES, "/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/LES_taxocleaning_033117_v4.csv")
+
+# LES<- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/LES_taxocleaning_033117_v3.csv", row.names = 1)
+# 
+# stillmissing <- LES$Species[which(is.na(LES$Family))]
+# misspelled10 <- tnrs(query = stillmissing[1:10], source = "iPlant_TNRS")[ , -c(5:7)]
+# misspelled20 <- tnrs(query = stillmissing[11:20], source = "iPlant_TNRS")[ , -c(5:7)] #didn't work
+# misspelled30 <- tnrs(query = stillmissing[21:30], source = "iPlant_TNRS")[ , -c(5:7)]
+# misspelled40 <- tnrs(query = stillmissing[31:40], source = "iPlant_TNRS")[ , -c(5:7)]
+# misspelled50 <- tnrs(query = stillmissing[41:50], source = "iPlant_TNRS")[ , -c(5:7)]
+# misspelled60 <- tnrs(query = stillmissing[51:60], source = "iPlant_TNRS")[ , -c(5:7)]
+# misspelled70 <- tnrs(query = stillmissing[61:70], source = "iPlant_TNRS")[ , -c(5:7)]
+# misspelled80 <- tnrs(query = stillmissing[71:80], source = "iPlant_TNRS")[ , -c(5:7)]
+# misspelled92 <- tnrs(query = stillmissing[81:92], source = "iPlant_TNRS")[ , -c(5:7)]
+# 
+# pullfams <- function(taxas, index){
+#   # tnrs doesn't return things in the order you gave them. wft?
+#   accnames <- taxas$acceptedname[match(stillmissing[index], taxas$submittedname)] 
+#   classes <- classification(accnames, db="ncbi")
+#   fams <- rep(NA, times=length(index))
+#   for(i in 1:length(index)){
+#     if(is.na(classes[[i]])){fams[i] <- NA}
+#     else{
+#       if(dim(classes[[i]])[1]<3){
+#         fams[i] <- NA
+#       }
+#       else{
+#         fams[i] <- classes[[i]]$name[which(classes[[i]]$rank=="family")]
+#       }
+#     }
+#   }
+#   return(fams)
+# }
+# 
+# 
+# missed10old <- missed10
+# missed10 <- pullfams(misspelled10, index=1:10)
+# missed20 <- pullfams(misspelled20, index=11:20)
+# missed30 <- pullfams(misspelled30, index=21:30)
+# missed40 <- pullfams(misspelled40, index=31:40)
+# missed50 <- pullfams(misspelled50, index=41:50)
+# missed60 <- pullfams(misspelled60, index=51:60)
+# missed70 <- pullfams(misspelled70, index=61:70)
+# missed80 <- pullfams(misspelled80, index=71:80)
+# missed92 <- pullfams(misspelled92, index=81:92)
+# 
+# missedall <- c(missed10, missed20,missed30,missed40,missed50,missed60,missed70,missed80,missed92)
+# LES$Family <- as.character(LES$Family)
+# LES$Family[which(is.na(LES$Family))] <- missedall
+#   # jesus. only filled in 32 with that whole shitshow
+# LES$Species[which(is.na(LES$Family))]
+# 
+# ## some random by hand fixes until I get bored
+# LES$Family[which(LES$Species=="Cymbopetalum baillonii")] <- "Annonaceae"
+# LES$Family[which(LES$Species=="Omphalea oleifera" )] <- "Euphorbiaceae"
+# LES$Family[which(LES$Species=="Robinsonella mirandae" )] <- "Malvaceae"
+# LES$Family[which(LES$Species=="Hyeronima alcheornoides")] <- "Euphorbiaceae"
+# LES$Family[which(LES$Species== "Hypochoeris sonchoides")] <- "Asteraceae"
+# LES$Genus <- as.character(LES$Genus)
+# LES$Genus[which(LES$Species=="Hypochoeris sonchoides")] <- "Hypochaeris"
+# LES$Species <- as.character(LES$Species)
+# LES$Species[which(LES$Species=="Hypochoeris sonchoides")] <- "Hypochaeris sonchoides"
+# LES$Family[which(LES$Species== "Nototriche phyllanthos")] <- "Malvaceae"
+# LES$Family[which(LES$Species== "Globularia cambessedesii")] <- "Plantaginaceae"
+# LES$Family[which(LES$Species== "Actinodaphne ambigua")] <- "Lauraceae"
+# LES$Family[which(LES$Species== "Antirrhoea trichantha")] <- "Rubaceae"
+# LES$Genus[which(LES$Species=="Antirrhoea trichantha")] <- "Pittoniotis"
+# LES$Species[which(LES$Species=="Antirrhoea trichantha")] <- "Pittoniotis trichantha"
+# LES$Family[which(LES$Species== "Holoptelia integrifolia")] <- "Ulmaceae"
+# LES$Genus[which(LES$Species=="Holoptelia integrifolia")] <- "Holoptelea"
+# LES$Species[which(LES$Species=="Holoptelia integrifolia")] <- "Holoptelea integrifolia"
+# LES$Family[which(LES$Species== "Swietinia mahogoni")] <- "Meliaceae"
+# LES$Genus[which(LES$Species== "Swietinia mahogoni")] <- "Swietenia"
+# LES$Species[which(LES$Species== "Swietinia mahogoni")] <- "Swietenia mahogoni"
+# LES$Family[which(LES$Species== "Xeromphis uliginosa")] <- "Rubiaceae"
+# LES$Genus[which(LES$Species== "Xeromphis uliginosa")] <- "Tamilnadia"
+# LES$Species[which(LES$Species== "Xeromphis uliginosa")] <-"Tamilnadia uliginosa"
+# LES$Family[which(LES$Species== "Bequaertiodendron natalense")] <- "Sapotaceae"
+# LES$Genus[which(LES$Species== "Bequaertiodendron natalense")] <- "Englerophytum"
+# LES$Species[which(LES$Species== "Bequaertiodendron natalense")] <- "Englerophytum natalense"
+# 
+# write.csv(LES, "/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/LES_taxocleaning_033117_v4.csv")
+
 LESclim <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Wright2004_sitedata.csv")
+LES <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/LES_taxocleaning_033117_v4.csv", row.names=1)
+  # still have 47 NAs for family. Probably 5 or 6 that legitimately can't be placed
+# LES$Family[which(LES$Species== )]
 
-##### Code for fixing problem spp that result in problem genera (genera w/ multiple families)
-# some Acers classified in old family - Aceraceae
-LES$Family[which(LES$Genus=="Acer" & LES$Family != "Sapindaceae")] <- "Sapindaceae"                                                   
-# one Atriplex in old family - Chenopodiaceae
-LES$Family[which(LES$Genus=="Atriplex")] <- "Amaranthaceae"
-# misnamed Betula and Lycaenidae
-LES[which(LES$Species=="Betula pumilla"), c("Species","GE.SP")] <- t(gsub(pattern = "ll", replacement = "l", x = t(LES[which(LES$Species=="Betula pumilla"), c("Species","GE.SP")]))) 
-LES$Family[which(LES$Genus=="Betula")] <- "Betulaceae"
-# misnamed Carex Asteraceae (Carex dimorphotheca also a synonymn for Carex stenophylla subsp. stenophylloides)
-LES$Family[which(LES$Genus=="Carex")] <- "Cyperaceae"
-# Diospyros mislabeld Fabaceae
-LES$Family[which(LES$Genus=="Diospyros")] <- "Ebenaceae"
-# Eugenia mislabeld a lot
-LES$Family[which(LES$Genus=="Eugenia")] <- "Myrtaceae"
-# Ficus mislabeled Agridae
-LES$Family[which(LES$Genus=="Ficus")] <- "Moraceae"
-# Grevillea often mislabeled
-LES$Family[which(LES$Genus=="Grevillea")] <- "Proteaceae"
-# Hakea often mislabeled
-LES$Family[which(LES$Genus=="Hakea")] <- "Proteaceae"
-# Hibbertia usually mislabeled
-LES$Family[which(LES$Genus=="Hibbertia")] <- "Dilleniaceae"
-# Ilex
-LES$Family[which(LES$Genus=="Ilex")] <- "Aquifoliaceae"
-# Luzula
-LES$Family[which(LES$Genus=="Luzula")] <- "Juncaceae"
-# Miconia
-LES$Family[which(LES$Genus=="Miconia")] <- "Melastomataceae"
-#Olea Oleaceae -> note: a couple spp have subspp that don't get pooled.
-LES$Family[which(LES$Genus=="Olea")] <- "Oleaceae"
-# Salix --> SALIX IS CLEAN
-LES$Species[which(LES$Species=="Salix alba fraxinus")] <- "Salix alba"
-LES$GE.SP[which(LES$Species=="Salix.alba fraxinus")] <- "Salix.alba"
-LES$Species[which(LES$Species=="Salix dasyclados phylicifolia")] <- "Salix dasyclados"
-LES$GE.SP[which(LES$Species=="Salix.dasyclados phylicifolia")] <- "Salix.dasyclados"
-LES$Species[which(LES$Species=="Salix fragilus")] <- "Salix fragilis"
-LES$GE.SP[which(LES$Species=="Salix.fragilus")] <- "Salix.fragilis"
 
-LES$Family[which(LES$Genus=="Salix")] <- "Salicaceae"
 LES$LMA <- 10^LES$log.LMA
 LES$LL <- 10^LES$log.LL
 LES$Nmass <- 10^LES$log.Nmass
@@ -335,11 +652,12 @@ traits$RGRdom[which(as.character(traits$FOREST_TYPE) == as.character(traits$SP.I
 traits$stGrowthdom <- traits$BIOST_TGROWTHgam
 traits$stGrowthdom[which(as.character(traits$FOREST_TYPE) != as.character(traits$SP.ID))] <- NA
 traits$stGrowthdom[which(as.character(traits$FOREST_TYPE) == as.character(traits$SP.ID) & traits$dominance<50)] <- NA
-
-########### END Data import and format ##############
-
-
 traits$FullSpecies <- paste(traits$GENUS, traits$SPECIES, sep=" ")
+
+## adding in family names to Traits
+PNWfams <- read.csv("PNWfams_031717.csv")
+traits$Family <- PNWfams$family[match(traits$FullSpecies, PNWfams$query)]
+#     Code that found Family names from itis and then cleaned them
 # PNWspecies <- sort(unique((traits$FullSpecies)))
 # PNWfams <- tax_name(PNWspecies, get="family", db="itis")
 # PNWfams$family[grep("Cercocarpus", PNWfams$query)] <- "Rosaceae"
@@ -349,36 +667,20 @@ traits$FullSpecies <- paste(traits$GENUS, traits$SPECIES, sep=" ")
 # 
 # write.csv(PNWfams, "PNWfams_031717.csv")
 
-PNWfams <- read.csv("PNWfams_031717.csv")
-traits$Family <- PNWfams$family[match(traits$FullSpecies, PNWfams$query)]
 
 
 
-
-
-
-
-#----------------------------------------------------------------------------------
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-###### **Analysis of intra-specific trait variation in common species** ###########
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#----------------------------------------------------------------------------------
-
-# definition of common species = >20 records
-
-
-
-
-######### Creating traits.common (and summaries) ################ 
-
+######### Creating traits.common and traits.common5 ################ 
+# traits.common= 10 or more records
+# traits.common5 = 5 or more records
 ### Look at species coverage
-speciescoverage <- traits %>% group_by(GENUS) %>% summarize(nspecies=length(unique(SPECIES)))
-speciescoverage <- speciescoverage[order(speciescoverage$nspecies, decreasing=T),]
-  ## So it looks like we've got 24 genera, 6 of which have more than one species. only 3 have >2 spp.
-
-### Look at coverage within genera
-genera <- traits%>%group_by(GENUS)%>% summarise(nspp=length(unique(SPECIES)))
-common.genera <- genera$GENUS[which(genera$nspp>1)]
+# speciescoverage <- traits %>% group_by(GENUS) %>% summarize(nspecies=length(unique(SPECIES)))
+# speciescoverage <- speciescoverage[order(speciescoverage$nspecies, decreasing=T),]
+#   ## So it looks like we've got 24 genera, 6 of which have more than one species. only 3 have >2 spp.
+# 
+# ### Look at coverage within genera
+# genera <- traits%>%group_by(GENUS)%>% summarise(nspp=length(unique(SPECIES)))
+# common.genera <- genera$GENUS[which(genera$nspp>1)]
 
 
 ### pull out common species (>10 records)
@@ -428,42 +730,80 @@ traits.common5$climPC3 <- climpca5$x[,3]
 
 
 
-
-
-### also making one with the common trait spp and common genera
-traits.commongenera <- subset(traits, subset=GE.SP %in% common.species | GENUS %in% common.genera)
-traits.commongenera <- traits.commongenera[-which(traits.commongenera$GE.SP == "Purshia.tridentate"),]
-traits.commongenera$PLOT_ID <- factor(traits.commongenera$PLOT_ID) # have 3 plots with no commongenera species, so dropping them
-traits.commongenera$GE.SP <- factor(traits.commongenera$GE.SP)
-traits.commongenera$GENUS <- factor(traits.commongenera$GENUS)
-traits.commongenera$SPECIES <- factor(traits.commongenera$SPECIES)
-traits.commongenera$SLA_HSAsc <- scale(traits.commongenera$SLA_HSA)
-traits.commongenera$FOREST_TYPE <- factor(traits.commongenera$FOREST_TYPE)
-traits.commongenera$SP.ID <- factor(traits.commongenera$SP.ID)
-
-# removing all NAs drops out 148 rows.
-traits.common.narm <- traits.common[-which(is.na(traits.common$SLA_HSAsc)|is.na(traits.common$LAI_O)|is.na(traits.common$HEIGHTC_m)|is.na(traits.common$soilmoist.lvl1.mm)),]
-
-
-
-### assess missing trait values by species, and number of plots for each species
-traits.common %>% group_by(GE.SP) %>% summarize(nplots = length(unique(PLOT_ID)), nsamples = n(), naLAI =length(which(is.na(LAI_O))), naHeight = length(which(is.na(HEIGHTC_m))), naSLA_PSA =length(which(is.na(SLA_PSA))), anSLA_HSA =length(which(is.na(SLA_HSA))),  naCN = length(which(is.na(LEAF_CN))), naLIFE = length(which(is.na(LEAF_LIFE))))   # decent plot replication for many species
-  # take home: use SLA_HSA (because it has fewer missing values), Junocc doesn't have LEAF_LIFE (scales rather than leaves), other species missing values all just reduce replication rather than eliminate species
-traits.common %>% group_by(GENUS) %>% summarize(length(unique(SPECIES)))# so not great species replication within genera
-plotrep <- traits.common[!is.na(traits.common$SLA_PSA),] %>% group_by(GENUS, SPECIES, PLOT_ID) %>% summarize(nsamples = n())
-  # most plots only have 2-4 samples per plot. 
-  #   but 19 plots have >5 samples
-  #   and 10 plots have >10 samples
-
-
+# 
+# 
+# ### also making one with the common trait spp and common genera
+# traits.commongenera <- subset(traits, subset=GE.SP %in% common.species | GENUS %in% common.genera)
+# traits.commongenera <- traits.commongenera[-which(traits.commongenera$GE.SP == "Purshia.tridentate"),]
+# traits.commongenera$PLOT_ID <- factor(traits.commongenera$PLOT_ID) # have 3 plots with no commongenera species, so dropping them
+# traits.commongenera$GE.SP <- factor(traits.commongenera$GE.SP)
+# traits.commongenera$GENUS <- factor(traits.commongenera$GENUS)
+# traits.commongenera$SPECIES <- factor(traits.commongenera$SPECIES)
+# traits.commongenera$SLA_HSAsc <- scale(traits.commongenera$SLA_HSA)
+# traits.commongenera$FOREST_TYPE <- factor(traits.commongenera$FOREST_TYPE)
+# traits.commongenera$SP.ID <- factor(traits.commongenera$SP.ID)
+# 
+# # removing all NAs drops out 148 rows.
+# traits.common.narm <- traits.common[-which(is.na(traits.common$SLA_HSAsc)|is.na(traits.common$LAI_O)|is.na(traits.common$HEIGHTC_m)|is.na(traits.common$soilmoist.lvl1.mm)),]
+# 
+# 
+# 
+# ### assess missing trait values by species, and number of plots for each species
+# traits.common %>% group_by(GE.SP) %>% summarize(nplots = length(unique(PLOT_ID)), nsamples = n(), naLAI =length(which(is.na(LAI_O))), naHeight = length(which(is.na(HEIGHTC_m))), naSLA_PSA =length(which(is.na(SLA_PSA))), anSLA_HSA =length(which(is.na(SLA_HSA))),  naCN = length(which(is.na(LEAF_CN))), naLIFE = length(which(is.na(LEAF_LIFE))))   # decent plot replication for many species
+#   # take home: use SLA_HSA (because it has fewer missing values), Junocc doesn't have LEAF_LIFE (scales rather than leaves), other species missing values all just reduce replication rather than eliminate species
+# traits.common %>% group_by(GENUS) %>% summarize(length(unique(SPECIES)))# so not great species replication within genera
+# plotrep <- traits.common[!is.na(traits.common$SLA_PSA),] %>% group_by(GENUS, SPECIES, PLOT_ID) %>% summarize(nsamples = n())
+#   # most plots only have 2-4 samples per plot. 
+#   #   but 19 plots have >5 samples
+#   #   and 10 plots have >10 samples
 
 
 
-#-----------------------------------------------------------------------------------
+############## **Making Master Dataset ** ###################
+###### trying with combined PACNW and glopnet dataset. ###
+data1 <- traits %>% select(FullSpecies,log.LMA, log.LL, log.Nmass, log.Narea, GENUS, Family)
+colnames(data1)[c(1,2,6)]<- c("Species", "log.LMA","Genus")
+data1$Project <- rep("PACNW", times=nrow(data1))
+data1$log.LL[which(data1$log.LL<1.2)] <- NA # all the deciduous species have '1yr' lifespan, but really that's wrong
+data2 <- LES %>% filter(!is.na(Family)) %>% select(Species, log.LMA, log.LL, log.Nmass, log.Narea,Genus, Family)
+# currently removes 47 records as of 04.01.17
+data2$Project <- rep("GLOPNET", times=nrow(data2))
+#data.supp <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/OtherData_Combined_033017.csv", header=T, row.names=1)
+data.supp <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/OtherData_Combined_040117.csv", header=T, row.names=1)
+data3 <- data.supp %>% select(Species,log.LMA,log.LL, log.Nmass,log.Narea,Genus,Family,Project)
 
+## make combined dataset with all the taxonomically resolved species
+data.all <- rbind(data1, data2, data3) # 4051 total records
+data.all$Species <- factor(data.all$Species)
+data.all$Genus <- factor(data.all$Genus)
+data.all$Family <- factor(data.all$Family)
+data.all$Project <- factor(data.all$Project)
+
+
+
+
+
+
+
+
+
+
+
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+###### **ANALYIS** ###########
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+
+
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ########### Initial Data Exploration (visualization, colinearity, etc.) ###########
-
-#-----------------------------------------------------------------------------------
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 
@@ -495,7 +835,10 @@ multiplot(plotlist=list(p7,p8,p9), layout=matrix(c(1,2,3,3), nrow = 2, byrow = T
 
 
 
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #################### Spatial distribution of plots #######################
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ######RgoogleMaps
 library(RgoogleMaps)
@@ -525,7 +868,12 @@ genus.summaries <- traits %>% group_by(GENUS) %>% summarize(nspp = length(unique
 
 
 
+
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #### INITAL VISUALIZATION ####################
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 pairs(traits.common[,c(10,11,23,24,25,26,27,29,30)],col=traits.common$SPECIES, pch=16, cex=.8)
 Mypairs(traits.common[,c(10,11,23,24,25,26,27,29,30)])
 ## based on this, it looks like traits that are worth looking at are:
@@ -611,9 +959,9 @@ for(i in levels(traits.common$GE.SP)[-c(6,7,8)]){
 
 
 
-#-----------------------------------------------------------------------------
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ########### do things relate to site productivity? ######
-#-----------------------------------------------------------------------------
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 plot(LEAF_LIFE~AG_TGROWTH, traits.common, col=SP.ID)
@@ -665,9 +1013,9 @@ with(traits.common[which(traits.common$SP.ID=="PSEMEN"),], plot3d(vpd.gy.max, so
 
 
 
-#-----------------------------------------------------------------------
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ######## Climate colinearity and associated infrences: ########
-#-----------------------------------------------------------------------------
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 Mypairs(traits.common[,c(10,11,grep("gy", colnames(traits.common)), grep("soilmoist", colnames(traits.common)))])
@@ -774,67 +1122,67 @@ SLA1nlme <- lme(SLA_HSAsc ~ LAI_O + HEIGHTC_m + tmean.gy.c  + vpd.gy.max , rando
 
 
 
-#-----------------------------------------------------------------------------
-################# VARIANCE DECOMPOSITION by fitting only random effects ####################
-#-----------------------------------------------------------------------------
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+################# **VARIANCE DECOMPOSITION ANALYSIS** ####################
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-
-SLAvar <- lmer(SLA_HSA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.common)
-SLAvar2 <- lmer(SLA_HSA~ (1|GENUS/SPECIES/PLOT_ID), traits.common)
-  ## These two are slightly different formulations??? but they give roughly the same answers.
-
-LeafLifevar <- lmer(LEAF_LIFE~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.common)
-LeafLifevar2 <- lmer(LEAF_LIFE~ (1|GENUS/SPECIES/PLOT_ID), traits.common)
-
-## probably need better models for these.
-LeafCNvar <- lmer(LEAF_CN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.common)
-LeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), traits.common)
-
-LeafCarbvar <- lmer(LEAF_CARBON~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.common)
-LeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), traits.common)
-
-LeafNitvar <- lmer(LEAF_NITROGEN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.common)
-LeafNitvar2 <- lmer(LEAF_NITROGEN~ (1|GENUS/SPECIES/PLOT_ID), traits.common)
-
-SLAvariance <- data.frame(VarCorr(SLAvar2))
-LeafLifevariance <- data.frame(VarCorr(LeafLifevar2))
-LeafCNvariance <- data.frame(VarCorr(LeafCNvar2))
-LeafCarvariance <- data.frame(VarCorr(LeafCarbvar2))
-LeafNitvariance <- data.frame(VarCorr(LeafNitvar2))
-
-traitvars <- data.frame(SLAvariance[,4], LeafLifevariance[,4], LeafCNvariance[,4], LeafCarvariance[,4], LeafNitvariance[,4])
-colnames(traitvars) <- c("SLA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN")
-rownames(traitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
-
-traitvars_scaled <- traitvars  
-for(i in 1:ncol(traitvars)){
-traitvars_scaled[,i] <- traitvars[,i]/sum(traitvars[,i])
-}
-
-## making stacked bar plots of variance decomposition:
-quartz(width=5, height=4)
-cols <- brewer.pal(11, "RdBu")[c(1,11,9, 6)]
-barplot(as.matrix(traitvars_scaled),beside=F,legend.text = F,xpd = T, names.arg = c("SLA", "Life","C/N","%C","%N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance")
-legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,1,2,3)], ncol=2, bty="n",  cex=1.2)
-
-
-
-######## making stacked bar plots with intra-specific variation highlighted
-traitvars_scaled2 <- traitvars_scaled[c(2,3,1,4),]
-## making stacked bar plots of variance decomposition:
-quartz(width=5, height=4)
-cols <- brewer.pal(11, "RdBu")[c(11,9,1, 6)]
-barplot(as.matrix(traitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("SLA", "Leaf\nLife","C/N","%C","%N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab="Traits.common")
-legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,1,2)], ncol=2, bty="n",  cex=1.2)
-
-## dropping C and N solo
-# traitvars_scaled3 <- traitvars_scaled[c(3,2,1,4),]
-# quartz(width=4.5, height=3.5)
-# par(mar=c(3,4,1,6.5), mgp=c(2.5,1,0))
+# ## Initial analysis of traits.common
+# SLAvar <- lmer(SLA_HSA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.common)
+# SLAvar2 <- lmer(SLA_HSA~ (1|GENUS/SPECIES/PLOT_ID), traits.common)
+#   ## These two are slightly different formulations??? but they give roughly the same answers.
+# 
+# LeafLifevar <- lmer(LEAF_LIFE~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.common)
+# LeafLifevar2 <- lmer(LEAF_LIFE~ (1|GENUS/SPECIES/PLOT_ID), traits.common)
+# 
+# ## probably need better models for these.
+# LeafCNvar <- lmer(LEAF_CN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.common)
+# LeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), traits.common)
+# 
+# LeafCarbvar <- lmer(LEAF_CARBON~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.common)
+# LeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), traits.common)
+# 
+# LeafNitvar <- lmer(LEAF_NITROGEN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.common)
+# LeafNitvar2 <- lmer(LEAF_NITROGEN~ (1|GENUS/SPECIES/PLOT_ID), traits.common)
+# 
+# SLAvariance <- data.frame(VarCorr(SLAvar2))
+# LeafLifevariance <- data.frame(VarCorr(LeafLifevar2))
+# LeafCNvariance <- data.frame(VarCorr(LeafCNvar2))
+# LeafCarvariance <- data.frame(VarCorr(LeafCarbvar2))
+# LeafNitvariance <- data.frame(VarCorr(LeafNitvar2))
+# 
+# traitvars <- data.frame(SLAvariance[,4], LeafLifevariance[,4], LeafCNvariance[,4], LeafCarvariance[,4], LeafNitvariance[,4])
+# colnames(traitvars) <- c("SLA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN")
+# rownames(traitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
+# 
+# traitvars_scaled <- traitvars  
+# for(i in 1:ncol(traitvars)){
+# traitvars_scaled[,i] <- traitvars[,i]/sum(traitvars[,i])
+# }
+# 
+# ## making stacked bar plots of variance decomposition:
+# quartz(width=5, height=4)
+# cols <- brewer.pal(11, "RdBu")[c(1,11,9, 6)]
+# barplot(as.matrix(traitvars_scaled),beside=F,legend.text = F,xpd = T, names.arg = c("SLA", "Life","C/N","%C","%N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance")
+# legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,1,2,3)], ncol=2, bty="n",  cex=1.2)
+# 
+# 
+# 
+# ######## making stacked bar plots with intra-specific variation highlighted
+# traitvars_scaled2 <- traitvars_scaled[c(2,3,1,4),]
+# ## making stacked bar plots of variance decomposition:
+# quartz(width=5, height=4)
 # cols <- brewer.pal(11, "RdBu")[c(11,9,1, 6)]
-# barplot(as.matrix(traitvars_scaled3[,1:3]),beside=F,legend.text = F,xpd = T, names.arg = c("SLA", "Leaf\nLife","C/N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance")
-# legend(xpd=T, x = 3.6, y=.7, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,2,1)], ncol=1, bty="n",  cex=1)
+# barplot(as.matrix(traitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("SLA", "Leaf\nLife","C/N","%C","%N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab="Traits.common")
+# legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,1,2)], ncol=2, bty="n",  cex=1.2)
+# 
+# ## dropping C and N solo
+# # traitvars_scaled3 <- traitvars_scaled[c(3,2,1,4),]
+# # quartz(width=4.5, height=3.5)
+# # par(mar=c(3,4,1,6.5), mgp=c(2.5,1,0))
+# # cols <- brewer.pal(11, "RdBu")[c(11,9,1, 6)]
+# # barplot(as.matrix(traitvars_scaled3[,1:3]),beside=F,legend.text = F,xpd = T, names.arg = c("SLA", "Leaf\nLife","C/N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance")
+# # legend(xpd=T, x = 3.6, y=.7, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,2,1)], ncol=1, bty="n",  cex=1)
 
 
 
@@ -845,18 +1193,21 @@ legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw G
 ################ VARIANCE DECOMPOSITION of only common needle leafed conifers ####################
 #-----------------------------------------------------------------------------
 
+# define conifers as anything with 2 or more stands that it's dominant
 conifers <- names(which(xtabs(~SPP_O1_ABBREV, biomass)>1))
 traits.conifers <- subset(traits, subset=SP.ID %in% conifers) # 1099 trait measurements
-conifers <- c("Abies","Picea","Pinus","Pseudotsuga","Thuja","Tsuga") # 1065 trait measurements
-traits.conifers <- subset(traits, subset=GENUS %in% conifers)
+# conifers <- c("Abies","Picea","Pinus","Pseudotsuga","Thuja","Tsuga") # 1065 trait measurements
+# traits.conifers <- subset(traits, subset=GENUS %in% conifers)
 
 traits.conifers$SP.ID <- factor(traits.conifers$SP.ID)
 
+# define dominants as anything that dominates 1 stand
 dominants <- levels(biomass$SPP_O1_ABBREV)
 traits.dominants <- subset(traits, subset=SP.ID %in% dominants)
+traits.dominants$SP.ID <- factor(traits.dominants$SP.ID)
 
 
-
+# make a function to quickly perform and plot variance decomps of log and raw traits
 variance.decomp <- function(dataz, lab){
   
   #### logged trait values
@@ -928,88 +1279,30 @@ variance.decomp <- function(dataz, lab){
   
 }
 
+# anything with >9 trait measurements
 variance.decomp(dataz=traits.common, lab="traits.common")
+# anything that dominates a stand (19 species)
 variance.decomp(dataz=traits.dominants, lab="traits.dominants")
+# anything that dominates 2 or more stands (gets rid of QUECHR, THUPLI, ABILAS,CALDEC,PICENG,PINMON)
 variance.decomp(dataz=traits.conifers, lab="traits.conifers")
-traits.domcon <- traits.dominants[-which(traits.dominants$SP.ID=="QUECHR"),]
+# anything thats a dominant but pull out the non-conifer
+traits.domcon <- traits.dominants[-which(traits.dominants$SP.ID =="QUECHR"),]
 domconvars <- variance.decomp(dataz=traits.domcon, lab="traits.domcon")
 
-SLAvar <- lmer(SLA_HSA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.conifers)
-SLAvar2 <- lmer(SLA_HSA~ (1|GENUS/SPECIES/PLOT_ID), traits.conifers)
-## These two are slightly different formulations??? but they give roughly the same answers.
-LMAvar <- lmer(LMA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.conifers) # uses LMA_HSA rather than PSA
-LMAvar2 <- lmer(LMA~ (1|GENUS/SPECIES/PLOT_ID), traits.conifers)
+traits.domcon1 <- traits.dominants[-which(traits.dominants$SP.ID %in% c("QUECHR", "LAROCC")),]
+domconvars1 <- variance.decomp(dataz=traits.domcon1, lab="traits.domcon1")
 
-
-LeafLifevar <- lmer(LEAF_LIFE~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.conifers)
-LeafLifevar2 <- lmer(LEAF_LIFE~ (1|GENUS/SPECIES/PLOT_ID), traits.conifers)
-
-## probably need better models for these.
-LeafCNvar <- lmer(LEAF_CN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.conifers)
-LeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), traits.conifers)
-
-LeafCarbvar <- lmer(LEAF_CARBON~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.conifers)
-LeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), traits.conifers)
-
-LeafNitvar <- lmer(LEAF_NITROGEN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.conifers)
-LeafNitvar2 <- lmer(LEAF_NITROGEN~ (1|GENUS/SPECIES/PLOT_ID), traits.conifers)
-
-SLAvariance <- data.frame(VarCorr(SLAvar2))
-LMAvariance <- data.frame(VarCorr(LMAvar2))
-LeafLifevariance <- data.frame(VarCorr(LeafLifevar2))
-LeafCNvariance <- data.frame(VarCorr(LeafCNvar2))
-LeafCarvariance <- data.frame(VarCorr(LeafCarbvar2))
-LeafNitvariance <- data.frame(VarCorr(LeafNitvar2))
-
-
-traitvars <- data.frame(SLAvariance[,4], LeafLifevariance[,4], LeafCNvariance[,4], LeafCarvariance[,4], LeafNitvariance[,4])
-colnames(traitvars) <- c("SLA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN")
-rownames(traitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
-
-## dataframe with LMA
-traitvars2 <- data.frame(LMAvariance[,4], LeafLifevariance[,4], LeafCNvariance[,4], LeafCarvariance[,4], LeafNitvariance[,4])
-colnames(traitvars2) <- c("LMA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN")
-rownames(traitvars2) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
-
-
-traitvars_scaled <- traitvars  
-for(i in 1:ncol(traitvars)){
-  traitvars_scaled[,i] <- traitvars[,i]/sum(traitvars[,i])
-}
-
-traitvars_scaled2 <- traitvars2  
-for(i in 1:ncol(traitvars2)){
-  traitvars_scaled2[,i] <- traitvars2[,i]/sum(traitvars2[,i])
-}
-
-######## making stacked bar plots with intra-specific variation highlighted
-traitvars_scaled <- traitvars_scaled[c(3,2,1,4),]
-traitvars_scaled2 <- traitvars_scaled2[c(3,2,1,4),]
-
-## making stacked bar plots of variance decomposition:
-quartz(width=5, height=4)
-cols <- brewer.pal(11, "RdBu")[c(11,9,1, 6)]
-barplot(as.matrix(traitvars_scaled),beside=F,legend.text = F,xpd = T, names.arg = c("SLA", "Leaf\nLife","C/N","%C","%N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab="dominants")
-legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,1,2)], ncol=2, bty="n",  cex=1.2)
-
-
-quartz(width=5, height=4, )
-cols <- brewer.pal(11, "PRGn")[c(1,3,9,11)]
-barplot(as.matrix(traitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("LMA", "Leaf\nLife","C/N","%C","%N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab="dominants")
-legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,2,1)], ncol=2, bty="n",  cex=1.2)
-
-
-###### showing how much of trait space these conifers still cover
+########## showing how much of trait space these conifers still cover ##########
 quartz(width=4, height=4)
-par(mar=c(3,3,1,1))
+par(mar=c(4,4,1,1))
 plot(log.LL~log.LMA, LES, col="grey", pch=16, ylab="log Leaf Lifespan (months)", xlab="log LMA (g/m^2)")
-points(log.LL~log.LMA, traits.conifers, col=SP.ID)
+points(log.LL~log.LMA, traits.domcon1, col=SP.ID)
 
 quartz(width=2, height=2)
 par(mar=c(3,3,1,1))
 
 plot(LL~LMA, LES, col="grey", pch=16, ylab="log Leaf Lifespan (months)", xlab="log LMA (g/m^2)", xlim=c(0,800))
-points(LLmonths~LMA, traits.conifers, col=SP.ID)
+points(LLmonths~LMA, traits.domcon1, col=SP.ID)
 
 
 
@@ -1019,125 +1312,125 @@ points(LLmonths~LMA, traits.conifers, col=SP.ID)
 #-----------------------------------------------------------------------------
 ############### VARIANCE DECOMPOSITION of only dominant species in the biomass dataset ####################
 #-----------------------------------------------------------------------------
-
-### 
-dominants <- levels(biomass$SPP_O1_ABBREV)
-traits.dominants <- subset(traits, subset=SP.ID %in% dominants)
-
-SLAvar <- lmer(SLA_HSA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
-SLAvar2 <- lmer(SLA_HSA~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
-## These two are slightly different formulations??? but they give roughly the same answers.
-rLMAvar <- lmer(LMA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants) # uses LMA_HSA rather than PSA
-rLMAvar2 <- lmer(LMA~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
-LMAvar <- lmer(LMA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants) # uses LMA_HSA rather than PSA
-LMAvar2 <- lmer(LMA~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
-
-
-rLeafLifevar <- lmer(LEAF_LIFE~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
-rLeafLifevar2 <- lmer(LEAF_LIFE~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
-
-## probably need better models for these.
-rLeafCNvar <- lmer(LEAF_CN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
-rLeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
-
-rLeafCarbvar <- lmer(LEAF_CARBON~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
-rLeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
-
-rLeafNitvar <- lmer(LEAF_NITROGEN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
-rLeafNitvar2 <- lmer(LEAF_NITROGEN~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
-
-rNareavar2 <- lmer(Narea~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
-
-rSLAvariance <- data.frame(VarCorr(rSLAvar2))
-rLMAvariance <- data.frame(VarCorr(rLMAvar2))
-rLeafLifevariance <- data.frame(VarCorr(rLeafLifevar2))
-rLeafCNvariance <- data.frame(VarCorr(rLeafCNvar2))
-rLeafCarvariance <- data.frame(VarCorr(rLeafCarbvar2))
-rLeafNitvariance <- data.frame(VarCorr(rLeafNitvar2))
-rNareavariance <- data.frame(VarCorr(rNareavar2))
-
-
-## dataframe with SLA
-rtraitvars <- data.frame(rSLAvariance[,4], rLeafLifevariance[,4], rLeafCNvariance[,4], rLeafCarvariance[,4], rLeafNitvariance[,4])
-colnames(rtraitvars) <- c("SLA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN")
-rownames(rtraitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
-## dataframe with LMA
-rtraitvars2 <- data.frame(rLMAvariance[,4], rLeafLifevariance[,4], rLeafCNvariance[,4], rLeafCarvariance[,4], rLeafNitvariance[,4], rNareavariance[,4])
-colnames(rtraitvars2) <- c("LMA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN", "Narea")
-rownames(rtraitvars2) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
-
-
-rtraitvars_scaled <- rtraitvars  
-for(i in 1:ncol(rtraitvars)){
-  rtraitvars_scaled[,i] <- rtraitvars[,i]/sum(rtraitvars[,i])
-}
-
-rtraitvars_scaled2 <- rtraitvars2  
-for(i in 1:ncol(rtraitvars2)){
-  rtraitvars_scaled2[,i] <- rtraitvars2[,i]/sum(rtraitvars2[,i])
-}
-
-######## making stacked bar plots with intra-specific variation highlighted
-rtraitvars_scaled <- traitvars_scaled[c(3,2,1,4),]
-rtraitvars_scaled2 <- traitvars_scaled2[c(3,2,1,4),]
-
-
-####### Logged trait variance decomp of dominant conifers ####
-SLAvar <- lmer(SLA_HSA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
-SLAvar2 <- lmer(SLA_HSA~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
-## These two are slightly different formulations??? but they give roughly the same answers.
-LMAvar <- lmer(log.LMA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants) # uses LMA_HSA rather than PSA
-LMAvar2 <- lmer(log.LMA~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
-
-
-LeafLifevar <- lmer(log.LL~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
-LeafLifevar2 <- lmer(log.LL~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
-
-## probably need better models for these.
-LeafCNvar <- lmer(LEAF_CN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
-LeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
-
-LeafCarbvar <- lmer(LEAF_CARBON~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
-LeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
-
-LeafNitvar <- lmer(log.Nmass~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
-LeafNitvar2 <- lmer(log.Nmass~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
-
-Nareavar <- lmer(log.Narea~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
-Nareavar2 <- lmer(log.Narea~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
-
-
-SLAvariance <- data.frame(VarCorr(SLAvar2))
-LMAvariance <- data.frame(VarCorr(LMAvar2))
-LeafLifevariance <- data.frame(VarCorr(LeafLifevar2))
-LeafCNvariance <- data.frame(VarCorr(LeafCNvar2))
-LeafCarvariance <- data.frame(VarCorr(LeafCarbvar2))
-LeafNitvariance <- data.frame(VarCorr(LeafNitvar2))
-Nareavariance <- data.frame(VarCorr(Nareavar2))
-
-## dataframe with SLA
-traitvars <- data.frame(SLAvariance[,4], LeafLifevariance[,4], LeafCNvariance[,4], LeafCarvariance[,4], LeafNitvariance[,4])
-colnames(traitvars) <- c("SLA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN")
-rownames(traitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
-## dataframe with LMA
-traitvars2 <- data.frame(LMAvariance[,4], LeafLifevariance[,4], LeafCNvariance[,4], LeafCarvariance[,4], LeafNitvariance[,4], Nareavariance[,4])
-colnames(traitvars2) <- c("LMA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN","Narea")
-rownames(traitvars2) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
-
-
-traitvars_scaled <- traitvars  
-for(i in 1:ncol(traitvars)){
-  traitvars_scaled[,i] <- traitvars[,i]/sum(traitvars[,i])
-}
-
-traitvars_scaled2 <- traitvars2  
-for(i in 1:ncol(traitvars2)){
-  traitvars_scaled2[,i] <- traitvars2[,i]/sum(traitvars2[,i])
-}
-
-######## making stacked bar plots with intra-specific variation highlighted
-traitvars_scaled <- traitvars_scaled[c(3,2,1,4),]
-traitvars_scaled2 <- traitvars_scaled2[c(3,2,1,4),]
+# 
+# ### 
+# dominants <- levels(biomass$SPP_O1_ABBREV)
+# traits.dominants <- subset(traits, subset=SP.ID %in% dominants)
+# 
+# SLAvar <- lmer(SLA_HSA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+# SLAvar2 <- lmer(SLA_HSA~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+# ## These two are slightly different formulations??? but they give roughly the same answers.
+# rLMAvar <- lmer(LMA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants) # uses LMA_HSA rather than PSA
+# rLMAvar2 <- lmer(LMA~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+# LMAvar <- lmer(LMA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants) # uses LMA_HSA rather than PSA
+# LMAvar2 <- lmer(LMA~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+# 
+# 
+# rLeafLifevar <- lmer(LEAF_LIFE~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+# rLeafLifevar2 <- lmer(LEAF_LIFE~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+# 
+# ## probably need better models for these.
+# rLeafCNvar <- lmer(LEAF_CN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+# rLeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+# 
+# rLeafCarbvar <- lmer(LEAF_CARBON~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+# rLeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+# 
+# rLeafNitvar <- lmer(LEAF_NITROGEN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+# rLeafNitvar2 <- lmer(LEAF_NITROGEN~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+# 
+# rNareavar2 <- lmer(Narea~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+# 
+# rSLAvariance <- data.frame(VarCorr(rSLAvar2))
+# rLMAvariance <- data.frame(VarCorr(rLMAvar2))
+# rLeafLifevariance <- data.frame(VarCorr(rLeafLifevar2))
+# rLeafCNvariance <- data.frame(VarCorr(rLeafCNvar2))
+# rLeafCarvariance <- data.frame(VarCorr(rLeafCarbvar2))
+# rLeafNitvariance <- data.frame(VarCorr(rLeafNitvar2))
+# rNareavariance <- data.frame(VarCorr(rNareavar2))
+# 
+# 
+# ## dataframe with SLA
+# rtraitvars <- data.frame(rSLAvariance[,4], rLeafLifevariance[,4], rLeafCNvariance[,4], rLeafCarvariance[,4], rLeafNitvariance[,4])
+# colnames(rtraitvars) <- c("SLA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN")
+# rownames(rtraitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
+# ## dataframe with LMA
+# rtraitvars2 <- data.frame(rLMAvariance[,4], rLeafLifevariance[,4], rLeafCNvariance[,4], rLeafCarvariance[,4], rLeafNitvariance[,4], rNareavariance[,4])
+# colnames(rtraitvars2) <- c("LMA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN", "Narea")
+# rownames(rtraitvars2) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
+# 
+# 
+# rtraitvars_scaled <- rtraitvars  
+# for(i in 1:ncol(rtraitvars)){
+#   rtraitvars_scaled[,i] <- rtraitvars[,i]/sum(rtraitvars[,i])
+# }
+# 
+# rtraitvars_scaled2 <- rtraitvars2  
+# for(i in 1:ncol(rtraitvars2)){
+#   rtraitvars_scaled2[,i] <- rtraitvars2[,i]/sum(rtraitvars2[,i])
+# }
+# 
+# ######## making stacked bar plots with intra-specific variation highlighted
+# rtraitvars_scaled <- traitvars_scaled[c(3,2,1,4),]
+# rtraitvars_scaled2 <- traitvars_scaled2[c(3,2,1,4),]
+# 
+# 
+# ####### Logged trait variance decomp of dominant conifers ####
+# SLAvar <- lmer(SLA_HSA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+# SLAvar2 <- lmer(SLA_HSA~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+# ## These two are slightly different formulations??? but they give roughly the same answers.
+# LMAvar <- lmer(log.LMA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants) # uses LMA_HSA rather than PSA
+# LMAvar2 <- lmer(log.LMA~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+# 
+# 
+# LeafLifevar <- lmer(log.LL~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+# LeafLifevar2 <- lmer(log.LL~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+# 
+# ## probably need better models for these.
+# LeafCNvar <- lmer(LEAF_CN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+# LeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+# 
+# LeafCarbvar <- lmer(LEAF_CARBON~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+# LeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+# 
+# LeafNitvar <- lmer(log.Nmass~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+# LeafNitvar2 <- lmer(log.Nmass~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+# 
+# Nareavar <- lmer(log.Narea~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.dominants)
+# Nareavar2 <- lmer(log.Narea~ (1|GENUS/SPECIES/PLOT_ID), traits.dominants)
+# 
+# 
+# SLAvariance <- data.frame(VarCorr(SLAvar2))
+# LMAvariance <- data.frame(VarCorr(LMAvar2))
+# LeafLifevariance <- data.frame(VarCorr(LeafLifevar2))
+# LeafCNvariance <- data.frame(VarCorr(LeafCNvar2))
+# LeafCarvariance <- data.frame(VarCorr(LeafCarbvar2))
+# LeafNitvariance <- data.frame(VarCorr(LeafNitvar2))
+# Nareavariance <- data.frame(VarCorr(Nareavar2))
+# 
+# ## dataframe with SLA
+# traitvars <- data.frame(SLAvariance[,4], LeafLifevariance[,4], LeafCNvariance[,4], LeafCarvariance[,4], LeafNitvariance[,4])
+# colnames(traitvars) <- c("SLA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN")
+# rownames(traitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
+# ## dataframe with LMA
+# traitvars2 <- data.frame(LMAvariance[,4], LeafLifevariance[,4], LeafCNvariance[,4], LeafCarvariance[,4], LeafNitvariance[,4], Nareavariance[,4])
+# colnames(traitvars2) <- c("LMA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN","Narea")
+# rownames(traitvars2) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
+# 
+# 
+# traitvars_scaled <- traitvars  
+# for(i in 1:ncol(traitvars)){
+#   traitvars_scaled[,i] <- traitvars[,i]/sum(traitvars[,i])
+# }
+# 
+# traitvars_scaled2 <- traitvars2  
+# for(i in 1:ncol(traitvars2)){
+#   traitvars_scaled2[,i] <- traitvars2[,i]/sum(traitvars2[,i])
+# }
+# 
+# ######## making stacked bar plots with intra-specific variation highlighted
+# traitvars_scaled <- traitvars_scaled[c(3,2,1,4),]
+# traitvars_scaled2 <- traitvars_scaled2[c(3,2,1,4),]
 
 #..........
 
@@ -1217,49 +1510,49 @@ cols <- brewer.pal(11, "RdBu")[c(11,9,1, 6)]
 barplot(as.matrix(traitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("SLA", "Leaf\nLife","C/N","%C","%N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab="Entire Dataset")
 legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,1,2)], ncol=2, bty="n",  cex=1.2)
 
-
-
-### VARIANCE DECOMPOSITION of only common species and genera ####################
-SLAvar <- lmer(SLA_HSA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.commongenera)
-SLAvar2 <- lmer(SLA_HSA~ (1|GENUS/SPECIES/PLOT_ID), traits.commongenera)
-## These two are slightly different formulations??? but they give roughly the same answers.
-
-LeafLifevar <- lmer(LEAF_LIFE~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.commongenera)
-LeafLifevar2 <- lmer(LEAF_LIFE~ (1|GENUS/SPECIES/PLOT_ID), traits.commongenera)
-
-## probably need better models for these.
-LeafCNvar <- lmer(LEAF_CN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.commongenera)
-LeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), traits.commongenera)
-
-LeafCarbvar <- lmer(LEAF_CARBON~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.commongenera)
-LeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), traits.commongenera)
-
-LeafNitvar <- lmer(LEAF_NITROGEN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.commongenera)
-LeafNitvar2 <- lmer(LEAF_NITROGEN~ (1|GENUS/SPECIES/PLOT_ID), traits.commongenera)
-
-SLAvariance <- data.frame(VarCorr(SLAvar2))
-LeafLifevariance <- data.frame(VarCorr(LeafLifevar2))
-LeafCNvariance <- data.frame(VarCorr(LeafCNvar2))
-LeafCarvariance <- data.frame(VarCorr(LeafCarbvar2))
-LeafNitvariance <- data.frame(VarCorr(LeafNitvar2))
-
-traitvars <- data.frame(SLAvariance[,4], LeafLifevariance[,4], LeafCNvariance[,4], LeafCarvariance[,4], LeafNitvariance[,4])
-colnames(traitvars) <- c("SLA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN")
-rownames(traitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
-
-traitvars_scaled <- traitvars  
-for(i in 1:ncol(traitvars)){
-  traitvars_scaled[,i] <- traitvars[,i]/sum(traitvars[,i])
-}
-
-
-traitvars_scaled2 <- traitvars_scaled[c(2,3,1,4),]
-## making stacked bar plots of variance decomposition:
-quartz(width=5, height=4)
-cols <- brewer.pal(11, "RdBu")[c(11,9,1, 6)]
-barplot(as.matrix(traitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("SLA", "Leaf\nLife","C/N","%C","%N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab="Genera w/ replication")
-legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,1,2)], ncol=2, bty="n",  cex=1.2)
-
+# 
+# 
+# ### VARIANCE DECOMPOSITION of only common species and genera ####################
+# SLAvar <- lmer(SLA_HSA~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.commongenera)
+# SLAvar2 <- lmer(SLA_HSA~ (1|GENUS/SPECIES/PLOT_ID), traits.commongenera)
+# ## These two are slightly different formulations??? but they give roughly the same answers.
+# 
+# LeafLifevar <- lmer(LEAF_LIFE~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.commongenera)
+# LeafLifevar2 <- lmer(LEAF_LIFE~ (1|GENUS/SPECIES/PLOT_ID), traits.commongenera)
+# 
+# ## probably need better models for these.
+# LeafCNvar <- lmer(LEAF_CN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.commongenera)
+# LeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), traits.commongenera)
+# 
+# LeafCarbvar <- lmer(LEAF_CARBON~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.commongenera)
+# LeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), traits.commongenera)
+# 
+# LeafNitvar <- lmer(LEAF_NITROGEN~ (1|PLOT_ID) + (1|GENUS) + (1|GE.SP), traits.commongenera)
+# LeafNitvar2 <- lmer(LEAF_NITROGEN~ (1|GENUS/SPECIES/PLOT_ID), traits.commongenera)
+# 
+# SLAvariance <- data.frame(VarCorr(SLAvar2))
+# LeafLifevariance <- data.frame(VarCorr(LeafLifevar2))
+# LeafCNvariance <- data.frame(VarCorr(LeafCNvar2))
+# LeafCarvariance <- data.frame(VarCorr(LeafCarbvar2))
+# LeafNitvariance <- data.frame(VarCorr(LeafNitvar2))
+# 
+# traitvars <- data.frame(SLAvariance[,4], LeafLifevariance[,4], LeafCNvariance[,4], LeafCarvariance[,4], LeafNitvariance[,4])
+# colnames(traitvars) <- c("SLA", "LEAF_Life", "LEAF_CN", "LEAF_CARBON", "LEAF_NITROGEN")
+# rownames(traitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
+# 
+# traitvars_scaled <- traitvars  
+# for(i in 1:ncol(traitvars)){
+#   traitvars_scaled[,i] <- traitvars[,i]/sum(traitvars[,i])
+# }
+# 
+# 
+# traitvars_scaled2 <- traitvars_scaled[c(2,3,1,4),]
+# ## making stacked bar plots of variance decomposition:
+# quartz(width=5, height=4)
+# cols <- brewer.pal(11, "RdBu")[c(11,9,1, 6)]
+# barplot(as.matrix(traitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("SLA", "Leaf\nLife","C/N","%C","%N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab="Genera w/ replication")
+# legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,1,2)], ncol=2, bty="n",  cex=1.2)
+# 
 
 
 
@@ -1299,33 +1592,16 @@ legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw G
 # legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,1,2)], ncol=2, bty="n",  cex=1.2)
 
 
-############## **Making Master Dataset for Variance Decomposition** ###################
-###### trying with combined PACNW and glopnet dataset. ###
-data1 <- traits %>% select(FullSpecies,log.LMA, log.LL, log.Nmass, log.Narea, GENUS, Family)
-colnames(data1)[c(1,2,6)]<- c("Species", "log.LMA","Genus")
-data1$Project <- rep("PACNW", times=nrow(data1))
-data1$log.LL[which(data1$log.LL<1.2)] <- NA # all the deciduous species have '1yr' lifespan, but really that's wrong
-data2 <- LES %>% filter(!is.na(Family)) %>% select(Species, log.LMA, log.LL, log.Nmass, log.Narea,Genus, Family)
-data2$Project <- rep("GLOPNET", times=nrow(data2))
-data.supp <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/OtherData_Combined_033017.csv", header=T, row.names=1)
-data3 <- data.supp %>% select(Species,log.LMA,log.LL, log.Nmass,log.Narea,Genus,Family)
-
-## make combined dataset with all the taxonomically resolved species
-data.all <- rbind(data1, data2, data3)
-data.all$Species <- factor(data.all$Species)
-data.all$Genus <- factor(data.all$Genus)
-data.all$Family <- factor(data.all$Family)
-data.all$Project <- factor(data.all$Project)
 
 ## with all spp used for the hierarchical analysis
 #logLMAvar <- lmer(log.LMA~ Project + (1|Family/Genus/Species), data.all)
 logLMAvar <- lmer(log.LMA~ Project + (1|Family) + (1|Genus) + (1|Species), data.all)
-logLLvar <- lmer(log.LL~ Project + (1|Family) + (1|Genus) + (1|Species), data.all)
+logLLvar <- lmer(log.LL~ Project + (1|Family) + (1|Genus) + (1|Species), data.all[-which(data.all$Project=="CO"),])
 logNmassvar <- lmer(log.Nmass~ Project + (1|Family) + (1|Genus) + (1|Species), data.all)
 logNareavar <- lmer(log.Narea~ Project + (1|Family) + (1|Genus) + (1|Species), data.all)
 
 LMAvar <- lmer(10^log.LMA~ Project + (1|Family) + (1|Genus) + (1|Species), data.all)
-LLvar <- lmer(10^log.LL~ Project + (1|Family) + (1|Genus) + (1|Species), data.all)
+LLvar <- lmer(10^log.LL~ Project + (1|Family) + (1|Genus) + (1|Species), data.all[-which(data.all$Project=="CO"),])
 Nmassvar <- lmer(10^log.Nmass~ Project + (1|Family) + (1|Genus) + (1|Species), data.all)
 Nareavar <- lmer(10^log.Narea~ Project + (1|Family) + (1|Genus) + (1|Species), data.all)
 #logNmassvar <- lmer(log.Nmass~ Project + (1|Family) + (1|Genus) + (1|Species), data.all)
@@ -1366,14 +1642,14 @@ quartz(width=5, height=4)
 cols <- brewer.pal(11, "RdBu")[c(11,9,1, 6)]
 barplot(as.matrix(traitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("logLMA", "logLL","logNmass","logNarea"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance\n(log traits)", xlab="", mgp=c(2,1,0))
 legend(xpd=T, x = 0, y=1.3, legend=rownames(traitvars_scaled2), fill=paste0(cols,"CC"), ncol=2, bty="n",  cex=1.2)
-
+mtext("a)", side=3, adj=-.1, line=1.3)
 
 quartz(width=5, height=4)
 cols <- brewer.pal(11, "RdBu")[c(11,9,1, 6)]
 barplot(as.matrix(rtraitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("LMA", "Leaf\nLife","Nmass","Narea"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance\n(raw traits)", mgp=c(2,1,0))
-mtext(text="28 spp w/ replication, 1000+ spp,\n500+ genera, 150+ families",side = 1,line = 3.3)
-legend(xpd=T, x = 0, y=1.3, legend=rownames(rtraitvars_scaled2), fill=paste0(cols,"CC"), ncol=2, bty="n",  cex=1.2)
-
+# mtext(text="28 spp w/ replication, 1000+ spp,\n500+ genera, 150+ families",side = 1,line = 3.3)
+# legend(xpd=T, x = 0, y=1.3, legend=rownames(rtraitvars_scaled2), fill=paste0(cols,"CC"), ncol=2, bty="n",  cex=1.2)
+mtext("b)", side=3, adj=-.1, line=1.3)
 
 #### Check that these normal distributions are a decent way to do this #######
 qqp(ranef(logLMAvar)$Family[,1]) # 179 families

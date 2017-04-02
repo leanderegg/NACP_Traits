@@ -246,6 +246,71 @@ mtext(text = "b)", side = 3, adj=0, line=.2)
 
 
 
+#________________________________________________________________
+###### FIG ??:Narea v LL Relations ######
+#________________________________________________________________
+# 2 panel figure with boxplots and scatterplot
+# width = 1.5 columns -> 11.4 cm,4.89
+#       = 2 columns -> 17.8 cm,7.008
+# I think the easiest thing will be to make two quartez: top with boxplots and bottom with funnel
+mat <- matrix(c(1,3,
+                2,3), nrow=2, byrow = T)
+
+quartz(width=7.008, height=4)
+layout(mat)
+par(mar=c(0,4,6,1))
+p <- boxplot(Slope_Narea.LL~Type, all.results[which(all.results$n_Narea.LL>5),]
+             , ylim=c(-2,3.5),las=3, ylab="MA Slope" #, main="log(LMA)~log(Nmass) strict"
+             , col=paste0(mypal[1:6],"66"), boxcol=paste0(mypal[1:6],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[1:6],"AA")
+             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[1:6]
+             , boxwex=.7, xaxt="n")
+abline(h=0, lty=2)
+#text(y=par()$usr[3]+.2, x=c(1,2,3,4,5,6), labels = p$n)
+#text(y=par()$usr[4]-.2,x=.5, labels = "a)")
+mtext(text = "a)", side = 3, adj=0, line=.2)
+mtext(text= "Narea vs LL", side=3, line=.2)
+par(mar=c(6,4,0,1))
+p <- boxplot(Rho_Narea.LL~Type, all.results[which(all.results$n_Narea.LL>5),]
+             , ylim=c(-1,1.4),las=3, ylab="Rho"
+             , col=paste0(mypal[1:6],"66"), boxcol=paste0(mypal[1:6],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[1:6],"AA")
+             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[1:6]
+             , boxwex=.7)
+abline(h=0, lty=2)
+text(y=par()$usr[4]-.2, x=c(1,2,3,4,5,6), labels = p$n)
+
+par(mar=c(4,4,1.5,1.5))
+## scatterplot
+
+###### testing out leaf lifespan vs Narea relations, I think they'll be ns ########
+
+plot(log.LL~log.Narea, LES, col="grey", pch=16, ylab="log(LL)", xlab="log(Narea)")
+
+tax <- "w.inSpp"
+for (i in as.character(all.results$Taxo.Unit[which(all.results$Type==tax & all.results$n_Narea.LL>5)])){
+  plot.MAR(xvar = "log.Narea", yvar = "log.LL",data= spp.data[which(spp.data$Species==i),], linecol = mypal[1])
+}
+
+tax <- "w.inGen"
+for (i in as.character(all.results$Taxo.Unit[which(all.results$Type==tax & all.results$n_Narea.LL>5)])){
+  plot.MAR(xvar = "log.Narea", yvar = "log.LL",data= gen.data[which(gen.data$Genus==i),], linecol = mypal[2])
+}
+
+tax <- "Genw.inFam"
+for (i in as.character(all.results$Taxo.Unit[which(all.results$Type==tax & all.results$n_Narea.LL>5)])){
+  plot.MAR(xvar = "log.Narea", yvar = "log.LL",data= geninfam.data[which(geninfam.data$Family==i),], linecol = mypal[4])
+}
+
+
+plot.MAR(xvar="log.Narea", yvar="log.LL", data= fam.dataclean, linecol = mypal[5], lwd=2)
+
+plot.MAR(xvar="log.Narea", yvar="log.LL", data= LES, linecol = "black", lwd=2)
+mtext(text = "b)", side = 3, adj=0, line=.2)
+
+
+
+
 
 #________________________________________________________________
 ###### FIG S1: Funnel Plots for LMA vs LL ######
@@ -295,28 +360,3 @@ abline(h=mean(all.results$Rho_LMA.LL[which(all.results$Type=="w.inSpp")], na.rm=
 
 
 
-###### testing out leaf lifespan vs Narea relations, I think they'll be ns ########
-
-####### Plotting the LMA vs Narea scaling in unit rather than log space ######
-plot(log.Narea~log.LL, LES, col="grey", pch=16, ylab="log(Narea)", xlab="log(LL)")
-
-tax <- "w.inSpp"
-for (i in as.character(all.results$Taxo.Unit[which(all.results$Type==tax & all.results$n_LMA.LL>5)])){
-  plot.MAR(xvar = "log.LL", yvar = "log.Narea",data= spp.data[which(spp.data$Species==i),], linecol = mypal[1])
-}
-
-tax <- "w.inGen"
-for (i in as.character(all.results$Taxo.Unit[which(all.results$Type==tax & all.results$n_LMA.LL>5)])){
-  plot.MAR(xvar = "log.LL", yvar = "log.Narea",data= gen.data[which(gen.data$Genus==i),], linecol = mypal[2])
-}
-
-tax <- "Genw.inFam"
-for (i in as.character(all.results$Taxo.Unit[which(all.results$Type==tax & all.results$n_LMA.LL>5)])){
-  plot.MAR(xvar = "log.LL", yvar = "log.Narea",data= geninfam.data[which(geninfam.data$Family==i),], linecol = mypal[4])
-}
-
-
-plot.MAR(xvar="log.LL", yvar="log.Narea", data= fam.data, linecol = mypal[5], lwd=2)
-
-plot.MAR(xvar="log.LL", yvar="log.Narea", data= LES, linecol = "black", lwd=2)
-mtext(text = "b)", side = 3, adj=0, line=.2)
