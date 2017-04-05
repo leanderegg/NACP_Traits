@@ -361,6 +361,18 @@ the function tnrs() from Taxize. What I should probably do is write a function t
 After updating the datasets completely (taxonomic cleaning and unifying everything into one dataset for Variance Decomp, then allspp, allgen, allfam w/ all the means and gen.data, spp.data, etc for the within-taxon trait covariations. Trying to commit before I update the taxnomic analysis to have a global and then update my boxplots.
 
 
+- things have been fully updated. Everything seems to look pretty good, and inferences were largely stable across versions.
+
+
+
+*** Note: played around with the Maire dataset a little bit. It seems to have quite a few new samples. Some of these include maybe 10 more species with replication. This is useful for LMA and Narea/Nmass. But it doesn't have leaf lifespan in it... boo.
+
+
+
+
+
+
+
 
 
 ############# USEFUL PACKAGES ########################

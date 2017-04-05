@@ -161,6 +161,14 @@ fam.data <- allfam # new: 211 families (up from 189)
 fam.dataclean <- allfam[which(allfam$tnspp>2),] # 101 families, up from 97 families
 
 
+############# End: Dataset Creation #################################################
+
+
+
+
+
+
+
 nsp <- spp.data %>% group_by (Species) %>% summarise(nLL = length(which(!is.na(log.LL))), nLMA = length(which(!is.na(log.LMA))), nN = length(which(!is.na(log.Nmass))))
 # apply(nsp[,2:4],MARGIN = 2, FUN=mean)
 ngen <- gen.data %>% group_by (Genus) %>% summarise(nLL = length(which(!is.na(log.LL))), nLMA = length(which(!is.na(log.LMA))), nN = length(which(!is.na(log.Nmass))))
@@ -369,6 +377,8 @@ fam.res_LMA.N <- c("fam.all", fit.MAR(xvar='log.LMA',yvar="log.Nmass",data=fam.d
 names(fam.res_LMA.N) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass","Type")
 fam.resclean_LMA.N <- c("fam.clean", fit.MAR(xvar='log.LMA',yvar="log.Nmass",data=fam.dataclean), "Fam.clean")
 names(fam.resclean_LMA.N) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass","Type")
+global_LMA.N <- c("global", fit.MAR(xvar='log.LMA',yvar="log.Nmass",data=allspp), "global")
+names(global_LMA.N) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass","Type")
 
 
 ###### .Combining Results into one dataframe #####
@@ -382,9 +392,9 @@ colnames(spp.results)[1] <- "Taxo.Unit"
 colnames(gen.results)[1] <- "Taxo.Unit"
 colnames(sppinfam.results)[1] <- "Taxo.Unit"
 colnames(geninfam.results)[1] <- "Taxo.Unit"
-all.results.LMAN <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_LMA.N, fam.resclean_LMA.N)
+all.results.LMAN <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_LMA.N, fam.resclean_LMA.N, global_LMA.N)
 all.results.LMAN$Type <- factor(all.results.LMAN$Type)
-levels(all.results.LMAN$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean")
+levels(all.results.LMAN$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean", global="global")
 
 
 
@@ -392,7 +402,7 @@ levels(all.results.LMAN$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",
 
 
 
-####### ***LL and LMA*** #####################
+####### ***LMA and LL*** #####################
 
 ############ .Species level analysis #####################
 
@@ -464,9 +474,11 @@ famcorr.all <- cor(x=fam.data[,c("log.LL","log.LMA","log.LL")], use = "pairwise.
 famcorr.clean <- cor(x=fam.dataclean[,c("log.LL","log.LMA","log.LL")], use = "pairwise.complete.obs")
 
 fam.res_LMA.LL <- c("fam.all", fit.MAR(xvar='log.LMA',yvar="log.LL",data=fam.data),"Fam")
-names(fam.res_LMA.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass","Type")
+names(fam.res_LMA.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varLL","Type")
 fam.resclean_LMA.LL <- c("fam.clean", fit.MAR(xvar='log.LMA',yvar="log.LL",data=fam.dataclean), "Fam.clean")
-names(fam.resclean_LMA.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass","Type")
+names(fam.resclean_LMA.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varLL","Type")
+global_LMA.LL <- c("global", fit.MAR(xvar='log.LMA',yvar="log.LL",data=allspp), "global")
+names(global_LMA.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varLL","Type")
 
 
 
@@ -482,15 +494,15 @@ colnames(spp.results)[1] <- "Taxo.Unit"
 colnames(gen.results)[1] <- "Taxo.Unit"
 colnames(sppinfam.results)[1] <- "Taxo.Unit"
 colnames(geninfam.results)[1] <- "Taxo.Unit"
-all.results.LMALL <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_LMA.LL, fam.resclean_LMA.LL)
+all.results.LMALL <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_LMA.LL, fam.resclean_LMA.LL, global_LMA.LL)
 all.results.LMALL$Type <- factor(all.results.LMALL$Type)
-levels(all.results.LMALL$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean")
+levels(all.results.LMALL$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean", global="global")
 
 
 
 
 
-####### ***LL and Nmass*** #####################
+####### ***Nmass and LL*** #####################
 
 
 
@@ -564,9 +576,13 @@ famcorr.all <- cor(x=fam.data[,c("log.LMA","log.Nmass","log.LL")], use = "pairwi
 famcorr.clean <- cor(x=fam.dataclean[,c("log.LMA","log.Nmass","log.LL")], use = "pairwise.complete.obs")
 
 fam.res_N.LL <- c("fam.all", fit.MAR(xvar='log.Nmass',yvar="log.LL",data=fam.data),"Fam")
-names(fam.res_N.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass","Type")
+names(fam.res_N.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varNmass","varLL","Type")
 fam.resclean_N.LL <- c("fam.clean", fit.MAR(xvar='log.Nmass',yvar="log.LL",data=fam.dataclean), "Fam.clean")
-names(fam.res_N.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass","Type")
+names(fam.res_N.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varNmass","varLL","Type")
+global_N.LL <- c("global", fit.MAR(xvar='log.Nmass',yvar="log.LL",data=allspp), "global")
+names(global_N.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varNmass","varLL","Type")
+
+
 
 
 
@@ -582,9 +598,9 @@ colnames(spp.results)[1] <- "Taxo.Unit"
 colnames(gen.results)[1] <- "Taxo.Unit"
 colnames(sppinfam.results)[1] <- "Taxo.Unit"
 colnames(geninfam.results)[1] <- "Taxo.Unit"
-all.results.NmassLL <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_N.LL, fam.resclean_N.LL)
+all.results.NmassLL <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_N.LL, fam.resclean_N.LL, global_N.LL)
 all.results.NmassLL$Type <- factor(all.results.NmassLL$Type)
-levels(all.results.NmassLL$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean")
+levels(all.results.NmassLL$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean", global="global")
 
 
 
@@ -668,9 +684,12 @@ for(i in 1:length(unique(geninfam.data$Family))){
 # famcorr.clean <- cor(x=fam.dataclean[,c("log.LMA","log.Nmass","log.Narea")], use = "pairwise.complete.obs")
 
 fam.res_LMA.Narea <- c("fam.all", fit.MAR(xvar='log.LMA',yvar="log.Narea",data=fam.data),"Fam")
-names(fam.res_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varLMA","Type")
+names(fam.res_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNarea","Type")
 fam.resclean_LMA.Narea <- c("fam.clean", fit.MAR(xvar='log.LMA',yvar="log.Narea",data=fam.dataclean), "Fam.clean")
-names(fam.res_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varLMA","Type")
+names(fam.res_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNarea","Type")
+global_LMA.Narea <- c("global", fit.MAR(xvar='log.LMA',yvar="log.Narea",data=allspp), "global")
+names(global_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNarea","Type")
+
 
 
 
@@ -686,9 +705,9 @@ colnames(spp.results)[1] <- "Taxo.Unit"
 colnames(gen.results)[1] <- "Taxo.Unit"
 colnames(sppinfam.results)[1] <- "Taxo.Unit"
 colnames(geninfam.results)[1] <- "Taxo.Unit"
-all.results.LMANarea <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_LMA.Narea, fam.resclean_LMA.Narea)
+all.results.LMANarea <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_LMA.Narea, fam.resclean_LMA.Narea, global_LMA.Narea)
 all.results.LMANarea$Type <- factor(all.results.LMANarea$Type)
-levels(all.results.LMANarea$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean")
+levels(all.results.LMANarea$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean", global="global")
 
 
 
@@ -696,7 +715,7 @@ levels(all.results.LMANarea$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inG
 
 
 
-####### ***LL and Narea*** #####################
+####### ***Narea and LL*** #####################
 
 
 
@@ -768,10 +787,12 @@ for(i in 1:length(unique(geninfam.data$Family))){
 famcorr.all <- cor(x=fam.data[,c("log.LMA","log.Narea","log.LL")], use = "pairwise.complete.obs")
 famcorr.clean <- cor(x=fam.dataclean[,c("log.LMA","log.Narea","log.LL")], use = "pairwise.complete.obs")
 
-fam.res_N.LL <- c("fam.all", fit.MAR(xvar='log.Narea',yvar="log.LL",data=fam.data),"Fam")
-names(fam.res_N.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNarea","Type")
-fam.resclean_N.LL <- c("fam.clean", fit.MAR(xvar='log.Narea',yvar="log.LL",data=fam.dataclean), "Fam.clean")
-names(fam.res_N.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNarea","Type")
+fam.res_Narea.LL <- c("fam.all", fit.MAR(xvar='log.Narea',yvar="log.LL",data=fam.data),"Fam")
+names(fam.res_Narea.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varNarea","varLL","Type")
+fam.resclean_Narea.LL <- c("fam.clean", fit.MAR(xvar='log.Narea',yvar="log.LL",data=fam.dataclean), "Fam.clean")
+names(fam.res_Narea.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varNarea","varLL","Type")
+global_Narea.LL <- c("global", fit.MAR(xvar='log.Narea',yvar="log.LL",data=allspp), "global")
+names(global_Narea.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varNarea","varLL","Type")
 
 
 
@@ -787,9 +808,9 @@ colnames(spp.results)[1] <- "Taxo.Unit"
 colnames(gen.results)[1] <- "Taxo.Unit"
 colnames(sppinfam.results)[1] <- "Taxo.Unit"
 colnames(geninfam.results)[1] <- "Taxo.Unit"
-all.results.NareaLL <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_N.LL, fam.resclean_N.LL)
+all.results.NareaLL <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_Narea.LL, fam.resclean_Narea.LL, global_Narea.LL)
 all.results.NareaLL$Type <- factor(all.results.NareaLL$Type)
-levels(all.results.NareaLL$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean")
+levels(all.results.NareaLL$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean", global="global")
 
 
 
@@ -826,6 +847,7 @@ all.results <- cbind(LMALL, LMAN[,-c(1,7,9)], NmassLL[,-c(1,7,8,9)], LMANarea[,-
 #write.csv(all.results, "Results_SimpleMAreg_v2_031417.csv")
 #write.csv(all.results, "Results_SimpleMAreg_v3_031717.csv")
 #write.csv(all.results, "Results_SimpleMAreg_v4_040117.csv")
+#write.csv(all.results, "Results_SimpleMAreg_v5_040217.csv")
 
 #all.resultsold <- read.csv("Results_SimpleMAreg_v2_031417.csv")
 
@@ -835,11 +857,11 @@ all.results <- cbind(LMALL, LMAN[,-c(1,7,9)], NmassLL[,-c(1,7,8,9)], LMANarea[,-
 
 ############# Plotting Slopes of diff taxo levels #################
 
-all.results <- read.csv("Results_SimpleMAreg_v4_040117.csv", row.names = 1)
-levels(all.results$Type) <- list(w.inSpp = "w.inSpp", w.inGen = "w.inGen", Sppw.inFam= "Sppw.inFam",Genw.inFam="Genw.inFam", Fam="Fam",Famclean="Famclean")
+all.results <- read.csv("Results_SimpleMAreg_v5_040217.csv", row.names = 1)
+levels(all.results$Type) <- list(w.inSpp = "w.inSpp", w.inGen = "w.inGen", Sppw.inFam= "Sppw.inFam",Genw.inFam="Genw.inFam", Fam="Fam",Famclean="Famclean", global="global")
 
-all.results.cl <- all.results %>% filter(Type %in% c("w.inSpp","w.inGen","Genw.inFam","Famclean"))
-
+all.results.cl <- all.results %>% filter(Type %in% c("w.inSpp","w.inGen","Genw.inFam","Famclean","global"))
+all.results.cl$Type <- factor(all.results.cl$Type)
 
 ######## Funnel Plots #######
 quartz(width=8,height=5)

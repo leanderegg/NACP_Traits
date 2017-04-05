@@ -122,6 +122,11 @@ tmp1$SpeciesName <- factor(tmp1$SpeciesName)
 # write.csv(LES, "Writght2004_LESdata_taxonomy012517.csv")
 
 
+#### updataded data from Maire et al. 2015
+
+Maire <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/globamax_data_160609.csv", header=T)
+
+
 ###### updated dataframe w/ taxonomy #####
 # LES <- read.csv("Writght2004_LESdata_taxonomy012517.csv", header=T)[,-1]
 # #### LES site climate
