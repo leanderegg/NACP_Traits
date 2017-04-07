@@ -288,7 +288,7 @@ fit.MAR <- function(xvar, yvar, data, method="SMA") {
     return(rep(NA, times=7))
   }
   else{
-    if(var(data[,yvar], na.rm=T)==0){
+    if(var(data[,yvar], na.rm=T)==0 | var(data[,xvar],na.rm=T)==0){
       return(rep(NA, times=7))
     }
     else{
@@ -708,6 +708,116 @@ colnames(geninfam.results)[1] <- "Taxo.Unit"
 all.results.LMANarea <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_LMA.Narea, fam.resclean_LMA.Narea, global_LMA.Narea)
 all.results.LMANarea$Type <- factor(all.results.LMANarea$Type)
 levels(all.results.LMANarea$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean", global="global")
+
+
+
+#################### reruning with axes flipped: Narea vs LMA
+####### ***LMA and Narea!!!*** #####################
+
+
+
+spp.results <- data.frame(matrix(NA, nrow=length(unique(spp.data$Species)), ncol=8))
+colnames(spp.results) <- c("Species", "Int","Slope","Rho","r.sq","n","varNarea","varLMA")
+for(i in 1:length(unique(spp.data$Species))){
+  species <- levels(spp.data$Species)[i]
+  print(species)
+  dataz <- spp.data[which(spp.data$Species==species),]
+  res <- fit.MAR(yvar='log.LMA',xvar="log.Narea",data=dataz)
+  spp.results[i,1] <- species
+  spp.results[i,2:8] <- res
+}
+
+
+############ .Genus level analysis #####################
+
+gen.results <- data.frame(matrix(NA, nrow=length(unique(gen.data$Genus)), ncol=8))
+colnames(gen.results) <- c("Genus", "Int","Slope","Rho","r.sq","n","varLMA","varNarea")
+for(i in 1:length(unique(gen.data$Genus))){
+  genus <- levels(gen.data$Genus)[i]
+  print(genus)
+  dataz <- gen.data[which(gen.data$Genus==genus),]
+  gen.results[i,1] <- genus
+  res <- fit.MAR(xvar='log.LMA',yvar="log.Narea",data=dataz)
+  gen.results[i,2:8] <- res 
+  
+}
+
+
+
+############ .spp w/in Family level analysis #####################
+
+sppinfam.results <- data.frame(matrix(NA, nrow=length(unique(sppinfam.data$Family)), ncol=8))
+colnames(sppinfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLMA","varNarea")
+for(i in 1:length(unique(sppinfam.data$Family))){
+  family <- levels(sppinfam.data$Family)[i]
+  print(family)
+  dataz <- sppinfam.data[which(sppinfam.data$Family==family),]
+  res <- fit.MAR(xvar='log.LMA',yvar="log.Narea",data=dataz)
+  sppinfam.results[i,1] <- family
+  sppinfam.results[i,2:8] <- res
+}
+
+
+
+
+
+############ .gen w/in Family level analysis #####################
+
+geninfam.results <- data.frame(matrix(NA, nrow=length(unique(geninfam.data$Family)), ncol=8))
+colnames(geninfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLMA","varNarea")
+for(i in 1:length(unique(geninfam.data$Family))){
+  family <- levels(geninfam.data$Family)[i]
+  print(family)
+  dataz <- geninfam.data[which(geninfam.data$Family==family),]
+  res <- fit.MAR(xvar='log.LMA',yvar="log.Narea",data=dataz)
+  geninfam.results[i,1] <- family
+  geninfam.results[i,2:8] <- res
+}
+
+
+
+
+
+############ .Family level analysis #####################
+
+# currently just working with LES until I combine the PACNW dataset into this.
+
+# fam.data <- LESfam # 189 families
+# fam.dataclean <- LESfam[which(LESfam$tnspp>2),] # 97 families
+
+# famcorr.all <- cor(x=fam.data[,c("log.LMA","log.Nmass","log.Narea")], use = "pairwise.complete.obs")
+# famcorr.clean <- cor(x=fam.dataclean[,c("log.LMA","log.Nmass","log.Narea")], use = "pairwise.complete.obs")
+
+fam.res_LMA.Narea <- c("fam.all", fit.MAR(xvar='log.LMA',yvar="log.Narea",data=fam.data),"Fam")
+names(fam.res_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNarea","Type")
+fam.resclean_LMA.Narea <- c("fam.clean", fit.MAR(xvar='log.LMA',yvar="log.Narea",data=fam.dataclean), "Fam.clean")
+names(fam.res_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNarea","Type")
+global_LMA.Narea <- c("global", fit.MAR(xvar='log.LMA',yvar="log.Narea",data=allspp), "global")
+names(global_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNarea","Type")
+
+
+
+
+###### .Combining Results into one dataframe #####
+
+# first add a "Type" column
+spp.results$Type <- rep("w/inSpp", times=nrow(spp.results))
+gen.results$Type <- rep("w/inGen", times=nrow(gen.results))
+sppinfam.results$Type <- rep("Sppw/inFam", times=nrow(sppinfam.results))
+geninfam.results$Type <- rep("Genw/inFam", times=nrow(geninfam.results))
+# now make the column names all match
+colnames(spp.results)[1] <- "Taxo.Unit"
+colnames(gen.results)[1] <- "Taxo.Unit"
+colnames(sppinfam.results)[1] <- "Taxo.Unit"
+colnames(geninfam.results)[1] <- "Taxo.Unit"
+all.results.LMANarea <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_LMA.Narea, fam.resclean_LMA.Narea, global_LMA.Narea)
+all.results.LMANarea$Type <- factor(all.results.LMANarea$Type)
+levels(all.results.LMANarea$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean", global="global")
+
+
+
+
+
 
 
 

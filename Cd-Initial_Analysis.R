@@ -241,7 +241,7 @@ Maire <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/globamax_data_160609.c
 # LES$Species <- factor(LES$Species)
 #   # still 339 NAs
 # write.csv(LES, "/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/LES_taxocleaning_033117_v2.csv")
-names(which(xtabs(~factor(LES$Genus[which(is.na(LES$Family))]))>1))[1]
+# names(which(xtabs(~factor(LES$Genus[which(is.na(LES$Family))]))>1))[1]
 
 
 
