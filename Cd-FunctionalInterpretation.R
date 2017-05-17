@@ -207,13 +207,57 @@ predsAarea <- predict(mod1,newdata = ndAarea)
 mesdat <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/gmes/Muir2016_LMAvGmes.csv")
 
 # match with any overlap from GLOPNET
-mesdat$Aarea <- LES$Aarea[match(mesdat$species,LES$Species)]
-mesdat$Amass <- LES$Amass[match(mesdat$species,LES$Species)] 
+# mesdat$Aarea <- LES$Aarea[match(mesdat$species,LES$Species)]
+# mesdat$Amass <- LES$Amass[match(mesdat$species,LES$Species)] 
+# actually more overlap from Maire
+mesdat$Aarea <- Maire$Aarea[match(mesdat$species,Maire$Genus.spp)]
+mesdat$Amass <- Maire$Amass[match(mesdat$species,Maire$Genus.spp)]
+mesdat$SLA <- 1/mesdat$lma
+
+#Maire$Genus.spp[match(mesdat$species,Maire$Genus.spp)]
+#LES$Species[match(mesdat$species,LES$Species)] 
 
 # plot of lma-specific gm versus Am
-ggplot(mesdat, aes(x=Aarea, y=gm*lma, col=Aarea)) + geom_point()
+ggplot(mesdat, aes(x=Aarea, y=gm/lma, col=Amass)) + geom_point()
 # or just as a function of A per unit mass
 ggplot(mesdat, aes(x=Amass, y=gm, col=Aarea)) + geom_point()
 # gm vs sla w/ Am as color
-ggplot(mesdat, aes(x=1/lma, y=gm, col=Aarea)) + geom_point()
+quartz(width=4,height=3.5)
+ggplot(mesdat, aes(x=SLA, y=gm, col=Aarea)) + geom_point() +
+  geom_line(data=predictions[which(predictions$Aarea==5),], col="black") +
+  geom_line(data=predictions[which(predictions$Aarea==12),], col="darkblue") +
+  geom_line(data=predictions[which(predictions$Aarea==20),], col="lightblue") 
 
+  
+ggplot(mesdat, aes(x=lma, y=gm)) + geom_point() 
+
+
+mestest <- lm(gm ~ SLA * Aarea, mesdat)
+slas <- seq(0.00,0.05, by=.01)
+preds <- predict(mestest,newdata = list(SLA=c(slas, slas, slas), Aarea = c(rep(5, times=length(slas)), rep(12, times=length(slas)), rep(20, times=length(slas)))))
+predictions <- data.frame(gm = preds, SLA = c(slas, slas, slas),Aarea = c(rep(5, times=length(slas)), rep(12, times=length(slas)), rep(20, times=length(slas))))
+
+####### Random test of LMA~Aarea relationship in Brachychitons
+
+brach <- read.csv("/Users/leeanderegg/Dropbox/Trade-offs project/Tori's Stuff/Brachychiton_Traits_Data_final031816.csv")
+brach$LMA <- 1/brach$SLA
+brach$Amass <- brach$A * brach$SLA # A/cm2? * cm2/g = A/g
+
+alec <- read.csv("/Users/leeanderegg/Dropbox/Aspen_Leaf_Manuscript/Manuscript DataFiles/MasterDataFile_ASB.csv")
+alec$Amass <- alec$amax / alec$lma # umol m-2 s-1 / g/cm2 = A/g
+levels(alec$treatment) <- list(C="C",LW="LW",LL="LL")
+
+plot(Amass~LMA, brach, col=Species, ylim=c(0,300), xlim=c(0.01,.15), pch=as.numeric(Treatment.x))
+points(Amass/10~I(lma*10), alec, pch=as.numeric(treatment))
+points(amass*1000~I(lma_g_m2/1000), coffee, col="green3")
+
+
+plot(Amass~LMA, brach, col=Species, pch=as.numeric(Treatment.x), ylim=c(0,15), xlim=c(0.01,0.15))
+points(amax~I(lma*10), alec, pch=as.numeric(treatment))
+points(amax~I(lma_g_m2/1000), coffee, pch=4, col="blue4")
+
+plot(A~LMA, brach, col=Species, pch=as.numeric(Treatment.x), ylim=c(0,15), xlim=c(0.01,0.15))
+points(amax~I(lma*10), alec, pch=as.numeric(treatment))
+points(amax~I(lma_g_m2/1000), coffee, pch=4, col="blue4")
+
+ggplot(brach, aes(x=LMA, y=Amass, col=Species, pch=Treatment.x)) + geom_point() + geom_smooth(method="lm")

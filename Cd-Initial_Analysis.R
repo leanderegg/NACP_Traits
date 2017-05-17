@@ -479,6 +479,12 @@ Maire <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/globamax_data_160609.c
 # LES$Species[which(LES$Species== "Bequaertiodendron natalense")] <- "Englerophytum natalense"
 # 
 # write.csv(LES, "/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/LES_taxocleaning_033117_v4.csv")
+###################### END data prep old
+
+
+#______________________________________________________________________________________________
+############### LOAD CLEAN DATA #############################################################
+#______________________________________________________________________________________________
 
 LESclim <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Wright2004_sitedata.csv")
 LES <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/LES_taxocleaning_033117_v4.csv", row.names=1)
@@ -766,16 +772,20 @@ traits.common5$climPC3 <- climpca5$x[,3]
 
 ############## **Making Master Dataset ** ###################
 ###### trying with combined PACNW and glopnet dataset. ###
-data1 <- traits %>% select(FullSpecies,log.LMA, log.LL, log.Nmass, log.Narea, GENUS, Family)
-colnames(data1)[c(1,2,6)]<- c("Species", "log.LMA","Genus")
+data1 <- traits %>% select(FullSpecies,log.LMA, log.LL, log.Nmass, log.Narea, GENUS, Family, tmean.gy.c,ppt.gy.mm,vpd.gy.max)
+colnames(data1)[c(1,2,6,8:10)]<- c("Species", "log.LMA","Genus","MAT","MAP","VPD")
 data1$Project <- rep("PACNW", times=nrow(data1))
 data1$log.LL[which(data1$log.LL<1.2)] <- NA # all the deciduous species have '1yr' lifespan, but really that's wrong
-data2 <- LES %>% filter(!is.na(Family)) %>% select(Species, log.LMA, log.LL, log.Nmass, log.Narea,Genus, Family)
+data2 <- LES %>% filter(!is.na(Family)) %>% select(Species, log.LMA, log.LL, log.Nmass, log.Narea,Genus, Family, MAT, MAP, VPD)
 # currently removes 47 records as of 04.01.17
 data2$Project <- rep("GLOPNET", times=nrow(data2))
 #data.supp <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/OtherData_Combined_033017.csv", header=T, row.names=1)
 data.supp <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/OtherData_Combined_040117.csv", header=T, row.names=1)
-data3 <- data.supp %>% select(Species,log.LMA,log.LL, log.Nmass,log.Narea,Genus,Family,Project)
+data.supp$MAT <- NA
+data.supp$MAP <- NA
+data.supp$VPD <- NA
+data3 <- data.supp %>% select(Species,log.LMA,log.LL, log.Nmass,log.Narea,Genus,Family,MAT, MAP, VPD, Project)
+
 
 ## make combined dataset with all the taxonomically resolved species
 data.all <- rbind(data1, data2, data3) # 4051 total records
@@ -2977,7 +2987,7 @@ Mypairs(traits.common[which(traits.common$SP.ID=="PINPON"), c("log.LL","log.LMA"
                                                               "LAI_O","RGR","dominance")])
 # PINPON: stand age and heat affect LL, but not much effect.
 # - again, no environmental relationships with LMA or Narea
-
+all.results.cl$
 Mypairs(traits.common[which(traits.common$SP.ID=="ABIGRA" & traits.common$ASA<400), c("log.LL","log.LMA","log.Narea","climPC1","climPC2","soil_N","TotalSoilDepth","ASA",
                                                               "LAI_O","RGR","dominance")])
 
@@ -3064,28 +3074,37 @@ PSEMENlma <- trait.mods(traitdata = traits.common, species = "PSEMEN",trait = "l
   # raw values pretty similar R2, variable rankings nearly identical
 PSEMENnarea <- trait.mods(traitdata = traits.common, species = "PSEMEN",trait = "log.Narea", modcrit=T)
   # n=220
+PSEMENnmass <- trait.mods(traitdata = traits.common, species = "PSEMEN",trait = "log.Nmass", modcrit=T)
+# n=220
+
+
 
 PINPONll <- trait.mods(traitdata = traits.common, species = "PINPON",trait = "log.LL")
 PINPONlma <- trait.mods(traitdata = traits.common, species = "PINPON",trait = "log.LMA")
 PINPONnarea <- trait.mods(traitdata = traits.common, species = "PINPON",trait = "log.Narea")
   # n= 97
+PINPONnmass <- trait.mods(traitdata = traits.common, species = "PINPON",trait = "log.Nmass")
 
 ABICONll <- trait.mods(traitdata = traits.common, species = "ABICON",trait = "log.LL")
 ABICONlma <- trait.mods(traitdata = traits.common, species = "ABICON",trait = "log.LMA")
 ABICONnarea <- trait.mods(traitdata = traits.common, species = "ABICON",trait = "log.Narea")
+ABICONnmass <- trait.mods(traitdata = traits.common, species = "ABICON",trait = "log.Nmass")
 
 TSUHETll <- trait.mods(traitdata = traits.common, species = "TSUHET",trait = "log.LL")
 TSUHETlma <- trait.mods(traitdata = traits.common, species = "TSUHET",trait = "log.LMA")
 TSUHETnarea <- trait.mods(traitdata = traits.common, species = "TSUHET",trait = "log.Narea") # might be one outlier that's leveraging things?
+TSUHETnmass <- trait.mods(traitdata = traits.common, species = "TSUHET",trait = "log.Nmass") # might be one outlier that's leveraging things?
 
 PINCONll <- trait.mods(traitdata = traits.common, species = "PINCON",trait = "log.LL")
 PINCONlma <- trait.mods(traitdata = traits.common, species = "PINCON",trait = "log.LMA")
 PINCONnarea <- trait.mods(traitdata = traits.common, species = "PINCON",trait = "log.Narea")
+PINCONnmass <- trait.mods(traitdata = traits.common, species = "PINCON",trait = "log.Nmass")
+
 
 PINJEFll <- trait.mods(traitdata = traits.common, species = "PINJEF",trait = "log.LL")
 PINJEFlma <- trait.mods(traitdata = traits.common, species = "PINJEF",trait = "log.LMA") # two outliers
 PINJEFnarea <- trait.mods(traitdata = traits.common, species = "PINJEF",trait = "log.Narea")
-
+PINJEFnmass <- trait.mods(traitdata = traits.common, species = "PINJEF",trait = "log.Nmass")
 
 ####### Combining all environmental trait models ######
 llbestmods <- rbind(PSEMENll$best, PINPONll$best,PINCONll$best,PINJEFll$best, ABICONll$best, TSUHETll$best)
@@ -3105,9 +3124,18 @@ nareabestmods$deltas <-rbind(PSEMENnarea$deltaNULL, PINPONnarea$deltaNULL,PINCON
 nareabestmods$SP.ID <-  c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
 nareabestmods$Species <-  c("Pseudotsuga menziesii","Pinus ponderosa","Pinus contorta","Pinus jeffreyii","Abies concolor","Tsuga heterophylla")
 
+
+nmassbestmods <- rbind(PSEMENnmass$best, PINPONnmass$best,PINCONnmass$best,PINJEFnmass$best, ABICONnmass$best, TSUHETnmass$best)
+nmassbestmods$n <- rbind(PSEMENnmass$n, PINPONnmass$n,PINCONnmass$n,PINJEFnmass$n, ABICONnmass$n, TSUHETnmass$n)
+nmassbestmods$deltas <-rbind(PSEMENnmass$deltaNULL, PINPONnmass$deltaNULL,PINCONnmass$deltaNULL,PINJEFnmass$deltaNULL, ABICONnmass$deltaNULL, TSUHETnmass$deltaNULL)
+nmassbestmods$SP.ID <-  c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
+nmassbestmods$Species <-  c("Pseudotsuga menziesii","Pinus ponderosa","Pinus contorta","Pinus jeffreyii","Abies concolor","Tsuga heterophylla")
+
+
 write.csv(llbestmods, "Trait_models/LeafLife_bestmodels_031617.csv")
 write.csv(lmabestmods, "Trait_models/LMA_bestmodels_031617.csv")
 write.csv(nareabestmods, "Trait_models/Narea_bestmodels_031617.csv")
+write.csv(nmassbestmods, "Trait_models/Nmass_bestmodels_041517.csv")
 
 
 #### Variable Importances ######
@@ -3126,12 +3154,19 @@ colnames(nareaimps) <- c("climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc
 nareaimps$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
 nareaimps$trait <- rep("Narea", times=nrow(nareaimps))
 
-importances <- rbind(llimps, lmaimps, nareaimps)
+
+nmassimps <- data.frame(rbind(PSEMENnmass$imp, PINPONnmass$imp,PINCONnmass$imp,PINJEFnmass$imp, ABICONnmass$imp, TSUHETnmass$imp)[,-1])
+colnames(nmassimps) <- c("climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc")
+nmassimps$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
+nmassimps$trait <- rep("Nmass", times=nrow(nmassimps))
+
+
+importances <- rbind(llimps, lmaimps, nareaimps, nmassimps)
 colnames(importances) <- c("climPC1", "climPC2","soil_N","Stand_Age","LAI","Growth", "SP.ID", "trait")
-# write.csv(importances, "Trait_models/VariableImportances_wide_041617aiccuttoff.csv")
+# write.csv(importances, "Trait_models/VariableImportances_wide_031617aiccuttoff.csv")
+# write.csv(importances, "Trait_models/VariableImportances_wide_041517aiccuttoff.csv")
 
-
-importances <- read.csv("Trait_models/VariableImportances_wide_041617aiccuttoff.csv", row.names = 1)
+importances <- read.csv("Trait_models/VariableImportances_wide_041517aiccuttoff.csv", row.names = 1)
 impslong <- melt(importances, id.vars = c("SP.ID","trait"))
 
 p1 <- ggplot(impslong, aes(x=variable, y=value, col=variable)) + geom_boxplot() + 
@@ -3140,20 +3175,27 @@ p1 <- ggplot(impslong, aes(x=variable, y=value, col=variable)) + geom_boxplot() 
 
 ##### Model Averaged Effects Sizes ######
 llavgmods <- data.frame(rbind(PSEMENll$avg, PINPONll$avg,PINCONll$avg,PINJEFll$avg, ABICONll$avg, TSUHETll$avg))
-lmaavgmods <- data.frame(rbind(PSEMENlma$avg, PINPONlma$avg,PINCONlma$avg,PINJEFlma$avg, ABICONlma$avg, TSUHETlma$avg))
-nareaavgmods <- data.frame(rbind(PSEMENnarea$avg, PINPONnarea$avg,PINCONnarea$avg,PINJEFnarea$avg, ABICONnarea$avg, TSUHETnarea$avg))
 llavgmods$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
 llavgmods$trait <- rep("LeafLife", times=nrow(llavgmods))
+
+lmaavgmods <- data.frame(rbind(PSEMENlma$avg, PINPONlma$avg,PINCONlma$avg,PINJEFlma$avg, ABICONlma$avg, TSUHETlma$avg))
 lmaavgmods$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
 lmaavgmods$trait <- rep("LMA", times=nrow(lmaavgmods))
+
+nareaavgmods <- data.frame(rbind(PSEMENnarea$avg, PINPONnarea$avg,PINCONnarea$avg,PINJEFnarea$avg, ABICONnarea$avg, TSUHETnarea$avg))
 nareaavgmods$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
 nareaavgmods$trait <- rep("Narea", times=nrow(nareaavgmods))
 
-avgmods <- rbind(llavgmods, lmaavgmods, nareaavgmods)[,-1]
+nmassavgmods <- data.frame(rbind(PSEMENnmass$avg, PINPONnmass$avg,PINCONnmass$avg,PINJEFnmass$avg, ABICONnmass$avg, TSUHETnmass$avg))
+nmassavgmods$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
+nmassavgmods$trait <- rep("Nmass", times=nrow(nmassavgmods))
+
+avgmods <- rbind(llavgmods, lmaavgmods, nareaavgmods, nmassavgmods)[,-1]
 colnames(avgmods) <- c("climPC1", "climPC2","soil_N","Stand_Age","LAI","Growth", "SP.ID", "trait")
 #write.csv(avgmods, "Trait_models/Model_Averages_wide_031617aiccuttoff.csv")
+#write.csv(avgmods, "Trait_models/Model_Averages_wide_041517aiccuttoff.csv")
 
-avgmods <- read.csv("Trait_models/Model_Averages_wide_031617aiccuttoff.csv", row.names = 1)
+avgmods <- read.csv("Trait_models/Model_Averages_wide_041517aiccuttoff.csv", row.names = 1)
 avglong <- melt(avgmods, id.vars = c("SP.ID","trait"))
 
 (p2 <- ggplot(avglong, aes(x=variable, y=value, col=variable)) + geom_boxplot() + 
@@ -3163,6 +3205,7 @@ avglong <- melt(avgmods, id.vars = c("SP.ID","trait"))
 
 quartz(width=6, height=5)
 multiplot(p2,p1, cols = 2)
+
 
 ### PICSIT and ABIAMA are right on the edge of useful ###
   #### yeeee, not sure I trust these.
@@ -3513,9 +3556,6 @@ LeafLife_TRY <- read.table("/Users/leeanderegg/Dropbox/Trade-offs project/TRY_Le
 # 3 species w/ >100 LeafLife
 # 0 species w/ >500 LeafLife
   # of the 4795 obs, 3097 are georefed, only 1114 are public
-
-
-
 
 
 

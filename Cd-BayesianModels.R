@@ -18,13 +18,15 @@ library(lmodel2)
 ####### Load Data ################
 ##################################################
 
+## need from taxonomic analysis:
+# allspp
+# allgen
+# allfam
+# spp.data
+# gen.data
+# geninfam.data
 
-testspp <- LES$Species[1:5]
 
-
-t <- tax_name(testspp, get="family", db="ncbi")
-
-which(is.na(t[,3]))
 
 ###################################################################
 ##########      Linear model of w/in species N vs LMA ###########################
@@ -34,18 +36,23 @@ which(is.na(t[,3]))
 ##### .Specify Data for model fitting ######################
 
 ### get rid of NAs, because
-traits.Nclean <- traits.common[-which(is.na(traits.common$log.Nmass)),]
-
-logLMA <- traits.Nclean$log.LMA
-logNmass <- traits.Nclean$log.Nmass
-species <- as.numeric(traits.Nclean$SP.ID)
-# note: there are quite a few sites with a lot of years, but also some sites with very few years
-
-nspecies <- length(unique(species))
-n <- length(logNmass)
 
 
+#traits.Nclean <- traits.common[-which(is.na(traits.common$log.Nmass)),]
+# logLMA <- traits.Nclean$log.LMA
+# logNmass <- traits.Nclean$log.Nmass
+# species <- as.numeric(traits.Nclean$SP.ID)
+# 
+# nspecies <- length(unique(species))
+# n <- length(logNmass)
+tmp <- allspp[which(allspp$log.LL> -10 & allspp$log.LMA > -10),]
 
+
+logLMA <- tmp$log.LMA
+logLL <- tmp$log.LL
+n <- length(logLMA)
+ngen <- length(unique(tmp$Genus))
+genera <- as.numeric(factor(tmp$Genus))
 
 ######### New method for fitting model (from http://www.jkarreth.net/files/bayes-cph_Tutorial-JAGS.pdf) 
 
@@ -73,7 +80,7 @@ mod.NvLMA <- function () {
   # Likelihood
   for(i in 1:n){
     logNmass[i] ~ dnorm(mu.logNmass[i], tau.resid)
-    mu.logNmass[i] <- b.spp[species[i]] * logLMA[i] + a.spp[species[i]] # relationship derived by true nirv 
+    mu.logNmass[i] <- b.spp[species[i]] * logLMA[i] + a.spp[species[i]] 
     
   }
   
@@ -100,7 +107,7 @@ mod.NvLMA <- function () {
 }
 
 # Assemble data into a list
-data.list.NvLMA <- list(n=n, logLMA=logLMA, logNmass=logNmass, species=species, nspecies=nspecies)
+data.list.NvLMA <- list(n=n, logLMA=logLMA, logNmass=logLL, species=genera, nspecies=ngen)
 
 # define parameters to follow
 params.NvLMA <- c("mu.a","mu.b","sigma.a", "sigma.b","fit","fit.new","bpvalue", "sigma.resid")
@@ -115,7 +122,7 @@ mod.inits.NvLMA <- function(){
 ########### ,fit the model ##############
 set.seed(531)
 mod.fit.NvLMA <- jags(data=data.list.NvLMA, inits = mod.inits.NvLMA
-                        , parameters.to.save = params.NvLMA2, n.chains=3
+                        , parameters.to.save = params.NvLMA, n.chains=3
                         , n.iter=5000, n.burnin=2000, n.thin=10
                         , model.file= mod.NvLMA )
 

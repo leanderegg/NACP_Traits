@@ -370,9 +370,47 @@ After updating the datasets completely (taxonomic cleaning and unifying everythi
 
 ####### New Commit: 04.05.17 ###################
 committed just for upkeeps sake.
+- did some replotting, updating of plots and whatnot. 
+
+
+###### New Commit: 04.07.17 #######################
+realized that it is best to have either LMA & LL on the x or y axis for looking at Narea relations. I think it's most visually interpretable with LL and LMA on the x axis. Can't really tell what's going on with LMA on the y axis (figure dimensions make everything look like isometry. Which maybe it is?? but I don't think so give the boxplots)
+Also, LL on the x axis really shows the poor global relationship between LL and Narea. it's very striking. So I'm updating all.results to show that.
+- added a little code to fit.MAR so that x or y can be the variable screened for 0 variance 
 
 
 
+04.15.17
+Added in Nmass environmental modeling in Cd-Initial_Analysis.R
+- I initially saved the VariableImportances as Apr instead of March. I updated the old file names in the code and in /Trait_models
+
+* updated Trait-ClimateResults_worksheet.xlsx with Nmass
+* updated Figure AvgModCoefficients_VariableImportances_boxplot_v2.pdf
+
+
+
+05.15.17
+Added Narea v LL statistical analysis in Cd-TaxonomicAnalysis, and to Table S4 in the appendix of the manuscript (version in the Dissertation folder for the moment, but not in the full dissertation document)
+Adding stats for 
+
+
+05.16.17
+started coding up a null model for testing correlation degredation.
+made a function that pulls the range of X and Y values for a taxon, then draws a bunch of random samples from a global distribution truncated around a box of the appropriate x and y range centered on a random point. I then calculate the lci and uci for each species based on the lower and upper quantiles from this random draw.
+
+LMA vs Nmass - things work pretty well. Everything except 2 spp within the 95% confidence interval (2-tailed), and the two significant ones are stronger correlations than expected
+  4 of 32 spp are more extreme than null, 3 of them are negative (Abies procera is more positive than expected)
+
+LMA vs LL - things aren't quite as significant as I was hoping. 
+  - 4 of 18 spp are more negative than the null at p<0.025 (one tailed/0.05 2 tailed)
+  - 5 of 18 spp more negative at p<0.05 (one tailed)
+  - 9 of 18 spp more negative at p<0.1 (one tailed)
+Many, but not all of these, are the well sampled species. P contorta, P ponderosa, and T. heterophylla aren't significant though they're pretty well sampled...
+
+LMA vs Narea - only 7 of 32 spp AREN'T more extreme than the null
+
+
+My next step is to add this in to all.results in Taxonomic Analysis. But I'll commit first in case I break something
 
 
 
