@@ -209,7 +209,8 @@ mesdat <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/gmes/Muir2016_LMAvGme
 # match with any overlap from GLOPNET
 # mesdat$Aarea <- LES$Aarea[match(mesdat$species,LES$Species)]
 # mesdat$Amass <- LES$Amass[match(mesdat$species,LES$Species)] 
-# actually more overlap from Maire
+# actually more overlap from Maire et al. 2015
+Maire <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/globamax_data_160609.csv", header=T)
 mesdat$Aarea <- Maire$Aarea[match(mesdat$species,Maire$Genus.spp)]
 mesdat$Amass <- Maire$Amass[match(mesdat$species,Maire$Genus.spp)]
 mesdat$SLA <- 1/mesdat$lma
@@ -261,3 +262,52 @@ points(amax~I(lma*10), alec, pch=as.numeric(treatment))
 points(amax~I(lma_g_m2/1000), coffee, pch=4, col="blue4")
 
 ggplot(brach, aes(x=LMA, y=Amass, col=Species, pch=Treatment.x)) + geom_point() + geom_smooth(method="lm")
+
+
+
+##### Comparison of my results with Blonder's results ######
+
+require(lmodel2)
+plot.MAR <- function(xvar, yvar, data, method="SMA", linecol, lwd=1) {
+  if(method=="SMA") meth = 3
+  if(method=="MA") meth = 2
+  if(method=="OLS") meth =1
+  if(length(t(as.vector(data[!(is.na(data[,xvar]) | is.na(data[,yvar])), xvar])))<3){
+    #return(rep(NA, times=7))
+    break()
+  }
+  else{
+    if(var(data[,yvar], na.rm=T)==0){
+      break()
+    }
+    else{
+      tmp.mod <- suppressMessages(lmodel2(get(yvar)~get(xvar), data))
+      intercept <- tmp.mod$regression.results$Intercept[meth]
+      slope <- tmp.mod$regression.results$Slope[meth]
+      yhat <- tmp.mod$x * slope + intercept
+      lines(yhat~tmp.mod$x, col=linecol, lwd=lwd)
+      
+    }
+  }
+}
+
+
+
+plot(log.LL~log.LMA, allspp, col="grey", pch=16, ylab="log(LL)", xlab="log(LMA)")
+abline(a=all.results.cl$Int_LMA.LL[nrow(all.results.cl)], b=all.results.cl$Slope_LMA.LL[nrow(all.results.cl)], lwd=3, col="#666666", lty=3)
+#abline(a=all.results.cl$Int_LMA.LL[nrow(all.results.cl)-1], b=all.results.cl$Slope_LMA.LL[nrow(all.results.cl)-1], lwd=3, col="black")
+palette(paste0(genpal,"88"))
+points(log.LL~log.LMA, spp.data[which(spp.data$Species %in% all.results.cl$Taxo.Unit[which(all.results.cl$n_LMA.LL>5 & all.results.cl$Type=="w.inSpp")]),], pch=16)#, col=factor(Species))
+palette(genpal)
+tax <- "w.inSpp"
+for (j in 1:length(as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.LL>5)]))){
+  i <- as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.LL>5)])[j]
+  #plot.MAR(xvar = "log.LMA", yvar = "log.LL",data= spp.data[which(spp.data$Species==i),], linecol = genpal[j], lwd=3)
+  plot.MAR(xvar = "log.LMA", yvar = "log.LL",data= spp.data[which(spp.data$Species==i),], linecol = mypal[colchoices[1]], lwd=3)
+  
+}
+# arabidopsis line
+points(log.LL~log.LMA, arab, pch=1)
+plot.MAR(xvar="log.LMA", yvar="log.LL", data=arab, linecol=mypal[colchoices[2]],lwd = 3)
+legend("bottomright", legend = c("GLOPNET","w/in SPP geographic", "Blonder 2015"), lwd=c(3,3,3), lty=c(3,1,1), col = c("#666666",mypal[colchoices[1]],mypal[colchoices[2]]), cex=.6,pt.cex = 1, bty="n")
+

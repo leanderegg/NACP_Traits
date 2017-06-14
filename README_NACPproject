@@ -413,6 +413,23 @@ LMA vs Narea - only 7 of 32 spp AREN'T more extreme than the null
 My next step is to add this in to all.results in Taxonomic Analysis. But I'll commit first in case I break something
 
 
+Ok, updated all LL vs Nmass references, so they are x=LL and y=Nmass (and referenced LL.N)
+  - however, some of the axes may have changed. I will only know this after I update all.results.cl and try to replot everything...
+  
+
+Now adding in null model results.
+- I expanded my null model function to calculate the 2.5,5,and 10% quantiles.
+
+After many false starts, I think my function works appropriately, and I've now recreated all.results with
+1) rerun LL vs Nmass ()
+
+
+
+
+########## New Commit: 05.16.17
+- about to add in null model estimates to all.results, also may swap Nmass axes so I can plot them both on the Y axis to mirror how I treat Narea
+  - LMA vs Nmass, Nmass is on the Y (good!)
+
 
 ############# USEFUL PACKAGES ########################
 TR8 for pulling life history, height, growth form, etc. data from various databases.

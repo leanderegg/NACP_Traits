@@ -310,9 +310,10 @@ fit.MAR <- function(xvar, yvar, data, method="SMA") {
 
 ############# **LMA vs Nmass** ###########
 ############ .Species level analysis #####################
-
-spp.results <- data.frame(matrix(NA, nrow=length(unique(spp.data$Species)), ncol=8))
-colnames(spp.results) <- c("Species", "Int","Slope","Rho","r.sq","n","varLMA","varNmass")
+ptm <- proc.time()
+set.seed(42)
+spp.results <- data.frame(matrix(NA, nrow=length(unique(spp.data$Species)), ncol=15))
+colnames(spp.results) <- c("Species", "Int","Slope","Rho","r.sq","n","varLMA","varNmass", "lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(spp.data$Species))){
   species <- levels(spp.data$Species)[i]
   print(species)
@@ -320,13 +321,24 @@ for(i in 1:length(unique(spp.data$Species))){
   res <- fit.MAR(xvar='log.LMA',yvar="log.Nmass",data=dataz)
   spp.results[i,1] <- species
   spp.results[i,2:8] <- res
+  if (!is.na(res[1]) & res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Nmass", observed = dataz, nulldata = allspp, nits = 1000)  
+    spp.results[i, 9:14] <- nullbounds
+    spp.results[i,15] <- test.sig(x=spp.results$Rho[i], test=nullbounds)
+  }
 }
+proc.time()-ptm
+
+
+
+
+
 # Seems to be working!!!
 
 ############ .Genus level analysis #####################
-
-gen.results <- data.frame(matrix(NA, nrow=length(unique(gen.data$Genus)), ncol=8))
-colnames(gen.results) <- c("Genus", "Int","Slope","Rho","r.sq","n","varLMA","varNmass")
+t0 <- proc.time()
+gen.results <- data.frame(matrix(NA, nrow=length(unique(gen.data$Genus)), ncol=15))
+colnames(gen.results) <- c("Genus", "Int","Slope","Rho","r.sq","n","varLMA","varNmass", "lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(gen.data$Genus))){
   genus <- levels(gen.data$Genus)[i]
   print(genus)
@@ -334,14 +346,20 @@ for(i in 1:length(unique(gen.data$Genus))){
   gen.results[i,1] <- genus
   res <- fit.MAR(xvar='log.LMA',yvar="log.Nmass",data=dataz)
   gen.results[i,2:8] <- res 
+  if (!is.na(res[1]) & res[5]>4){ # only fit null model if there are >5 data points, and the fit.MAR actually ran
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Nmass", observed = dataz, nulldata = allgen, nits = 1000)  
+    gen.results[i, 9:14] <- nullbounds
+    gen.results[i,15] <- test.sig(x=gen.results$Rho[i], test=nullbounds)
+  }
   
 }
+proc.time()-t0
 
 
 ############ .spp w/in Family level analysis #####################
-
-sppinfam.results <- data.frame(matrix(NA, nrow=length(unique(sppinfam.data$Family)), ncol=8))
-colnames(sppinfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLMA","varNmass")
+t0<- proc.time()
+sppinfam.results <- data.frame(matrix(NA, nrow=length(unique(sppinfam.data$Family)), ncol=15))
+colnames(sppinfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLMA","varNmass", "lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(sppinfam.data$Family))){
   family <- levels(sppinfam.data$Family)[i]
   print(family)
@@ -349,13 +367,19 @@ for(i in 1:length(unique(sppinfam.data$Family))){
   res <- fit.MAR(xvar='log.LMA',yvar="log.Nmass",data=dataz)
   sppinfam.results[i,1] <- family
   sppinfam.results[i,2:8] <- res
+  if (!is.na(res[1]) & res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Nmass", observed = dataz, nulldata = allfam, nits = 1000)  
+    sppinfam.results[i, 9:14] <- nullbounds
+    sppinfam.results[i,15] <- test.sig(x=sppinfam.results$Rho[i], test=nullbounds)
+  }
+  
 }
-
+proc.time()-t0
 
 ############ .gen w/in Family level analysis #####################
-
-geninfam.results <- data.frame(matrix(NA, nrow=length(unique(geninfam.data$Family)), ncol=8))
-colnames(geninfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLMA","varNmass")
+t0<-proc.time()
+geninfam.results <- data.frame(matrix(NA, nrow=length(unique(geninfam.data$Family)), ncol=15))
+colnames(geninfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLMA","varNmass", "lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(geninfam.data$Family))){
   family <- levels(geninfam.data$Family)[i]
   print(family)
@@ -363,21 +387,26 @@ for(i in 1:length(unique(geninfam.data$Family))){
   res <- fit.MAR(xvar='log.LMA',yvar="log.Nmass",data=dataz)
   geninfam.results[i,1] <- family
   geninfam.results[i,2:8] <- res
+  if (!is.na(res[1]) & res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Nmass", observed = dataz, nulldata = allfam, nits = 1000)  
+    geninfam.results[i, 9:14] <- nullbounds
+    geninfam.results[i,15] <- test.sig(x=geninfam.results$Rho[i], test=nullbounds)
+  }
 }
-
+proc.time()-t0
 
 ############ .Family level analysis #####################
 
-# currently just working with LES until I combine the PACNW dataset into this.
-famcorr.all <- cor(x=fam.data[,c("log.LL","log.LMA","log.Nmass")], use = "pairwise.complete.obs")
-famcorr.clean <- cor(x=fam.dataclean[,c("log.LL","log.LMA","log.Nmass")], use = "pairwise.complete.obs")
+# # currently just working with LES until I combine the PACNW dataset into this.
+# famcorr.all <- cor(x=fam.data[,c("log.LL","log.LMA","log.Nmass")], use = "pairwise.complete.obs")
+# famcorr.clean <- cor(x=fam.dataclean[,c("log.LL","log.LMA","log.Nmass")], use = "pairwise.complete.obs")
 
-fam.res_LMA.N <- c("fam.all", fit.MAR(xvar='log.LMA',yvar="log.Nmass",data=fam.data),"Fam")
-names(fam.res_LMA.N) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass","Type")
-fam.resclean_LMA.N <- c("fam.clean", fit.MAR(xvar='log.LMA',yvar="log.Nmass",data=fam.dataclean), "Fam.clean")
-names(fam.resclean_LMA.N) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass","Type")
-global_LMA.N <- c("global", fit.MAR(xvar='log.LMA',yvar="log.Nmass",data=allspp), "global")
-names(global_LMA.N) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass","Type")
+fam.res_LMA.N <- c("fam.all", fit.MAR(xvar='log.LMA',yvar="log.Nmass",data=fam.data),rep(NA, times=7),"Fam") 
+names(fam.res_LMA.N) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass", "lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig" ,"Type")
+fam.resclean_LMA.N <- c("fam.clean", fit.MAR(xvar='log.LMA',yvar="log.Nmass",data=fam.dataclean),rep(NA, times=7), "Fam.clean")
+names(fam.resclean_LMA.N) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass", "lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
+global_LMA.N <- c("global", fit.MAR(xvar='log.LMA',yvar="log.Nmass",data=allspp),rep(NA, times=7), "global")
+names(global_LMA.N) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass", "lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
 
 
 ###### .Combining Results into one dataframe #####
@@ -406,8 +435,8 @@ levels(all.results.LMAN$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",
 ############ .Species level analysis #####################
 
 
-spp.results <- data.frame(matrix(NA, nrow=length(unique(spp.data$Species)), ncol=8))
-colnames(spp.results) <- c("Species", "Int","Slope","Rho","r.sq","n","varLMA","varLL")
+spp.results <- data.frame(matrix(NA, nrow=length(unique(spp.data$Species)), ncol=15))
+colnames(spp.results) <- c("Species", "Int","Slope","Rho","r.sq","n","varLMA","varLL","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(spp.data$Species))){
   species <- levels(spp.data$Species)[i]
   print(species)
@@ -415,14 +444,19 @@ for(i in 1:length(unique(spp.data$Species))){
   res <- fit.MAR(xvar='log.LMA',yvar="log.LL",data=dataz)
   spp.results[i,1] <- species
   spp.results[i,2:8] <- res
+  if (!is.na(res[1]) &res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.LL", observed = dataz, nulldata = allspp, nits = 1000)  
+    spp.results[i, 9:14] <- nullbounds
+    spp.results[i,15] <- test.sig(x=spp.results$Rho[i], test=nullbounds)
+  }
 }
 
 
 ############ .Genus level analysis #####################
 
 
-gen.results <- data.frame(matrix(NA, nrow=length(unique(gen.data$Genus)), ncol=8))
-colnames(gen.results) <- c("Genus", "Int","Slope","Rho","r.sq","n","varLMA","varLL")
+gen.results <- data.frame(matrix(NA, nrow=length(unique(gen.data$Genus)), ncol=15))
+colnames(gen.results) <- c("Genus", "Int","Slope","Rho","r.sq","n","varLMA","varLL","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(gen.data$Genus))){
   genus <- levels(gen.data$Genus)[i]
   print(genus)
@@ -430,7 +464,11 @@ for(i in 1:length(unique(gen.data$Genus))){
   gen.results[i,1] <- genus
   res <- fit.MAR(xvar='log.LMA',yvar="log.LL",data=dataz)
   gen.results[i,2:8] <- res 
-  
+  if (!is.na(res[1]) & res[5]>4){ # only fit null model if there are >5 data points, and the fit.MAR actually ran
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.LL", observed = dataz, nulldata = allgen, nits = 1000)  
+    gen.results[i, 9:14] <- nullbounds
+    gen.results[i,15] <- test.sig(x=gen.results$Rho[i], test=nullbounds)
+  }
 }
 
 
@@ -438,8 +476,8 @@ for(i in 1:length(unique(gen.data$Genus))){
 ############ .spp w/in Family level analysis #####################
 
 
-sppinfam.results <- data.frame(matrix(NA, nrow=length(unique(sppinfam.data$Family)), ncol=8))
-colnames(sppinfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLMA","varLL")
+sppinfam.results <- data.frame(matrix(NA, nrow=length(unique(sppinfam.data$Family)), ncol=15))
+colnames(sppinfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLMA","varLL","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(sppinfam.data$Family))){
   family <- levels(sppinfam.data$Family)[i]
   print(family)
@@ -447,14 +485,19 @@ for(i in 1:length(unique(sppinfam.data$Family))){
   res <- fit.MAR(xvar='log.LMA',yvar="log.LL",data=dataz)
   sppinfam.results[i,1] <- family
   sppinfam.results[i,2:8] <- res
+  if (!is.na(res[1]) & res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.LL", observed = dataz, nulldata = allfam, nits = 1000)  
+    sppinfam.results[i, 9:14] <- nullbounds
+    sppinfam.results[i,15] <- test.sig(x=sppinfam.results$Rho[i], test=nullbounds)
+  }
 }
 
 
 ############ .gen w/in Family level analysis #####################
 
 
-geninfam.results <- data.frame(matrix(NA, nrow=length(unique(geninfam.data$Family)), ncol=8))
-colnames(geninfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLMA","varLL")
+geninfam.results <- data.frame(matrix(NA, nrow=length(unique(geninfam.data$Family)), ncol=15))
+colnames(geninfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLMA","varLL","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(geninfam.data$Family))){
   family <- levels(geninfam.data$Family)[i]
   print(family)
@@ -462,22 +505,22 @@ for(i in 1:length(unique(geninfam.data$Family))){
   res <- fit.MAR(xvar='log.LMA',yvar="log.LL",data=dataz)
   geninfam.results[i,1] <- family
   geninfam.results[i,2:8] <- res
+  if (!is.na(res[1]) & res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.LL", observed = dataz, nulldata = allfam, nits = 1000)  
+    geninfam.results[i, 9:14] <- nullbounds
+    geninfam.results[i,15] <- test.sig(x=geninfam.results$Rho[i], test=nullbounds)
+  }
 }
 
 
 ############ .Family level analysis #####################
 
-# currently just working with LES until I combine the PACNW dataset into this.
-
-famcorr.all <- cor(x=fam.data[,c("log.LL","log.LMA","log.LL")], use = "pairwise.complete.obs")
-famcorr.clean <- cor(x=fam.dataclean[,c("log.LL","log.LMA","log.LL")], use = "pairwise.complete.obs")
-
-fam.res_LMA.LL <- c("fam.all", fit.MAR(xvar='log.LMA',yvar="log.LL",data=fam.data),"Fam")
-names(fam.res_LMA.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varLL","Type")
-fam.resclean_LMA.LL <- c("fam.clean", fit.MAR(xvar='log.LMA',yvar="log.LL",data=fam.dataclean), "Fam.clean")
-names(fam.resclean_LMA.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varLL","Type")
-global_LMA.LL <- c("global", fit.MAR(xvar='log.LMA',yvar="log.LL",data=allspp), "global")
-names(global_LMA.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varLL","Type")
+fam.res_LMA.LL <- c("fam.all", fit.MAR(xvar='log.LMA',yvar="log.LL",data=fam.data),rep(NA, times=7),"Fam")
+names(fam.res_LMA.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varLL","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
+fam.resclean_LMA.LL <- c("fam.clean", fit.MAR(xvar='log.LMA',yvar="log.LL",data=fam.dataclean),rep(NA, times=7), "Fam.clean")
+names(fam.resclean_LMA.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varLL","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
+global_LMA.LL <- c("global", fit.MAR(xvar='log.LMA',yvar="log.LL",data=allspp),rep(NA, times=7), "global")
+names(global_LMA.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varLL","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
 
 
 
@@ -501,49 +544,63 @@ levels(all.results.LMALL$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen"
 
 
 
-####### ***Nmass and LL*** #####################
+####### ***LL and Nmass*** #####################
 
 
 
-spp.results <- data.frame(matrix(NA, nrow=length(unique(spp.data$Species)), ncol=8))
-colnames(spp.results) <- c("Species", "Int","Slope","Rho","r.sq","n","varNmass","varLL")
+spp.results <- data.frame(matrix(NA, nrow=length(unique(spp.data$Species)), ncol=15))
+colnames(spp.results) <- c("Species", "Int","Slope","Rho","r.sq","n","varLL","varNmass","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(spp.data$Species))){
   species <- levels(spp.data$Species)[i]
   print(species)
   dataz <- spp.data[which(spp.data$Species==species),]
-  res <- fit.MAR(xvar='log.Nmass',yvar="log.LL",data=dataz)
+  res <- fit.MAR(xvar='log.LL',yvar="log.Nmass",data=dataz)
   spp.results[i,1] <- species
   spp.results[i,2:8] <- res
+  if (!is.na(res[1]) &res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LL', yvar="log.Nmass", observed = dataz, nulldata = allspp, nits = 1000)  
+    spp.results[i, 9:14] <- nullbounds
+    spp.results[i,15] <- test.sig(x=spp.results$Rho[i], test=nullbounds)
+  }
 }
 
 
 ############ .Genus level analysis #####################
 
-gen.results <- data.frame(matrix(NA, nrow=length(unique(gen.data$Genus)), ncol=8))
-colnames(gen.results) <- c("Genus", "Int","Slope","Rho","r.sq","n","varNmass","varLL")
+gen.results <- data.frame(matrix(NA, nrow=length(unique(gen.data$Genus)), ncol=15))
+colnames(gen.results) <- c("Genus", "Int","Slope","Rho","r.sq","n","varLL","varNmass","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(gen.data$Genus))){
   genus <- levels(gen.data$Genus)[i]
   print(genus)
   dataz <- gen.data[which(gen.data$Genus==genus),]
   gen.results[i,1] <- genus
-  res <- fit.MAR(xvar='log.Nmass',yvar="log.LL",data=dataz)
+  res <- fit.MAR(xvar='log.LL',yvar="log.Nmass",data=dataz)
   gen.results[i,2:8] <- res 
-  
+  if (!is.na(res[1]) & res[5]>4){ # only fit null model if there are >5 data points, and the fit.MAR actually ran
+    nullbounds <- fit.null(xvar='log.LL', yvar="log.Nmass", observed = dataz, nulldata = allgen, nits = 1000)  
+    gen.results[i, 9:14] <- nullbounds
+    gen.results[i,15] <- test.sig(x=gen.results$Rho[i], test=nullbounds)
+  }
 }
 
 
 
 ############ .spp w/in Family level analysis #####################
 
-sppinfam.results <- data.frame(matrix(NA, nrow=length(unique(sppinfam.data$Family)), ncol=8))
-colnames(sppinfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varNmass","varLL")
+sppinfam.results <- data.frame(matrix(NA, nrow=length(unique(sppinfam.data$Family)), ncol=15))
+colnames(sppinfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLL","varNmass","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(sppinfam.data$Family))){
   family <- levels(sppinfam.data$Family)[i]
   print(family)
   dataz <- sppinfam.data[which(sppinfam.data$Family==family),]
-  res <- fit.MAR(xvar='log.Nmass',yvar="log.LL",data=dataz)
+  res <- fit.MAR(xvar='log.LL',yvar="log.Nmass",data=dataz)
   sppinfam.results[i,1] <- family
   sppinfam.results[i,2:8] <- res
+  if (!is.na(res[1]) & res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LL', yvar="log.Nmass", observed = dataz, nulldata = allfam, nits = 1000)  
+    sppinfam.results[i, 9:14] <- nullbounds
+    sppinfam.results[i,15] <- test.sig(x=sppinfam.results$Rho[i], test=nullbounds)
+  }
 }
 
 
@@ -551,15 +608,20 @@ for(i in 1:length(unique(sppinfam.data$Family))){
 
 
 ############ .gen w/in Family level analysis #####################
-geninfam.results <- data.frame(matrix(NA, nrow=length(unique(geninfam.data$Family)), ncol=8))
-colnames(geninfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varNmass","varLL")
+geninfam.results <- data.frame(matrix(NA, nrow=length(unique(geninfam.data$Family)), ncol=15))
+colnames(geninfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLL","varNmass","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(geninfam.data$Family))){
   family <- levels(geninfam.data$Family)[i]
   print(family)
   dataz <- geninfam.data[which(geninfam.data$Family==family),]
-  res <- fit.MAR(xvar='log.Nmass',yvar="log.LL",data=dataz)
+  res <- fit.MAR(xvar='log.LL',yvar="log.Nmass",data=dataz)
   geninfam.results[i,1] <- family
   geninfam.results[i,2:8] <- res
+  if (!is.na(res[1]) & res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LL', yvar="log.Nmass", observed = dataz, nulldata = allfam, nits = 1000)  
+    geninfam.results[i, 9:14] <- nullbounds
+    geninfam.results[i,15] <- test.sig(x=geninfam.results$Rho[i], test=nullbounds)
+  }
 }
 
 
@@ -568,18 +630,13 @@ for(i in 1:length(unique(geninfam.data$Family))){
 
 ############ .Family level analysis #####################
 
-# currently just working with LES until I combine the PACNW dataset into this.
 
-
-famcorr.all <- cor(x=fam.data[,c("log.LMA","log.Nmass","log.LL")], use = "pairwise.complete.obs")
-famcorr.clean <- cor(x=fam.dataclean[,c("log.LMA","log.Nmass","log.LL")], use = "pairwise.complete.obs")
-
-fam.res_N.LL <- c("fam.all", fit.MAR(xvar='log.Nmass',yvar="log.LL",data=fam.data),"Fam")
-names(fam.res_N.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varNmass","varLL","Type")
-fam.resclean_N.LL <- c("fam.clean", fit.MAR(xvar='log.Nmass',yvar="log.LL",data=fam.dataclean), "Fam.clean")
-names(fam.res_N.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varNmass","varLL","Type")
-global_N.LL <- c("global", fit.MAR(xvar='log.Nmass',yvar="log.LL",data=allspp), "global")
-names(global_N.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varNmass","varLL","Type")
+fam.res_LL.N <- c("fam.all", fit.MAR(xvar='log.LL',yvar="log.Nmass",data=fam.data),rep(NA, times=7),"Fam")
+names(fam.res_LL.N) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLL","varNmass","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
+fam.resclean_LL.N <- c("fam.clean", fit.MAR(xvar='log.LL',yvar="log.Nmass",data=fam.dataclean),rep(NA, times=7), "Fam.clean")
+names(fam.res_LL.N) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLL","varNmass","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
+global_LL.N <- c("global", fit.MAR(xvar='log.LL',yvar="log.Nmass",data=allspp),rep(NA, times=7), "global")
+names(global_LL.N) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLL","varNmass","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
 
 
 
@@ -597,9 +654,9 @@ colnames(spp.results)[1] <- "Taxo.Unit"
 colnames(gen.results)[1] <- "Taxo.Unit"
 colnames(sppinfam.results)[1] <- "Taxo.Unit"
 colnames(geninfam.results)[1] <- "Taxo.Unit"
-all.results.NmassLL <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_N.LL, fam.resclean_N.LL, global_N.LL)
-all.results.NmassLL$Type <- factor(all.results.NmassLL$Type)
-levels(all.results.NmassLL$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean", global="global")
+all.results.LLNmass <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_LL.N, fam.resclean_LL.N, global_LL.N)
+all.results.LLNmass$Type <- factor(all.results.LLNmass$Type)
+levels(all.results.LLNmass$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean", global="global")
 
 
 
@@ -610,8 +667,8 @@ levels(all.results.NmassLL$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGe
 
 
 
-spp.results <- data.frame(matrix(NA, nrow=length(unique(spp.data$Species)), ncol=8))
-colnames(spp.results) <- c("Species", "Int","Slope","Rho","r.sq","n","varLMA","varNarea")
+spp.results <- data.frame(matrix(NA, nrow=length(unique(spp.data$Species)), ncol=15))
+colnames(spp.results) <- c("Species", "Int","Slope","Rho","r.sq","n","varLMA","varNarea","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(spp.data$Species))){
   species <- levels(spp.data$Species)[i]
   print(species)
@@ -619,13 +676,18 @@ for(i in 1:length(unique(spp.data$Species))){
   res <- fit.MAR(xvar='log.LMA',yvar="log.Narea",data=dataz)
   spp.results[i,1] <- species
   spp.results[i,2:8] <- res
+  if (!is.na(res[1]) &res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Narea", observed = dataz, nulldata = allspp, nits = 1000)  
+    spp.results[i, 9:14] <- nullbounds
+    spp.results[i,15] <- test.sig(x=spp.results$Rho[i], test=nullbounds)
+  }
 }
 
 
 ############ .Genus level analysis #####################
 
-gen.results <- data.frame(matrix(NA, nrow=length(unique(gen.data$Genus)), ncol=8))
-colnames(gen.results) <- c("Genus", "Int","Slope","Rho","r.sq","n","varLMA","varNarea")
+gen.results <- data.frame(matrix(NA, nrow=length(unique(gen.data$Genus)), ncol=15))
+colnames(gen.results) <- c("Genus", "Int","Slope","Rho","r.sq","n","varLMA","varNarea","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(gen.data$Genus))){
   genus <- levels(gen.data$Genus)[i]
   print(genus)
@@ -633,15 +695,19 @@ for(i in 1:length(unique(gen.data$Genus))){
   gen.results[i,1] <- genus
   res <- fit.MAR(xvar='log.LMA',yvar="log.Narea",data=dataz)
   gen.results[i,2:8] <- res 
-  
+  if (!is.na(res[1]) & res[5]>4){ # only fit null model if there are >5 data points, and the fit.MAR actually ran
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Narea", observed = dataz, nulldata = allgen, nits = 1000)  
+    gen.results[i, 9:14] <- nullbounds
+    gen.results[i,15] <- test.sig(x=gen.results$Rho[i], test=nullbounds)
+  }
 }
 
 
 
 ############ .spp w/in Family level analysis #####################
 
-sppinfam.results <- data.frame(matrix(NA, nrow=length(unique(sppinfam.data$Family)), ncol=8))
-colnames(sppinfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLMA","varNarea")
+sppinfam.results <- data.frame(matrix(NA, nrow=length(unique(sppinfam.data$Family)), ncol=15))
+colnames(sppinfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLMA","varNarea","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(sppinfam.data$Family))){
   family <- levels(sppinfam.data$Family)[i]
   print(family)
@@ -649,6 +715,11 @@ for(i in 1:length(unique(sppinfam.data$Family))){
   res <- fit.MAR(xvar='log.LMA',yvar="log.Narea",data=dataz)
   sppinfam.results[i,1] <- family
   sppinfam.results[i,2:8] <- res
+  if (!is.na(res[1]) & res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Narea", observed = dataz, nulldata = allfam, nits = 1000)  
+    sppinfam.results[i, 9:14] <- nullbounds
+    sppinfam.results[i,15] <- test.sig(x=sppinfam.results$Rho[i], test=nullbounds)
+  }
 }
 
 
@@ -657,8 +728,8 @@ for(i in 1:length(unique(sppinfam.data$Family))){
 
 ############ .gen w/in Family level analysis #####################
 
-geninfam.results <- data.frame(matrix(NA, nrow=length(unique(geninfam.data$Family)), ncol=8))
-colnames(geninfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLMA","varNarea")
+geninfam.results <- data.frame(matrix(NA, nrow=length(unique(geninfam.data$Family)), ncol=15))
+colnames(geninfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLMA","varNarea","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(geninfam.data$Family))){
   family <- levels(geninfam.data$Family)[i]
   print(family)
@@ -666,6 +737,11 @@ for(i in 1:length(unique(geninfam.data$Family))){
   res <- fit.MAR(xvar='log.LMA',yvar="log.Narea",data=dataz)
   geninfam.results[i,1] <- family
   geninfam.results[i,2:8] <- res
+  if (!is.na(res[1]) & res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Narea", observed = dataz, nulldata = allfam, nits = 1000)  
+    geninfam.results[i, 9:14] <- nullbounds
+    geninfam.results[i,15] <- test.sig(x=geninfam.results$Rho[i], test=nullbounds)
+  }
 }
 
 
@@ -674,20 +750,13 @@ for(i in 1:length(unique(geninfam.data$Family))){
 
 ############ .Family level analysis #####################
 
-# currently just working with LES until I combine the PACNW dataset into this.
 
-# fam.data <- LESfam # 189 families
-# fam.dataclean <- LESfam[which(LESfam$tnspp>2),] # 97 families
-
-# famcorr.all <- cor(x=fam.data[,c("log.LMA","log.Nmass","log.Narea")], use = "pairwise.complete.obs")
-# famcorr.clean <- cor(x=fam.dataclean[,c("log.LMA","log.Nmass","log.Narea")], use = "pairwise.complete.obs")
-
-fam.res_LMA.Narea <- c("fam.all", fit.MAR(xvar='log.LMA',yvar="log.Narea",data=fam.data),"Fam")
-names(fam.res_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNarea","Type")
-fam.resclean_LMA.Narea <- c("fam.clean", fit.MAR(xvar='log.LMA',yvar="log.Narea",data=fam.dataclean), "Fam.clean")
-names(fam.res_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNarea","Type")
-global_LMA.Narea <- c("global", fit.MAR(xvar='log.LMA',yvar="log.Narea",data=allspp), "global")
-names(global_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNarea","Type")
+fam.res_LMA.Narea <- c("fam.all", fit.MAR(xvar='log.LMA',yvar="log.Narea",data=fam.data),rep(NA, times=7),"Fam")
+names(fam.res_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNarea","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
+fam.resclean_LMA.Narea <- c("fam.clean", fit.MAR(xvar='log.LMA',yvar="log.Narea",data=fam.dataclean),rep(NA, times=7), "Fam.clean")
+names(fam.res_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNarea","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
+global_LMA.Narea <- c("global", fit.MAR(xvar='log.LMA',yvar="log.Narea",data=allspp),rep(NA, times=7), "global")
+names(global_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNarea","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
 
 
 
@@ -717,45 +786,59 @@ levels(all.results.LMANarea$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inG
 
 
 
-spp.results <- data.frame(matrix(NA, nrow=length(unique(spp.data$Species)), ncol=8))
-colnames(spp.results) <- c("Species", "Int","Slope","Rho","r.sq","n","varLL","varNarea")
+spp.results <- data.frame(matrix(NA, nrow=length(unique(spp.data$Species)), ncol=15))
+colnames(spp.results) <- c("Species", "Int","Slope","Rho","r.sq","n","varLL","varNarea","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(spp.data$Species))){
   species <- levels(spp.data$Species)[i]
   print(species)
   dataz <- spp.data[which(spp.data$Species==species),]
-  res <- fit.MAR(yvar='log.Narea',xvar="log.LL",data=dataz)
+  res <- fit.MAR(xvar="log.LL", yvar='log.Narea',data=dataz)
   spp.results[i,1] <- species
   spp.results[i,2:8] <- res
+  if (!is.na(res[1]) &res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LL', yvar="log.Narea", observed = dataz, nulldata = allspp, nits = 1000)  
+    spp.results[i, 9:14] <- nullbounds
+    spp.results[i,15] <- test.sig(x=spp.results$Rho[i], test=nullbounds)
+  }
 }
 
 
 ############ .Genus level analysis #####################
 
-gen.results <- data.frame(matrix(NA, nrow=length(unique(gen.data$Genus)), ncol=8))
-colnames(gen.results) <- c("Genus", "Int","Slope","Rho","r.sq","n","varLL","varNarea")
+gen.results <- data.frame(matrix(NA, nrow=length(unique(gen.data$Genus)), ncol=15))
+colnames(gen.results) <- c("Genus", "Int","Slope","Rho","r.sq","n","varLL","varNarea","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(gen.data$Genus))){
   genus <- levels(gen.data$Genus)[i]
   print(genus)
   dataz <- gen.data[which(gen.data$Genus==genus),]
   gen.results[i,1] <- genus
-  res <- fit.MAR(yvar='log.Narea',xvar="log.LL",data=dataz)
+  res <- fit.MAR(xvar="log.LL",yvar='log.Narea',data=dataz)
   gen.results[i,2:8] <- res 
-  
+  if (!is.na(res[1]) & res[5]>4){ # only fit null model if there are >5 data points, and the fit.MAR actually ran
+    nullbounds <- fit.null(xvar='log.LL', yvar="log.Narea", observed = dataz, nulldata = allgen, nits = 1000)  
+    gen.results[i, 9:14] <- nullbounds
+    gen.results[i,15] <- test.sig(x=gen.results$Rho[i], test=nullbounds)
+  }
 }
 
 
 
 ############ .spp w/in Family level analysis #####################
 
-sppinfam.results <- data.frame(matrix(NA, nrow=length(unique(sppinfam.data$Family)), ncol=8))
-colnames(sppinfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLL","varNarea")
+sppinfam.results <- data.frame(matrix(NA, nrow=length(unique(sppinfam.data$Family)), ncol=15))
+colnames(sppinfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLL","varNarea","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(sppinfam.data$Family))){
   family <- levels(sppinfam.data$Family)[i]
   print(family)
   dataz <- sppinfam.data[which(sppinfam.data$Family==family),]
-  res <- fit.MAR(yvar='log.Narea',xvar="log.LL",data=dataz)
+  res <- fit.MAR(xvar='log.LL',yvar="log.Narea",data=dataz)
   sppinfam.results[i,1] <- family
   sppinfam.results[i,2:8] <- res
+  if (!is.na(res[1]) & res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LL', yvar="log.Narea", observed = dataz, nulldata = allfam, nits = 1000)  
+    sppinfam.results[i, 9:14] <- nullbounds
+    sppinfam.results[i,15] <- test.sig(x=sppinfam.results$Rho[i], test=nullbounds)
+  }
 }
 
 
@@ -764,15 +847,20 @@ for(i in 1:length(unique(sppinfam.data$Family))){
 
 ############ .gen w/in Family level analysis #####################
 
-geninfam.results <- data.frame(matrix(NA, nrow=length(unique(geninfam.data$Family)), ncol=8))
-colnames(geninfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLL","varNarea")
+geninfam.results <- data.frame(matrix(NA, nrow=length(unique(geninfam.data$Family)), ncol=15))
+colnames(geninfam.results) <- c("Family", "Int","Slope","Rho","r.sq","n","varLL","varNarea","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
 for(i in 1:length(unique(geninfam.data$Family))){
   family <- levels(geninfam.data$Family)[i]
   print(family)
   dataz <- geninfam.data[which(geninfam.data$Family==family),]
-  res <- fit.MAR(yvar='log.Narea',xvar="log.LL",data=dataz)
+  res <- fit.MAR(xvar='log.LL',yvar="log.Narea",data=dataz)
   geninfam.results[i,1] <- family
   geninfam.results[i,2:8] <- res
+  if (!is.na(res[1]) & res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LL', yvar="log.Narea", observed = dataz, nulldata = allfam, nits = 1000)  
+    geninfam.results[i, 9:14] <- nullbounds
+    geninfam.results[i,15] <- test.sig(x=geninfam.results$Rho[i], test=nullbounds)
+  }
 }
 
 
@@ -782,15 +870,12 @@ for(i in 1:length(unique(geninfam.data$Family))){
 ############ .Family level analysis #####################
 
 
-famcorr.all <- cor(x=fam.data[,c("log.LMA","log.Narea","log.LL")], use = "pairwise.complete.obs")
-famcorr.clean <- cor(x=fam.dataclean[,c("log.LMA","log.Narea","log.LL")], use = "pairwise.complete.obs")
-
-fam.res_Narea.LL <- c("fam.all", fit.MAR(yvar='log.Narea',xvar="log.LL",data=fam.data),"Fam")
-names(fam.res_Narea.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLL","varNarea","Type")
-fam.resclean_Narea.LL <- c("fam.clean", fit.MAR(yvar='log.Narea',xvar="log.LL",data=fam.dataclean), "Fam.clean")
-names(fam.res_Narea.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLL","varNarea","Type")
-global_Narea.LL <- c("global", fit.MAR(yvar='log.Narea',xvar="log.LL",data=allspp), "global")
-names(global_Narea.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLL","varNarea","Type")
+fam.res_LL.Narea <- c("fam.all", fit.MAR(xvar="log.LL",yvar='log.Narea',data=fam.data),rep(NA, times=7),"Fam")
+names(fam.res_LL.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLL","varNarea","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
+fam.resclean_LL.Narea <- c("fam.clean", fit.MAR(xvar="log.LL",yvar='log.Narea',data=fam.dataclean),rep(NA, times=7), "Fam.clean")
+names(fam.res_LL.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLL","varNarea","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
+global_LL.Narea <- c("global", fit.MAR(xvar="log.LL",yvar='log.Narea',data=allspp),rep(NA, times=7), "global")
+names(global_LL.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLL","varNarea","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
 
 
 
@@ -806,7 +891,7 @@ colnames(spp.results)[1] <- "Taxo.Unit"
 colnames(gen.results)[1] <- "Taxo.Unit"
 colnames(sppinfam.results)[1] <- "Taxo.Unit"
 colnames(geninfam.results)[1] <- "Taxo.Unit"
-all.results.LLNarea <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_Narea.LL, fam.resclean_Narea.LL, global_Narea.LL)
+all.results.LLNarea <-rbind(spp.results,gen.results, sppinfam.results, geninfam.results, fam.res_LL.Narea, fam.resclean_LL.Narea, global_LL.Narea)
 all.results.LLNarea$Type <- factor(all.results.LLNarea$Type)
 levels(all.results.LLNarea$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGen",    Sppw.inFam="Sppw/inFam", Genw.inFam="Genw/inFam", Fam = "Fam", Famclean = "Fam.clean", global="global")
 
@@ -829,17 +914,17 @@ levels(all.results.LLNarea$Type) <- list(w.inSpp = "w/inSpp",   w.inGen= "w/inGe
 ########### ** ==Combining ALL ANALYSES into 1 df == ** ######
 
 LMALL <- all.results.LMALL
-colnames(LMALL)[2:6] <- paste(colnames(all.results.LMALL)[2:6],"LMA.LL", sep="_")
+colnames(LMALL)[c(2:6, 9:15)] <- paste(colnames(all.results.LMALL)[c(2:6, 9:15)],"LMA.LL", sep="_")
 LMAN <- all.results.LMAN
-colnames(LMAN)[2:6] <- paste(colnames(all.results.LMAN)[2:6],"LMA.N", sep="_")
-NmassLL <- all.results.NmassLL
-colnames(NmassLL)[2:6] <- paste(colnames(all.results.NmassLL)[2:6],"N.LL", sep="_")
+colnames(LMAN)[c(2:6, 9:15)] <- paste(colnames(all.results.LMAN)[c(2:6, 9:15)],"LMA.N", sep="_")
+LLNmass <- all.results.LLNmass
+colnames(LLNmass)[c(2:6, 9:15)] <- paste(colnames(all.results.LLNmass)[c(2:6, 9:15)],"LL.N", sep="_")
 LMANarea <- all.results.LMANarea
-colnames(LMANarea)[2:6] <- paste(colnames(all.results.LMANarea)[2:6],"LMA.Narea", sep="_")
+colnames(LMANarea)[c(2:6, 9:15)] <- paste(colnames(all.results.LMANarea)[c(2:6, 9:15)],"LMA.Narea", sep="_")
 LLNarea <- all.results.LLNarea
-colnames(LLNarea)[2:6] <- paste(colnames(all.results.LLNarea)[2:6],"LL.Narea", sep="_")
+colnames(LLNarea)[c(2:6, 9:15)] <- paste(colnames(all.results.LLNarea)[c(2:6, 9:15)],"LL.Narea", sep="_")
 
-all.results <- cbind(LMALL, LMAN[,-c(1,7,9)], NmassLL[,-c(1,7,8,9)], LMANarea[,-c(1,7,9)], LLNarea[,-c(1,7,8,9)]) # drop the duplicate 'var' columns
+all.results <- cbind(LMALL, LMAN[,-c(1,7,16)], LLNmass[,-c(1,7,8,16)], LMANarea[,-c(1,7,16)], LLNarea[,-c(1,7,8,16)]) # drop the duplicate 'var' columns
 
 #write.csv(all.results, "Results_SimpleMAreg_v1_030817.csv")
 #write.csv(all.results, "Results_SimpleMAreg_v2_031417.csv")
@@ -847,6 +932,8 @@ all.results <- cbind(LMALL, LMAN[,-c(1,7,9)], NmassLL[,-c(1,7,8,9)], LMANarea[,-
 #write.csv(all.results, "Results_SimpleMAreg_v4_040117.csv")
 #write.csv(all.results, "Results_SimpleMAreg_v5_040217.csv") # updated with NareaLL
 #write.csv(all.results, "Results_SimpleMAreg_v6_040717.csv") # switched to LLNarea
+#write.csv(all.results, "Results_SimpleMAreg_v7_051717.csv") # switched to LLNmass, and added CIs from null model
+write.csv(all.results, "Results_SimpleMAreg_v8_051717.csv") # fixed bug that screwed up LL.Narea null model (when taxa had more variance than all families)
 #all.resultsold <- read.csv("Results_SimpleMAreg_v2_031417.csv")
 
 
@@ -864,7 +951,7 @@ all.results <- cbind(LMALL, LMAN[,-c(1,7,9)], NmassLL[,-c(1,7,8,9)], LMANarea[,-
 #________________________________________________________________________
 ########## LOAD RESULTS DATA ##################
 
-all.results <- read.csv("Results_SimpleMAreg_v6_040717.csv", row.names = 1)
+all.results <- read.csv("Results_SimpleMAreg_v8_051717.csv", row.names = 1)
 levels(all.results$Type) <- list(w.inSpp = "w.inSpp", w.inGen = "w.inGen", Sppw.inFam= "Sppw.inFam",Genw.inFam="Genw.inFam", Fam="Fam",Famclean="Famclean", global="global")
 
 all.results.cl <- all.results %>% filter(Type %in% c("w.inSpp","w.inGen","Genw.inFam","Famclean","global"))
@@ -1059,16 +1146,16 @@ abline(h=0, lty=2)
 
 quartz(width=3, height=4.5)
 par(mfrow=c(2,1), mar=c(4,4,2,1), oma=c(2,0,0,0))
-boxplot(Slope_N.LL~Type, all.results, ylim=c(-3,2.5),las=3, main="log(Nmass)~log(LL)", ylab="MA Slope")
-points(y=rep(as.numeric(fam.res_N.LL[3]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
-points(y=rep(as.numeric(fam.resclean_N.LL[3]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
+boxplot(Slope_LL.N~Type, all.results, ylim=c(-3,2.5),las=3, main="log(Nmass)~log(LL)", ylab="MA Slope")
+points(y=rep(as.numeric(fam.res_LL.N[3]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
+points(y=rep(as.numeric(fam.resclean_LL.N[3]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
 abline(h=0, lty=2)
-boxplot(Rho_N.LL~Type, all.results, ylim=c(-1,1),las=3, ylab="Rho")
-points(y=rep(as.numeric(fam.res_N.LL[4]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
-points(y=rep(as.numeric(fam.resclean_N.LL[4]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
+boxplot(Rho_LL.N~Type, all.results, ylim=c(-1,1),las=3, ylab="Rho")
+points(y=rep(as.numeric(fam.res_LL.N[4]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
+points(y=rep(as.numeric(fam.resclean_LL.N[4]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
 abline(h=0, lty=2)
 
-# quartz(width=3, height=4.5)
+# quartz(width=3, height=4.5) # not updated for axis flop
 # par(mfrow=c(2,1), mar=c(4,4,2,1), oma=c(2,0,0,0))
 # boxplot(Slope_N.LL~Type, all.results[which(all.results$n_N.LL>9),], ylim=c(-3,2.5),las=3, main="log(LL)~log(Nmass) strict", ylab="MA Slope")
 # points(y=rep(as.numeric(fam.res_N.LL[3]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
@@ -1083,7 +1170,7 @@ abline(h=0, lty=2)
 ####LL v Nmass: Trimming to only well represented taxa (10 or more)
 quartz(width=3, height=4.5, title="LL v Nmass")
 par(mfrow=c(2,1), mar=c(0,4,0,1), oma=c(6,0,2,0))
-p <- boxplot(Slope_N.LL~Type, all.results[which(all.results$n_N.LL>5),]
+p <- boxplot(Slope_LL.N~Type, all.results[which(all.results$n_LL.N>5),]
              , ylim=c(-3.5,3),las=3, ylab="MA Slope" #, main="log(LMA)~log(Nmass) strict"
              , col=paste0(mypal[1:6],"66"), boxcol=paste0(mypal[1:6],"66")
              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[1:6],"AA")
@@ -1095,7 +1182,7 @@ abline(h=0, lty=2)
 mtext(text = "b)", side = 3, adj=0, line=.2)
 mtext(text= "LL vs Nmass", side=3, line=.2)
 
-p <- boxplot(Rho_N.LL~Type, all.results[which(all.results$n_N.LL>5),]
+p <- boxplot(Rho_LL.N~Type, all.results[which(all.results$n_LL.N>5),]
              , ylim=c(-1,1.1),las=3, ylab="Rho"
              , col=paste0(mypal[1:6],"66"), boxcol=paste0(mypal[1:6],"66")
              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[1:6],"AA")
@@ -1111,13 +1198,13 @@ text(y=par()$usr[4]-.2, x=c(1,2,3,4,5,6), labels = p$n)
 ## only things with reasonable correlations 
 quartz(width=3, height=4.5)
 par(mfrow=c(2,1), mar=c(4,4,2,1), oma=c(2,0,0,0))
-boxplot(Slope_N.LL~Type, all.results[which(abs(all.results$Rho_N.LL)>.3),], ylim=c(-3,2.5),las=3, main="log(LL)~log(Nmass) Hcor", ylab="MA Slope")
-points(y=rep(as.numeric(fam.res_N.LL[3]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
-points(y=rep(as.numeric(fam.resclean_N.LL[3]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
+boxplot(Slope_LL.N~Type, all.results[which(abs(all.results$Rho_LL.N)>.3),], ylim=c(-3,2.5),las=3, main="log(LL)~log(Nmass) Hcor", ylab="MA Slope")
+points(y=rep(as.numeric(fam.res_LL.N[3]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
+points(y=rep(as.numeric(fam.resclean_LL.N[3]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
 abline(h=0, lty=2)
-boxplot(Rho_N.LL~Type, all.results[which(all.results$n_N.LL>9),], ylim=c(-1,1),las=3, ylab="Rho")
-points(y=rep(as.numeric(fam.res_N.LL[4]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
-points(y=rep(as.numeric(fam.resclean_N.LL[4]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
+boxplot(Rho_LL.N~Type, all.results[which(all.results$n_LL.N>9),], ylim=c(-1,1),las=3, ylab="Rho")
+points(y=rep(as.numeric(fam.res_LL.N[4]), times=7),x=seq(4.7,5.3, by=.1), pch=15, cex=.7)
+points(y=rep(as.numeric(fam.resclean_LL.N[4]), times=7),x=seq(5.7,6.3, by=.1), pch=15, cex=.7)
 abline(h=0, lty=2)
 
 
@@ -1203,9 +1290,9 @@ TukeyHSD(lman)
 # everything different from w/in spp. but above spp not different
 
 
-NmassLL <- lm(Rho_N.LL~Type, weights = n_N.LL, all.results)
+NmassLL <- lm(Rho_LL.N~Type, weights = n_LL.N, all.results)
 # w.inGen not different from w/.in spp, but everything else is...
-nmassll <- aov(Rho_N.LL~Type, all.results,weights=n_N.LL)
+nmassll <- aov(Rho_LL.N~Type, all.results,weights=n_LL.N)
 TukeyHSD(nmassll)
 # with super conservative TukeyHSD, nothing is significantly different, though w/spp is close
 
@@ -1231,7 +1318,7 @@ anova(LMALL, LMALLnull) # p=0.002
 LMALL <- lm(Slope_LMA.LL~Type, weights = varLMA, all.results)
 LMALLnull <- lm(Slope_LMA.LL~1, weights = varLMA, all.results)
 anova(LMALL, LMALLnull) # p=0.031
-# Rho LMA v Nmass
+# Rho LMA v LL
 LMALL <- lm(Rho_LMA.LL~Type, all.results)
 LMALLnull <- lm(Rho_LMA.LL~1, all.results)
 anova(LMALL, LMALLnull) # p=0.007
@@ -1276,31 +1363,31 @@ anova(LMAN, LMANnull) # p=0.0008
 
 
 #### SLOPE LL v Nmass
-NmassLL <- lm(Slope_N.LL~Type, all.results)
-NmassLLnull <- lm(Slope_N.LL~1, all.results)
-anova(NmassLL, NmassLLnull) # p=0.897
-NmassLL <- lm(Slope_N.LL~Type, weights = n_N.LL, all.results)
-NmassLLnull <- lm(Slope_N.LL~1, weights=n_N.LL, all.results)
-anova(NmassLL, NmassLLnull) # p=0.0878
-NmassLL <- lm(Slope_N.LL~Type, weights=varNmass, all.results)
-NmassLLnull <- lm(Slope_N.LL~1, all.results, weights=varNmass)
-anova(NmassLL, NmassLLnull) # p=0.61
-NmassLL <- lm(Slope_N.LL~Type, weights=varLL, all.results)
-NmassLLnull <- lm(Slope_N.LL~1, all.results, weights=varLL)
-anova(NmassLL, NmassLLnull) # p=0.31
+LLNmass <- lm(Slope_LL.N~Type, all.results)
+LLNmassnull <- lm(Slope_LL.N~1, all.results)
+anova(LLNmass, LLNmassnull) # p=0.897
+LLNmass <- lm(Slope_LL.N~Type, weights = n_LL.N, all.results)
+LLNmassnull <- lm(Slope_LL.N~1, weights=n_LL.N, all.results)
+anova(LLNmass, LLNmassnull) # p=0.0878
+LLNmass <- lm(Slope_LL.N~Type, weights=varNmass, all.results)
+LLNmassnull <- lm(Slope_LL.N~1, all.results, weights=varNmass)
+anova(LLNmass, LLNmassnull) # p=0.61
+LLNmass <- lm(Slope_LL.N~Type, weights=varLL, all.results)
+LLNmassnull <- lm(Slope_LL.N~1, all.results, weights=varLL)
+anova(LLNmass, LLNmassnull) # p=0.31
 #### Rho LL v Nmass
-NmassLL <- lm(Rho_N.LL~Type, all.results)
-NmassLLnull <- lm(Rho_N.LL~1, all.results)
-anova(NmassLL, NmassLLnull) # p=0.018
-NmassLL <- lm(Rho_N.LL~Type, weights = n_N.LL, all.results)
-NmassLLnull <- lm(Rho_N.LL~1, weights=n_N.LL, all.results)
-anova(NmassLL, NmassLLnull) # p<0.0001
-NmassLL <- lm(Rho_N.LL~Type, weights=varNmass, all.results)
-NmassLLnull <- lm(Rho_N.LL~1, all.results, weights=varNmass)
-anova(NmassLL, NmassLLnull) # p=0.005
-NmassLL <- lm(Rho_N.LL~Type, weights=varLL, all.results)
-NmassLLnull <- lm(Rho_N.LL~1, all.results, weights=varLL)
-anova(NmassLL, NmassLLnull) # p<0.0001
+LLNmass <- lm(Rho_LL.N~Type, all.results)
+LLNmassnull <- lm(Rho_LL.N~1, all.results)
+anova(LLNmass, LLNmassnull) # p=0.018
+LLNmass <- lm(Rho_LL.N~Type, weights = n_LL.N, all.results)
+LLNmassnull <- lm(Rho_LL.N~1, weights=n_LL.N, all.results)
+anova(LLNmass, LLNmassnull) # p<0.0001
+LLNmass <- lm(Rho_LL.N~Type, weights=varNmass, all.results)
+LLNmassnull <- lm(Rho_LL.N~1, all.results, weights=varNmass)
+anova(LLNmass, LLNmassnull) # p=0.005
+LLNmass <- lm(Rho_LL.N~Type, weights=varLL, all.results)
+LLNmassnull <- lm(Rho_LL.N~1, all.results, weights=varLL)
+anova(LLNmass, LLNmassnull) # p<0.0001
 
 
 
@@ -1362,7 +1449,7 @@ anova(LLNarea, LLNareanull) # p<0.03126
 
 
 # w.inGen not different from w/.in spp, but everything else is...
-nmassll <- aov(Slope_N.LL~Type, all.results,weights=n_N.LL)
+nmassll <- aov(Slope_LL.N~Type, all.results,weights=n_LL.N)
 TukeyHSD(nmassll)
 # with super conservative TukeyHSD, nothing is significantly different, though w/spp is close
 
@@ -1370,7 +1457,7 @@ LMA.Narea <- lm(Slope_LMA.Narea~Type, weights = n_LMA.Narea, all.results)
 # Everything's different from w.inSpp. and increasingly different at higher Taxon scales...
 lmanarea <- aov(Slope_LMA.Narea~Type, all.results)
 TukeyHSD(lmanarea)
-lmanarea <- aov(Slope_LMA.Narea~Type, all.results,weights=n_N.LL)
+lmanarea <- aov(Slope_LMA.Narea~Type, all.results,weights=n_LMA.Narea)
 TukeyHSD(lmanarea)
 lmanarea <- aov(Slope_LMA.Narea~Type, all.results,weights=varLMA)
 TukeyHSD(lmanarea)

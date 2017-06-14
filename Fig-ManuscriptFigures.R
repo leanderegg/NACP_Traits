@@ -40,142 +40,302 @@ plot.MAR <- function(xvar, yvar, data, method="SMA", linecol, lwd=1) {
 # 6 panel figure with
 # a-d: boxplots of MA slope and Rho for NmassvLMA and NmassvLL
 # e&f: funnel plots 
-
+meancis <- all.results.cl %>% group_by(Type) %>% summarise(m2.5_LMA.LL = mean(lci_2.5_LMA.LL, na.rm=T), m5_LMA.LL = mean(lci_5_LMA.LL, na.rm=T), m10_LMA.LL = mean(lci_10_LMA.LL, na.rm=T),
+                                                           m97.5_LMA.LL = mean(uci_2.5_LMA.LL, na.rm=T), m95_LMA.LL = mean(uci_5_LMA.LL, na.rm=T), m90_LMA.LL = mean(uci_10_LMA.LL, na.rm=T),
+                                                           m2.5_LMA.N = mean(lci_2.5_LMA.N, na.rm=T), m5_LMA.N = mean(lci_5_LMA.N, na.rm=T), m10_LMA.N = mean(lci_10_LMA.N, na.rm=T),
+                                                           m97.5_LMA.N = mean(uci_2.5_LMA.N, na.rm=T), m95_LMA.N = mean(uci_5_LMA.N, na.rm=T), m90_LMA.N = mean(uci_10_LMA.N, na.rm=T),
+                                                           m2.5_LL.N = mean(lci_2.5_LL.N, na.rm=T), m5_LL.N = mean(lci_5_LL.N, na.rm=T), m10_LL.N = mean(lci_10_LL.N, na.rm=T),
+                                                           m97.5_LL.N = mean(uci_2.5_LL.N, na.rm=T), m95_LL.N = mean(uci_5_LL.N, na.rm=T), m90_LL.N = mean(uci_10_LL.N, na.rm=T),
+                                                           m2.5_LMA.Narea = mean(lci_2.5_LMA.Narea, na.rm=T), m5_LMA.Narea = mean(lci_5_LMA.Narea, na.rm=T), m10_LMA.Narea = mean(lci_10_LMA.Narea, na.rm=T),
+                                                           m97.5_LMA.Narea = mean(uci_2.5_LMA.Narea, na.rm=T), m95_LMA.Narea = mean(uci_5_LMA.Narea, na.rm=T), m90_LMA.Narea = mean(uci_10_LMA.Narea, na.rm=T),
+                                                           m2.5_LL.Narea = mean(lci_2.5_LL.Narea, na.rm=T), m5_LL.Narea = mean(lci_5_LL.Narea, na.rm=T), m10_LL.Narea = mean(lci_10_LL.Narea, na.rm=T),
+                                                           m97.5_LL.Narea = mean(uci_2.5_LL.Narea, na.rm=T), m95_LL.Narea = mean(uci_5_LL.Narea, na.rm=T), m90_LL.Narea = mean(uci_10_LL.Narea, na.rm=T))
 # I think the easiest thing will be to make two quartez: top with boxplots and bottom with funnel
 
+# 
+# #________________________________________________________________________________________________
+# ########## .Old Version with boxplots and funnel plots and not examples ########
+# colchoices <- c(1,2,4,3,6)
+# ##### Uppper Panel: boxplots ............................................................
+# quartz(width=5.5, height=4.5,title = "LMA v Nmass")
+# par(mfrow=c(2,2), mar=c(0,4,0,1), oma=c(6,0,2,0), cex=1)
+# palette(mypal[colchoices])
+# ### Slope boxplots (a & b)
+#   ## LMA v Nmass
+# p <- boxplot(Slope_LMA.N~Type, all.results.cl[which(all.results.cl$n_LMA.N>5& !all.results.cl$Type %in% c("global","Famclean") ),]
+#              , ylim=c(-2.2,1.5),las=3, ylab="MA Slope" #, main="log(LMA)~log(Nmass) strict"
+#              , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+#              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+#              , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+#              , boxwex=.7, xaxt="n")
+# m <- lmodel2(log.Nmass~log.LMA, allspp)
+# points(y=m$regression.results$Slope[3],x=5, pch=16, cex=1.3, col="darkgrey")
+# arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+# arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+# m <- lmodel2(log.Mmass~log.LMA, fam.dataclean)
+# points(y=m$regression.results$Slope[3],x=4, pch=16, cex=1.3, col="black")
+# arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3)
+# arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3)
+# 
+# abline(h=0, lty=2)
+# #text(y=par()$usr[3]+.2, x=c(1,2,3,4,5,6), labels = p$n)
+# #text(y=par()$usr[4]-.2,x=.5, labels = "a)")
+# mtext(text = "a)", side = 3, adj=0, line=.2)
+# mtext(text= "LMA vs Nmass", side=3, line=.2)
+#   # LL v Nmass
+# p <- boxplot(Slope_LL.N~Type, all.results.cl[which(all.results.cl$n_LL.N>5& !all.results.cl$Type %in% c("global","Famclean") ),]
+#              , ylim=c(-1.2,1.2),las=3, ylab="MA Slope" #, main="log(LMA)~log(Nmass) strict"
+#              , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+#              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+#              , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+#              , boxwex=.7, xaxt="n")
+# m <- lmodel2(log.Nmass~log.LL, allspp)
+# points(y=m$regression.results$Slope[3],x=5, pch=16, cex=1.3, col="darkgrey")
+# arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+# arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+# m <- lmodel2(log.Mmass~log.LL, fam.dataclean)
+# points(y=m$regression.results$Slope[3],x=4, pch=16, cex=1.3, col="black")
+# arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3)
+# arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3)
+# 
+# 
+# abline(h=0, lty=2)
+# #text(y=par()$usr[3]+.2, x=c(1,2,3,4,5,6), labels = p$n)
+# #text(y=par()$usr[4]-.2,x=.5, labels = "b)")
+# mtext(text = "b)", side = 3, adj=0, line=.2)
+# mtext(text= "LL vs Nmass", side=3, line=.2)
+# 
+# ### Lower boxplots with Rho
+#   # LMA v Nmass
+# # p <- boxplot(Rho_LMA.N~Type, all.results.cl[which(all.results.cl$n_LMA.N>5 & is.na(all.results.cl$Taxo.Unit)),]
+# #              , ylim=c(-1,1.1),las=3, ylab="Rho"
+# #              , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+# #              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+# #              , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+# #              , boxwex=.7, xaxt="n")
+# # #lines(meancis$m10_LMA.N~c(1,2,3,4,5))
+# # #lines(meancis$m90_LMA.N~c(1,2,3,4,5))
+# #polygon(x = c(1,2,3,3,2,1), y=na.omit(c(meancis$m10_LMA.N, rev(meancis$m90_LMA.N))), border="#EEEEEE",col="#EEEEEE")#lightgrey",col = "lightgrey")
+# p <- boxplot(Rho_LMA.N~Type, all.results.cl[which(all.results.cl$n_LMA.N>5 & !all.results.cl$Type %in% c("global","Famclean") ),]
+#              , ylim=c(-1,1.1),las=3, ylab="Rho"
+#              , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+#              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+#              , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+#              , boxwex=.7, xaxt="n")
+# 
+# 
+#  m <- cor.test(x=allspp$log.LMA, y=allspp$log.Nmass)
+#  points(y=m$estimate,x=5, pch=16, cex=1.3, col="darkgrey")
+#  arrows(x0=5,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3, col="darkgrey")
+# m <- cor.test(x=fam.dataclean$log.LMA, y=fam.dataclean$log.Nmass)
+# points(y=m$estimate,x=4, pch=16, cex=1.3, col="black")
+# arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
+# 
+# 
+# 
+# axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
+# abline(h=0, lty=2)
+# text(y=par()$usr[4]-.2, x=c(1,2,3), labels = p$n[1:3])
+# text(y=par()$usr[4]-.2,x=c(4,5), labels=paste0("(",all.results.cl$n_LMA.N[c((nrow(all.results.cl)-1),nrow(all.results.cl))],")"), cex=0.7)
+# #text(y=par()$usr[4]-.2,x=.5, labels = "b)")
+#   # LL an Nmass
+# p <- boxplot(Rho_LL.N~Type, all.results.cl[which(all.results.cl$n_LL.N>5& !all.results.cl$Type %in% c("global","Famclean") ),]
+#              , ylim=c(-1,1.1),las=3, ylab="Rho"
+#              , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+#              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+#              , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+#              , boxwex=.7, xaxt="n")
+# axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
+# abline(h=0, lty=2)
+# text(y=par()$usr[4]-.2, x=c(1,2,3), labels = p$n[1:3])
+# text(y=par()$usr[4]-.2, x=c(4,5), labels=paste0("(",all.results.cl$n_LL.N[c((nrow(all.results.cl)-1),nrow(all.results.cl))],")"),cex=.7)
+# m <- cor.test(x=allspp$log.LL, y=allspp$log.Nmass)
+# points(y=m$estimate,x=5, pch=16, cex=1.3, col="darkgrey")
+# arrows(x0=5,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3, col="darkgrey")
+# m <- cor.test(x=fam.dataclean$log.LL, y=fam.dataclean$log.Nmass)
+# points(y=m$estimate,x=4, pch=16, cex=1.3, col="black")
+# arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
+# 
+# #text(y=par()$usr[4]-.2,x=.5, labels = "b)")
+# 
+# 
+# 
+# 
+# ##### Lower Panel: funnel plots ............................................................
+# 
+# quartz(width=5.5,height=3)
+# par(mar=c(4,4,0,1), mfrow=c(1,2), mgp=c(2.5,1,0), oma=c(0,0,2,0))
+# palette(mypal[colchoices])
+# plot(Rho_LMA.N~varNmass, all.results.cl, pch=16, col=Type, xlab="Var. in %N", ylab="Rho   (LMA v Nmass)")
+# #mtext( text="Nmass v LMA", side=3, line=0, font=2)
+# abline(h=0, col="grey", lty=2)
+# abline(h=all.results.cl$Rho_LMA.N[which(all.results.cl$Taxo.Unit=="global")])
+# mtext(text = "c)", side = 3, adj=0, line=.2)
+# points(Rho_LMA.N~varNmass, all.results.cl[c(nrow(all.results.cl)-1,nrow(all.results.cl)),], pch=c(24,25), cex=1.4, bg=mypal[colchoices[c(length(colchoices)-1,length(colchoices))]])
+# 
+# plot(Rho_LL.N~varNmass, all.results.cl, pch=16, col=Type, xlab="Var. in %N", ylab="Rho   (LL v Nmass)")
+# abline(h=0, col="grey", lty=2)
+# abline(h=all.results.cl$Rho_LL.N[which(all.results.cl$Taxo.Unit=="global")])
+# legend('topright', legend = levels(all.results.cl$Type), pch=c(16,16,16,24,25), col=c(mypal[colchoices[1:3]], "black","black"), pt.bg= mypal[colchoices], bty ="n", cex=.7)
+# mtext(text = "d)", side = 3, adj=0, line=.2)
+# points(Rho_LL.N~varNmass, all.results.cl[c(nrow(all.results.cl)-1,nrow(all.results.cl)),], pch=c(24,25), cex=1.4, bg=mypal[colchoices[c(length(colchoices)-1,length(colchoices))]])
+# 
+# 
+
+
+
+
+#________________________________________________________________________________________________
+########## .New Version similar to all other covariation plots ########
+#_________________________________________________________________________________________________
+
+## LMA v Nmass boxplots
+mat <- matrix(c(1,3,
+                2,3), nrow=2, byrow = T)
 colchoices <- c(1,2,4,3,6)
-##### Uppper Panel: boxplots ............................................................
-quartz(width=5.5, height=4.5,title = "LMA v Nmass")
-par(mfrow=c(2,2), mar=c(0,4,0,1), oma=c(6,0,2,0), cex=1)
 palette(mypal[colchoices])
-### Slope boxplots (a & b)
-  ## LMA v Nmass
-p <- boxplot(Slope_LMA.N~Type, all.results.cl[which(all.results.cl$n_LMA.N>5),]
+
+quartz(width=7.008, height=4)
+layout(mat)
+par(mar=c(0,4,5,1))
+
+# Slope boxplots
+p <- boxplot(Slope_LMA.N~Type, all.results.cl[which(all.results.cl$n_LMA.N>5& !all.results.cl$Type %in% c("global","Famclean") ),]
              , ylim=c(-2.2,1.5),las=3, ylab="MA Slope" #, main="log(LMA)~log(Nmass) strict"
              , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
              , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
              , boxwex=.7, xaxt="n")
-
+  # add global and bewteen family points and error bars
+m <- lmodel2(log.Nmass~log.LMA, allspp)
+points(y=m$regression.results$Slope[3],x=5, pch=16, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+m <- lmodel2(log.Mmass~log.LMA, fam.dataclean)
+points(y=m$regression.results$Slope[3],x=4, pch=16, cex=1.3, col="black")
+arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3)
+arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3)
 abline(h=0, lty=2)
-#text(y=par()$usr[3]+.2, x=c(1,2,3,4,5,6), labels = p$n)
-#text(y=par()$usr[4]-.2,x=.5, labels = "a)")
 mtext(text = "a)", side = 3, adj=0, line=.2)
-mtext(text= "LMA vs Nmass", side=3, line=.2)
-  # LL v Nmass
-p <- boxplot(Slope_N.LL~Type, all.results.cl[which(all.results.cl$n_N.LL>5),]
-             , ylim=c(-3.5,3),las=3, ylab="MA Slope" #, main="log(LMA)~log(Nmass) strict"
-             , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
-             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
-             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
-             , boxwex=.7, xaxt="n")
-abline(h=0, lty=2)
-#text(y=par()$usr[3]+.2, x=c(1,2,3,4,5,6), labels = p$n)
-#text(y=par()$usr[4]-.2,x=.5, labels = "b)")
-mtext(text = "b)", side = 3, adj=0, line=.2)
-mtext(text= "LL vs Nmass", side=3, line=.2)
+mtext(text= expression(paste("LMA vs ", N[mass], sep=" ")), side=3, line=.2)
 
-### Lower boxplots with Rho
-  # LMA v Nmass
-p <- boxplot(Rho_LMA.N~Type, all.results.cl[which(all.results.cl$n_LMA.N>5),]
+# Rho boxplots
+par(mar=c(5,4,0,1))
+p <- boxplot(Rho_LMA.N~Type, all.results.cl[which(all.results.cl$n_LMA.N>5 & !all.results.cl$Type %in% c("global","Famclean") ),]
              , ylim=c(-1,1.1),las=3, ylab="Rho"
              , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
              , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
              , boxwex=.7, xaxt="n")
+  # add global and between family points
+m <- cor.test(x=allspp$log.LMA, y=allspp$log.Nmass)
+points(y=m$estimate,x=5, pch=16, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3, col="darkgrey")
+m <- cor.test(x=fam.dataclean$log.LMA, y=fam.dataclean$log.Nmass)
+points(y=m$estimate,x=4, pch=16, cex=1.3, col="black")
+arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
+  # add axes and sample sizes
 axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
 abline(h=0, lty=2)
 text(y=par()$usr[4]-.2, x=c(1,2,3), labels = p$n[1:3])
 text(y=par()$usr[4]-.2,x=c(4,5), labels=paste0("(",all.results.cl$n_LMA.N[c((nrow(all.results.cl)-1),nrow(all.results.cl))],")"), cex=0.7)
-#text(y=par()$usr[4]-.2,x=.5, labels = "b)")
-  # LL an Nmass
-p <- boxplot(Rho_N.LL~Type, all.results.cl[which(all.results.cl$n_N.LL>5),]
-             , ylim=c(-1,1.1),las=3, ylab="Rho"
-             , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
-             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
-             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
-             , boxwex=.7, xaxt="n")
-axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
-abline(h=0, lty=2)
-text(y=par()$usr[4]-.2, x=c(1,2,3), labels = p$n[1:3])
-text(y=par()$usr[4]-.2, x=c(4,5), labels=paste0("(",all.results.cl$n_N.LL[c((nrow(all.results.cl)-1),nrow(all.results.cl))],")"),cex=.7)
-#text(y=par()$usr[4]-.2,x=.5, labels = "b)")
 
 
-##### Lower Panel: funnel plots ............................................................
 
-quartz(width=5.5,height=3)
-par(mar=c(4,4,0,1), mfrow=c(1,2), mgp=c(2.5,1,0), oma=c(0,0,2,0))
-palette(mypal[colchoices])
-plot(Rho_LMA.N~varNmass, all.results.cl, pch=16, col=Type, xlab="Var. in %N", ylab="Rho   (LMA v Nmass)")
-#mtext( text="Nmass v LMA", side=3, line=0, font=2)
-abline(h=0, col="grey", lty=2)
-abline(h=all.results.cl$Rho_LMA.N[which(all.results.cl$Taxo.Unit=="global")])
-mtext(text = "c)", side = 3, adj=0, line=.2)
-points(Rho_LMA.N~varNmass, all.results.cl[c(nrow(all.results.cl)-1,nrow(all.results.cl)),], pch=c(24,25), cex=1.4, bg=mypal[colchoices[c(length(colchoices)-1,length(colchoices))]])
-
-plot(Rho_N.LL~varNmass, all.results.cl, pch=16, col=Type, xlab="Var. in %N", ylab="Rho   (LL v Nmass)")
-abline(h=0, col="grey", lty=2)
-abline(h=all.results.cl$Rho_N.LL[which(all.results.cl$Taxo.Unit=="global")])
-legend('topright', legend = levels(all.results.cl$Type), pch=c(16,16,16,24,25), col=c(mypal[colchoices[1:3]], "black","black"), pt.bg= mypal[colchoices], bty ="n", cex=.7)
-mtext(text = "d)", side = 3, adj=0, line=.2)
-points(Rho_N.LL~varNmass, all.results.cl[c(nrow(all.results.cl)-1,nrow(all.results.cl)),], pch=c(24,25), cex=1.4, bg=mypal[colchoices[c(length(colchoices)-1,length(colchoices))]])
-
-
-##### possible additional panels: visuals of slopes on scatterplot ...............................
-
-####### Plotting the LMA vs Nmass scaling in log space ######
-plot(log.Nmass~log.LMA, LES, col="grey", pch=16, ylab="log(LMA)", xlab="log(Nmass)")
-
+# scatterplot w/ lines
+par(mar=c(4,4,1.5,1.5))
+plot(log.Nmass~log.LMA, LES, col="grey", pch=16, ylab=expression(paste(log[10],"LMA")), xlab=expression(paste(log[10],N[mass], sep=" ")))
 tax <- "w.inGen"
 for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.N>5)])){
   plot.MAR(xvar = "log.LMA", yvar = "log.Nmass",data= gen.data[which(gen.data$Genus==i),], linecol = mypal[colchoices[2]])
 }
-
 tax <- "Genw.inFam"
 for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.N>5)])){
   plot.MAR(xvar = "log.LMA", yvar = "log.Nmass",data= geninfam.data[which(geninfam.data$Family==i),], linecol = mypal[colchoices[3]])
 }
-
-
 abline(a=all.results.cl$Int_LMA.N[nrow(all.results.cl)-1], b=all.results.cl$Slope_LMA.N[nrow(all.results.cl)-1], lwd=3, col="black")
 abline(a=all.results.cl$Int_LMA.N[nrow(all.results.cl)], b=all.results.cl$Slope_LMA.N[nrow(all.results.cl)], lwd=3, col="black", lty=3)
 tax <- "w.inSpp"
 for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.N>5)])){
   plot.MAR(xvar = "log.LMA", yvar = "log.Nmass",data= spp.data[which(spp.data$Species==i),], linecol = mypal[colchoices[1]])
 }
-
-#plot.MAR(xvar="log.LMA", yvar="log.Nmass", data= fam.data, linecol = mypal[colchoices[4]], lwd=2)
-
-#plot.MAR(xvar="log.LMA", yvar="log.Nmass", data= LES, linecol = "black", lwd=2)
 mtext(text = "b)", side = 3, adj=0, line=.2)
 
 
-####### Plotting the LMA vs Narea scaling in unit rather than log space ######
-plot(log.Nmass~log.LL, LES, col="grey", pch=16, ylab="log(LL)", xlab="log(Nmass)")
 
+
+
+# LL v Nmass ________________________
+mat <- matrix(c(1,3,
+                2,3), nrow=2, byrow = T)
+colchoices <- c(1,2,4,3,6)
+palette(mypal[colchoices])
+
+quartz(width=7.008, height=4)
+layout(mat)
+par(mar=c(0,4,5,1))
+
+p <- boxplot(Slope_LL.N~Type, all.results.cl[which(all.results.cl$n_LL.N>5& !all.results.cl$Type %in% c("global","Famclean") ),]
+             , ylim=c(-1.2,1.2),las=3, ylab="MA Slope" #, main="log(LMA)~log(Nmass) strict"
+             , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+             , boxwex=.7, xaxt="n")
+m <- lmodel2(log.Nmass~log.LL, allspp)
+points(y=m$regression.results$Slope[3],x=5, pch=16, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+m <- lmodel2(log.Mmass~log.LL, fam.dataclean)
+points(y=m$regression.results$Slope[3],x=4, pch=16, cex=1.3, col="black")
+arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3)
+arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3)
+abline(h=0, lty=2)
+mtext(text = "c)", side = 3, adj=0, line=.2)
+mtext(text= expression(paste("LL vs ",N[mass])), side=3, line=.2)
+
+
+# Rho boxplot
+par(mar=c(5,4,0,1))
+p <- boxplot(Rho_LL.N~Type, all.results.cl[which(all.results.cl$n_LL.N>5& !all.results.cl$Type %in% c("global","Famclean") ),]
+             , ylim=c(-1,1.1),las=3, ylab="Rho"
+             , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+             , boxwex=.7, xaxt="n")
+axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
+abline(h=0, lty=2)
+text(y=par()$usr[4]-.2, x=c(1,2,3), labels = p$n[1:3])
+text(y=par()$usr[4]-.2, x=c(4,5), labels=paste0("(",all.results.cl$n_LL.N[c((nrow(all.results.cl)-1),nrow(all.results.cl))],")"),cex=.7)
+m <- cor.test(x=allspp$log.LL, y=allspp$log.Nmass)
+points(y=m$estimate,x=5, pch=16, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3, col="darkgrey")
+m <- cor.test(x=fam.dataclean$log.LL, y=fam.dataclean$log.Nmass)
+points(y=m$estimate,x=4, pch=16, cex=1.3, col="black")
+arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
+
+# scatterplot w/ lines
+par(mar=c(4,4,1.5,1.5))
+plot(log.Nmass~log.LL, LES, col="grey", pch=16, ylab="log(LL)", xlab="log(Nmass)")
 tax <- "w.inGen"
-for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_N.LL>5)])){
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LL.N>5)])){
   plot.MAR(xvar = "log.LL", yvar = "log.Nmass",data= gen.data[which(gen.data$Genus==i),], linecol = mypal[colchoices[2]])
 }
-
 tax <- "Genw.inFam"
-for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_N.LL>5)])){
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LL.N>5)])){
   plot.MAR(xvar = "log.LL", yvar = "log.Nmass",data= geninfam.data[which(geninfam.data$Family==i),], linecol = mypal[colchoices[3]])
 }
-
-
-abline(a=all.results.cl$Int_N.LL[nrow(all.results.cl)-1], b=all.results.cl$Slope_N.LL[nrow(all.results.cl)-1], lwd=3, col="black")
-abline(a=all.results.cl$Int_N.LL[nrow(all.results.cl)], b=all.results.cl$Slope_N.LL[nrow(all.results.cl)], lwd=3, col="black", lty=3)
+abline(a=all.results.cl$Int_LL.N[nrow(all.results.cl)-1], b=all.results.cl$Slope_LL.N[nrow(all.results.cl)-1], lwd=3, col="black")
+abline(a=all.results.cl$Int_LL.N[nrow(all.results.cl)], b=all.results.cl$Slope_LL.N[nrow(all.results.cl)], lwd=3, col="black", lty=3)
 tax <- "w.inSpp"
-for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_N.LL>5)])){
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LL.N>5)])){
   plot.MAR(xvar = "log.LL", yvar = "log.Nmass",data= spp.data[which(spp.data$Species==i),], linecol = mypal[colchoices[1]])
 }
+mtext(text = "d)", side = 3, adj=0, line=.2)
 
-#plot.MAR(xvar="log.LL", yvar="log.Nmass", data= fam.data, linecol = mypal[colchoices[4]], lwd=2)
 
-#plot.MAR(xvar="log.LL", yvar="log.Nmass", data= LES, linecol = "black", lwd=2)
-mtext(text = "b)", side = 3, adj=0, line=.2)
+
+#_________________________________________________________________________________________________
+
 
 
 
@@ -226,6 +386,7 @@ axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,
 abline(h=0, lty=2)
 text(y=par()$usr[4]-.2, x=c(1,2,3), labels = p$n[1:3])
 text(y=par()$usr[4]-.2, x=c(4,5), labels=paste0("(",all.results.cl$n_LMA.LL[c((nrow(all.results.cl)-1),nrow(all.results.cl))],")"),cex=.8)
+#polygon(x = c(1,2,3,3,2,1), y=na.omit(c(meancis$m10_LMA.LL, rev(meancis$m90_LMA.LL))), border="#EEEEEE",col="#EEEEEE")#lightgrey",col = "lightgrey")
 
 par(mar=c(4,4,1.5,1.5))
 ## scatterplot
@@ -751,8 +912,8 @@ palette(genpal)
 tax <- "w.inSpp"
 for (j in 1:length(as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.LL>5)]))){
   i <- as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.LL>5)])[j]
-  #plot.MAR(xvar = "log.LMA", yvar = "log.LL",data= spp.data[which(spp.data$Species==i),], linecol = genpal[j], lwd=3)
-  plot.MAR(xvar = "log.LMA", yvar = "log.LL",data= spp.data[which(spp.data$Species==i),], linecol = mypal[colchoices[1]], lwd=3)
+  plot.MAR(xvar = "log.LMA", yvar = "log.LL",data= spp.data[which(spp.data$Species==i),], linecol = genpal[j], lwd=3)
+  #plot.MAR(xvar = "log.LMA", yvar = "log.LL",data= spp.data[which(spp.data$Species==i),], linecol = mypal[colchoices[1]], lwd=3)
   
 }
 
@@ -1199,3 +1360,167 @@ for(i in levels(spid)){
   lines(LLs[which(spid==i)], f1LL[I][which(spid==i)],  col=spid[which(spid==i)], lwd=2)
 }
 
+
+
+
+
+
+
+
+
+
+#________________________________________________________________
+###### Null Model Plots - for supplement ######
+#________________________________________________________________
+
+
+
+meancis <- all.results.cl %>% group_by(Type) %>% summarise(m2.5_LMA.LL = mean(lci_2.5_LMA.LL, na.rm=T), m5_LMA.LL = mean(lci_5_LMA.LL, na.rm=T), m10_LMA.LL = mean(lci_10_LMA.LL, na.rm=T),
+                                                           m97.5_LMA.LL = mean(uci_2.5_LMA.LL, na.rm=T), m95_LMA.LL = mean(uci_5_LMA.LL, na.rm=T), m90_LMA.LL = mean(uci_10_LMA.LL, na.rm=T),
+                                                           m2.5_LMA.N = mean(lci_2.5_LMA.N, na.rm=T), m5_LMA.N = mean(lci_5_LMA.N, na.rm=T), m10_LMA.N = mean(lci_10_LMA.N, na.rm=T),
+                                                           m97.5_LMA.N = mean(uci_2.5_LMA.N, na.rm=T), m95_LMA.N = mean(uci_5_LMA.N, na.rm=T), m90_LMA.N = mean(uci_10_LMA.N, na.rm=T),
+                                                           m2.5_LL.N = mean(lci_2.5_LL.N, na.rm=T), m5_LL.N = mean(lci_5_LL.N, na.rm=T), m10_LL.N = mean(lci_10_LL.N, na.rm=T),
+                                                           m97.5_LL.N = mean(uci_2.5_LL.N, na.rm=T), m95_LL.N = mean(uci_5_LL.N, na.rm=T), m90_LL.N = mean(uci_10_LL.N, na.rm=T),
+                                                           m2.5_LMA.Narea = mean(lci_2.5_LMA.Narea, na.rm=T), m5_LMA.Narea = mean(lci_5_LMA.Narea, na.rm=T), m10_LMA.Narea = mean(lci_10_LMA.Narea, na.rm=T),
+                                                           m97.5_LMA.Narea = mean(uci_2.5_LMA.Narea, na.rm=T), m95_LMA.Narea = mean(uci_5_LMA.Narea, na.rm=T), m90_LMA.Narea = mean(uci_10_LMA.Narea, na.rm=T),
+                                                           m2.5_LL.Narea = mean(lci_2.5_LL.Narea, na.rm=T), m5_LL.Narea = mean(lci_5_LL.Narea, na.rm=T), m10_LL.Narea = mean(lci_10_LL.Narea, na.rm=T),
+                                                           m97.5_LL.Narea = mean(uci_2.5_LL.Narea, na.rm=T), m95_LL.Narea = mean(uci_5_LL.Narea, na.rm=T), m90_LL.Narea = mean(uci_10_LL.Narea, na.rm=T))
+# I think the easiest thing will be to make two quartez: top with boxplots and bottom with funnel
+
+
+xvals <- as.numeric(all.results.cl$Type)
+pchs <- rep(1, times=nrow(all.results.cl))
+pchs[which(all.results.cl$sig_LMA.N>0)] <- 16
+### Lower boxplots with Rho
+
+quartz(width=5, height=6)
+par(mfrow=c(3,2), mar=c(5,3,1,1), mgp=c(2,1,0), cex=.8)
+# LMA v Nmass
+p <- boxplot(Rho_LMA.N~Type, all.results.cl[which(all.results.cl$n_LMA.N>5 & is.na(all.results.cl$Taxo.Unit)),]
+             , ylim=c(-1,1.3),las=3, ylab="Rho"
+             , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+             , boxwex=.7, xaxt="n")
+#lines(meancis$m10_LMA.N~c(1,2,3,4,5))
+#lines(meancis$m90_LMA.N~c(1,2,3,4,5))
+polygon(x = c(.8,2,3.2,3.2,2,.8), y=na.omit(c(meancis$m10_LMA.N, rev(meancis$m90_LMA.N))), border="#DDDDDD",col="#DDDDDD")#lightgrey",col = "lightgrey")
+m <- cor.test(x=allspp$log.LMA, y=allspp$log.Nmass)
+points(y=m$estimate,x=5, pch=15, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3, col="darkgrey")
+m <- cor.test(x=fam.dataclean$log.LMA, y=fam.dataclean$log.Nmass)
+points(y=m$estimate,x=4, pch=17, cex=1.3, col="black")
+arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
+# layering points on top of null model
+points(Rho_LMA.N~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.N>5 & all.results.cl$sig_LMA.N>0),], pch=16)
+points(Rho_LMA.N~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.N>5 & all.results.cl$sig_LMA.N==0),], pch=1)
+axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
+abline(h=0, lty=2)
+text(y=par()$usr[4]-.2,x=3, labels = "a) LMA vs Nmass")
+
+# LL v Nmass
+p <- boxplot(Rho_LL.N~Type, all.results.cl[which(all.results.cl$n_LL.N>5 & is.na(all.results.cl$Taxo.Unit)),]
+             , ylim=c(-1,1.3),las=3, ylab="Rho"
+             , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+             , boxwex=.7, xaxt="n")
+#lines(meancis$m10_LL.N~c(1,2,3,4,5))
+#lines(meancis$m90_LL.N~c(1,2,3,4,5))
+polygon(x = c(.8,2,3.2,3.2,2,.8), y=na.omit(c(meancis$m10_LL.N, rev(meancis$m90_LL.N))), border="#DDDDDD",col="#DDDDDD")#lightgrey",col = "lightgrey")
+m <- cor.test(x=allspp$log.LL, y=allspp$log.Nmass)
+points(y=m$estimate,x=5, pch=15, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3, col="darkgrey")
+m <- cor.test(x=fam.dataclean$log.LL, y=fam.dataclean$log.Nmass)
+points(y=m$estimate,x=4, pch=17, cex=1.3, col="black")
+arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
+# layering points on top of null model
+points(Rho_LL.N~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LL.N>5 & all.results.cl$sig_LL.N>0),], pch=16)
+points(Rho_LL.N~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LL.N>5 & all.results.cl$sig_LL.N==0),], pch=1)
+axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
+abline(h=0, lty=2)
+#text(y=par()$usr[4]-.2,x=.5, labels = "b)")
+text(y=par()$usr[4]-.2,x=3, labels = "b) Leaf Life vs Nmass")
+
+
+# LMA v Narea
+p <- boxplot(Rho_LMA.Narea~Type, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & is.na(all.results.cl$Taxo.Unit)),]
+             , ylim=c(-1,1.3),las=3, ylab="Rho"
+             , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+             , boxwex=.7, xaxt="n")
+#lines(meancis$m10_LMA.Narea~c(1,2,3,4,5))
+#lines(meancis$m90_LMA.Narea~c(1,2,3,4,5))
+polygon(x = c(.8,2,3.2,3.2,2,.8), y=na.omit(c(meancis$m10_LMA.Narea, rev(meancis$m90_LMA.Narea))), border="#DDDDDD",col="#DDDDDD")#lightgrey",col = "lightgrey")
+m <- cor.test(x=allspp$log.LMA, y=allspp$log.Narea)
+points(y=m$estimate,x=5, pch=15, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3, col="darkgrey")
+m <- cor.test(x=fam.dataclean$log.LMA, y=fam.dataclean$log.Narea)
+points(y=m$estimate,x=4, pch=17, cex=1.3, col="black")
+arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
+# layering points on top of null model
+points(Rho_LMA.Narea~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$sig_LMA.Narea>0),], pch=16)
+points(Rho_LMA.Narea~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$sig_LMA.Narea==0),], pch=1)
+axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
+abline(h=0, lty=2)
+#text(y=par()$usr[4]-.2,x=.5, labels = "b)")
+text(y=par()$usr[4]-.2,x=3, labels = "c) LMA vs Narea")
+
+
+
+
+# LL v Narea
+p <- boxplot(Rho_LL.Narea~Type, all.results.cl[which(all.results.cl$n_LL.Narea>5 & is.na(all.results.cl$Taxo.Unit)),]
+             , ylim=c(-1,1.3),las=3, ylab="Rho"
+             , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+             , boxwex=.7, xaxt="n")
+#lines(meancis$m10_LL.Narea~c(1,2,3,4,5))
+#lines(meancis$m90_LL.Narea~c(1,2,3,4,5))
+polygon(x = c(.8,2,3.2,3.2,2,.8), y=na.omit(c(meancis$m10_LL.Narea, rev(meancis$m90_LL.Narea))), border="#DDDDDD",col="#DDDDDD")#lightgrey",col = "lightgrey")
+m <- cor.test(x=allspp$log.LL, y=allspp$log.Narea)
+points(y=m$estimate,x=5, pch=15, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3, col="darkgrey")
+m <- cor.test(x=fam.dataclean$log.LL, y=fam.dataclean$log.Narea)
+points(y=m$estimate,x=4, pch=17, cex=1.3, col="black")
+arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
+# layering points on top of null model
+points(Rho_LL.Narea~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LL.Narea>5 & all.results.cl$sig_LL.Narea>0),], pch=16)
+points(Rho_LL.Narea~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LL.Narea>5 & all.results.cl$sig_LL.Narea==0),], pch=1)
+axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
+abline(h=0, lty=2)
+#text(y=par()$usr[4]-.2,x=.5, labels = "b)")
+text(y=par()$usr[4]-.2,x=3, labels = "d) Leaf Life vs Narea")
+
+
+
+
+# LMA v LL
+p <- boxplot(Rho_LMA.LL~Type, all.results.cl[which(all.results.cl$n_LMA.LL>5 & is.na(all.results.cl$Taxo.Unit)),]
+             , ylim=c(-1,1.3),las=3, ylab="Rho"
+             , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+             , boxwex=.7, xaxt="n")
+#lines(meancis$m10_LMA.LL~c(1,2,3,4,5))
+#lines(meancis$m90_LMA.LL~c(1,2,3,4,5))
+polygon(x = c(.8,2,3.2,3.2,2,.8), y=na.omit(c(meancis$m10_LMA.LL, rev(meancis$m90_LMA.LL))), border="#DDDDDD",col="#DDDDDD")#lightgrey",col = "lightgrey")
+m <- cor.test(x=allspp$log.LMA, y=allspp$log.LL)
+points(y=m$estimate,x=5, pch=15, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3, col="darkgrey")
+m <- cor.test(x=fam.dataclean$log.LMA, y=fam.dataclean$log.LL)
+points(y=m$estimate,x=4, pch=17, cex=1.3, col="black")
+arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
+# layering points on top of null model
+points(Rho_LMA.LL~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.LL>5 & all.results.cl$sig_LMA.LL>0),], pch=16)
+points(Rho_LMA.LL~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.LL>5 & all.results.cl$sig_LMA.LL==0),], pch=1)
+axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
+abline(h=0, lty=2)
+#text(y=par()$usr[4]-.2,x=.5, labels = "b)")
+text(y=par()$usr[4]-.2,x=3, labels = "e) Leaf Life vs LMA")
+
+plot(1~1, type="n", bty="n", xlab="", ylab="", xaxt="n", yaxt="n")
+legend("center",legend = c("not different from null","different from null"), pch = c(1,16),bty="n")
+legend("bottomleft", bty="n", legend = "mean of 10%-90%\nnull distributions", fill = "#DDDDDD")
