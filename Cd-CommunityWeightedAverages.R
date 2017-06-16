@@ -10,8 +10,8 @@
 # note on nomenclature:
 # TRAIT1 = species mean trait value for species 1
 # wTRAIT1 = BA weighted species mean trait value
-# TRAITs1 = site mean value for the species species 1
-# wTRAITs1 = BA weighted site mean value for species 1
+# TRAITp1 = plot/site mean value for the species species 1 - originally used s, but that was horrific. changed 06.14.17
+# wTRAITp1 = BA weighted plot/site mean value for species 1
 
 
 
@@ -22,25 +22,33 @@ species.means <- traits %>% group_by(GENUS,SPECIES,SP.ID) %>% summarise(mSLA = m
 
 spp.traits <- traits %>% group_by(GE.SP) %>% summarise(nsample = n(), SLA = mean(SLA_HSA, na.rm=T), nSLA = n()- length(which(is.na(SLA_HSA))), CN = mean(LEAF_CN, na.rm=T), nCN = n()- length(which(is.na(LEAF_CN)))
                                                        , LIFE = mean(LEAF_LIFE, na.rm=T), nLIFE=n()- length(which(is.na(LEAF_LIFE))), nplots =length(unique(PLOT_ID))
-                                                       , mLMA = mean(LMA_PSA, na.rm=T), mLLmonths= mean(LLmonths, na.rm=T), mNarea=mean(Narea, na.rm=T)
+                                                       , mLMA = mean(LMA_PSA, na.rm=T), mLLmonths= mean(LLmonths, na.rm=T), mNmass = mean(LEAF_NITROGEN, na.rm=T), mNarea=mean(Narea, na.rm=T)
                                                        , mlog.LMA = mean(log.LMA, na.rm=T), mlog.LL = mean(log.LL, na.rm=T), mlog.Narea=mean(log.Narea, na.rm=T), mlog.Nmass=mean(log.Nmass, na.rm=T)
-                                                       , RGR = unique(RGRdom), stGrowth = mean(stGrowthdom, na.rm=T) )
+                                                       , RGR = mean(RGRdom, na.rm=T), stGrowth = mean(stGrowthdom, na.rm=T) )
 ## An idea: leaf lifespan seems to vary quite a bit with MAT. What if I calculated plot averaged leaf lifespan based on spp averages vs based on the actual data from the plot? could say something about using a single value for a species?
 spp.plot.traits <- traits %>% group_by(SP.ID, PLOT_ID) %>% summarise(nsample = n(), mSLA = mean(SLA_HSA, na.rm=T), nSLA = n()- length(which(is.na(SLA_HSA))), mCN = mean(LEAF_CN, na.rm=T), nCN = n()- length(which(is.na(LEAF_CN)))
-                                                                     , mLIFE = mean(LEAF_LIFE, na.rm=T), nLIFE=n()- length(which(is.na(LEAF_LIFE))), mNITROGEN = mean(LEAF_NITROGEN, na.rm=T), nplots =length(unique(PLOT_ID))
+                                                                     , mLIFE = mean(LEAF_LIFE, na.rm=T), nLIFE=n()- length(which(is.na(LEAF_LIFE))), mNmass = mean(LEAF_NITROGEN, na.rm=T), nplots =length(unique(PLOT_ID))
                                                                      , mLMA = mean(LMA_PSA, na.rm=T), mLLmonths= mean(LLmonths, na.rm=T), mNarea=mean(Narea, na.rm=T)
                                                                      , mlog.LMA = mean(log.LMA, na.rm=T), mlog.LL = mean(log.LL, na.rm=T), mlog.Narea=mean(log.Narea, na.rm=T), mlog.Nmass=mean(log.Nmass, na.rm=T)
-                                                                     , RGR = unique(RGRdom), stGrowth = mean(stGrowthdom, na.rm=T))
+                                                                     , RGR = unique(RGRdom), stGrowth = mean(stGrowthdom, na.rm=T)
+                                                                     , climPC1 = unique(climPC1), climPC2 = unique(climPC2), climPC3 = unique(climPC3)
+                                                                     )
+
 # Note: I used LMA_PSA in other trait analysis in TaxonomicAnalysis. So I've switched to it here
 spp.plot.traits$SP.PLOT <- paste(spp.plot.traits$SP.ID, spp.plot.traits$PLOT_ID, sep="-")
-# let's just pull out the common dominant species in an easy to name df
-plotavs <- spp.plot.traits%>% subset(spp.plot.traits$SP.ID %in% names(which(xtabs(~SPP_O1_ABBREV, biomass)>2)))
+
 
 ### make unique identifiers for matching biomass and spp.plot.traits rows
 biomass$SP1.PLOT <- paste(biomass$SPP_O1_ABBREV,biomass$PLOT_ID, sep="-")
 biomass$SP2.PLOT <- paste(biomass$SPP_O2_ABBREV,biomass$PLOT_ID, sep="-")
 biomass$SP3.PLOT <- paste(biomass$SPP_O3_ABBREV,biomass$PLOT_ID, sep="-")
 biomass$SP4.PLOT <- paste(biomass$SPP_O4_ABBREV,biomass$PLOT_ID, sep="-")
+
+
+# let's just pull out the common dominant species in an easy to name df
+plotavs <- spp.plot.traits%>% subset(spp.plot.traits$SP.ID %in% names(which(xtabs(~SPP_O1_ABBREV, biomass)>2)))
+
+
 
 
 
@@ -53,128 +61,434 @@ biomass$SP4.PLOT <- paste(biomass$SPP_O4_ABBREV,biomass$PLOT_ID, sep="-")
 
 
 
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+############ CWMs based on species mean trait values #######################################
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 ####### Plot Trait values based on species mean values ######
-biomass$SLA1 <- species.means$mSLA[match(biomass$SPP_O1_ABBREV, species.means$SP.ID)]
-biomass$SLA2 <- species.means$mSLA[match(biomass$SPP_O2_ABBREV, species.means$SP.ID)]
-biomass$SLA3 <- species.means$mSLA[match(biomass$SPP_O3_ABBREV, species.means$SP.ID)]
-biomass$SLA4 <- species.means$mSLA[match(biomass$SPP_O4_ABBREV, species.means$SP.ID)]
+biomass$wSLA1 <- species.means$mSLA[match(biomass$SPP_O1_ABBREV, species.means$SP.ID)]*biomass$SPP_O1_BASAL_AREA_FRACTION/100
+biomass$wSLA2 <- species.means$mSLA[match(biomass$SPP_O2_ABBREV, species.means$SP.ID)]*biomass$SPP_O2_BASAL_AREA_FRACTION/100
+biomass$wSLA3 <- species.means$mSLA[match(biomass$SPP_O3_ABBREV, species.means$SP.ID)]*biomass$SPP_O3_BASAL_AREA_FRACTION/100
+biomass$wSLA4 <- species.means$mSLA[match(biomass$SPP_O4_ABBREV, species.means$SP.ID)]*biomass$SPP_O4_BASAL_AREA_FRACTION/100
+# # cut out this step to limit the number of columns I create.
+# biomass$wSLA1 <- biomass$SLA1 * biomass$SPP_O1_BASAL_AREA_FRACTION/100
+# biomass$wSLA2 <- biomass$SLA2 * biomass$SPP_O2_BASAL_AREA_FRACTION/100
+# biomass$wSLA3 <- biomass$SLA3 * biomass$SPP_O3_BASAL_AREA_FRACTION/100
+# biomass$wSLA4 <- biomass$SLA4 * biomass$SPP_O4_BASAL_AREA_FRACTION/100
+biomass$cw_SLA <- apply(biomass[,c("wSLA1", "wSLA2","wSLA3","wSLA4")],MARGIN=1,FUN=sum, na.rm=T)
+biomass$cw_SLA[which(biomass$cw_SLA==0)] <- NA
 
-biomass$wSLA1 <- biomass$SLA1 * biomass$SPP_O1_BASAL_AREA_FRACTION/100
-biomass$wSLA2 <- biomass$SLA2 * biomass$SPP_O2_BASAL_AREA_FRACTION/100
-biomass$wSLA3 <- biomass$SLA3 * biomass$SPP_O3_BASAL_AREA_FRACTION/100
-biomass$wSLA4 <- biomass$SLA4 * biomass$SPP_O4_BASAL_AREA_FRACTION/100
-biomass$ComM_SLA <- apply(biomass[,c("wSLA1", "wSLA2","wSLA3","wSLA4")],MARGIN=1,FUN=sum, na.rm=T)
+plot(cw_SLA~MAP, biomass, col=SPP_O1_ABBREV, pch=14 + as.numeric(biomass$PROJECT))
+  # surprisingly linear increase in SLA w/ MAP, despite using spp means
+plot(cw_SLA~MAT_C, biomass, col=SPP_O1_ABBREV, pch=14 + as.numeric(biomass$PROJECT))
+abline(lm(cw_SLA~MAT_C, biomass))
+summary(lm(cw_SLA~MAP + MAT_C + SPP_O1_ABBREV, biomass))
 
-
-plot(ComM_SLA~MAP, biomass, col=SPP_O1_ABBREV, pch=14 + as.numeric(biomass$PROJECT))
-plot(ComM_SLA~MAT_C, biomass, col=SPP_O1_ABBREV, pch=14 + as.numeric(biomass$PROJECT))
-abline(lm(ComM_SLA~MAT_C, biomass))
-summary(lm(ComM_SLA~MAP + MAT_C + SPP_O1_ABBREV, biomass))
-
-## let's look at how many plots are dominated primarily by one species:
-length(biomass[which(biomass$SPP_O1_BASAL_AREA_FRACTION==100),1])
-#55 plots are monoculture
-length(biomass[which(biomass$SPP_O1_BASAL_AREA_FRACTION>90),1])
-#116/265 plots are >90% 1 spp
-length(biomass[which(biomass$SPP_O1_BASAL_AREA_FRACTION>75),1])
-#150 plots are >75% 1 species.
-length(biomass[which(biomass$SPP_O1_BASAL_AREA_FRACTION<50),1])
-#only 39 of 265 plots are bonafide co-dominant...
+# ## let's look at how many plots are dominated primarily by one species:
+# length(biomass[which(biomass$SPP_O1_BASAL_AREA_FRACTION==100),1])
+# #55 plots are monoculture
+# length(biomass[which(biomass$SPP_O1_BASAL_AREA_FRACTION>90),1])
+# #116/265 plots are >90% 1 spp
+# length(biomass[which(biomass$SPP_O1_BASAL_AREA_FRACTION>75),1])
+# #150 plots are >75% 1 species.
+# length(biomass[which(biomass$SPP_O1_BASAL_AREA_FRACTION<50),1])
+# #only 39 of 265 plots are bonafide co-dominant...
 
 
 
 
 ####### **Comparing Plot Level Values based on SPP averages, vs Plot values*** ######
-spp.traits <- traits %>% group_by(GE.SP) %>% summarise(nsample = n(), SLA = mean(SLA_HSA, na.rm=T), nSLA = n()- length(which(is.na(SLA_HSA))), CN = mean(LEAF_CN, na.rm=T), nCN = n()- length(which(is.na(LEAF_CN))), LIFE = mean(LEAF_LIFE, na.rm=T), nLIFE=n()- length(which(is.na(LEAF_LIFE))), nplots =length(unique(PLOT_ID)) )
-## An idea: leaf lifespan seems to vary quite a bit with MAT. What if I calculated plot averaged leaf lifespan based on spp averages vs based on the actual data from the plot? could say something about using a single value for a species?
-spp.plot.traits <- traits %>% group_by(SP.ID, PLOT_ID) %>% summarise(nsample = n(), mSLA = mean(SLA_HSA, na.rm=T), nSLA = n()- length(which(is.na(SLA_HSA))), mCN = mean(LEAF_CN, na.rm=T), nCN = n()- length(which(is.na(LEAF_CN)))
-                                                                     , mLIFE = mean(LEAF_LIFE, na.rm=T), nLIFE=n()- length(which(is.na(LEAF_LIFE))), mNITROGEN = mean(LEAF_NITROGEN, na.rm=T), nplots =length(unique(PLOT_ID))
-                                                                     , mLMA = mean(LMA_PSA, na.rm=T), mLLmonths= mean(LLmonths, na.rm=T), mNarea=mean(Narea, na.rm=T)
-                                                                     , mlog.LMA = mean(log.LMA, na.rm=T), mlog.LL = mean(log.LL, na.rm=T), mlog.Narea=mean(log.Narea, na.rm=T), mlog.Nmass=mean(log.Nmass, na.rm=T), RGR = unique(RGRdom), stGrowth = mean(stGrowthdom, na.rm=T))
-# Note: I used LMA_PSA in other trait analysis in TaxonomicAnalysis. So I've switched to it here
-spp.plot.traits$SP.PLOT <- paste(spp.plot.traits$SP.ID, spp.plot.traits$PLOT_ID, sep="-")
-# let's just pull out the common dominant species in an easy to name df
-plotavs <- spp.plot.traits%>% subset(spp.plot.traits$SP.ID %in% names(which(xtabs(~SPP_O1_ABBREV, biomass)>2)))
-
-### make unique identifiers for matching biomass and spp.plot.traits rows
-biomass$SP1.PLOT <- paste(biomass$SPP_O1_ABBREV,biomass$PLOT_ID, sep="-")
-biomass$SP2.PLOT <- paste(biomass$SPP_O2_ABBREV,biomass$PLOT_ID, sep="-")
-biomass$SP3.PLOT <- paste(biomass$SPP_O3_ABBREV,biomass$PLOT_ID, sep="-")
-biomass$SP4.PLOT <- paste(biomass$SPP_O4_ABBREV,biomass$PLOT_ID, sep="-")
 
 
 #### Plot average trait values for each species ############################
-biomass$SLAs1 <- spp.plot.traits$mSLA[match(as.character(biomass$SP1.PLOT), as.character(spp.plot.traits$SP.PLOT))]
-biomass$SLAs2 <- spp.plot.traits$mSLA[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)]
-biomass$SLAs3 <- spp.plot.traits$mSLA[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)]
-biomass$SLAs4 <- spp.plot.traits$mSLA[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)]
+biomass$wSLAp1 <- spp.plot.traits$mSLA[match(as.character(biomass$SP1.PLOT), as.character(spp.plot.traits$SP.PLOT))] * biomass$SPP_O1_BASAL_AREA_FRACTION/100
+biomass$wSLAp2 <- spp.plot.traits$mSLA[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)] * biomass$SPP_O2_BASAL_AREA_FRACTION/100
+biomass$wSLAp3 <- spp.plot.traits$mSLA[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)] * biomass$SPP_O3_BASAL_AREA_FRACTION/100
+biomass$wSLAp4 <- spp.plot.traits$mSLA[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)] * biomass$SPP_O4_BASAL_AREA_FRACTION/100
 
-biomass$wSLAs1 <- biomass$SLAs1 * biomass$SPP_O1_BASAL_AREA_FRACTION/100
-biomass$wSLAs2 <- biomass$SLAs2 * biomass$SPP_O2_BASAL_AREA_FRACTION/100
-biomass$wSLAs3 <- biomass$SLAs3 * biomass$SPP_O3_BASAL_AREA_FRACTION/100
-biomass$wSLAs4 <- biomass$SLAs4 * biomass$SPP_O4_BASAL_AREA_FRACTION/100
-biomass$ComM_SLAs <- apply(biomass[,c("wSLAs1", "wSLAs2","wSLAs3","wSLAs4")],MARGIN=1,FUN=sum, na.rm=T)
+# biomass$wSLAp1 <- biomass$SLAp1 * biomass$SPP_O1_BASAL_AREA_FRACTION/100
+# biomass$wSLAp2 <- biomass$SLAp2 * biomass$SPP_O2_BASAL_AREA_FRACTION/100
+# biomass$wSLAp3 <- biomass$SLAp3 * biomass$SPP_O3_BASAL_AREA_FRACTION/100
+# biomass$wSLAp4 <- biomass$SLAp4 * biomass$SPP_O4_BASAL_AREA_FRACTION/100
+biomass$cw_SLAp <- apply(biomass[,c("wSLAp1", "wSLAp2","wSLAp3","wSLAp4")],MARGIN=1,FUN=sum, na.rm=T)
 # now need to remove values that got smoothed over due to na.rm=T in the apply function
-biomass$ComM_SLAs[which(is.na(biomass$SLAs1))] <- NA # 85 plots lacking SLA data of SPP01
-biomass$ComM_SLAs[which(is.na(biomass$SLAs2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
+biomass$cw_SLAp[which(is.na(biomass$wSLAp1))] <- NA # 86 plots lacking SLA data of SPP01
+biomass$cw_SLAp[which(is.na(biomass$wSLAp2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
 #18 sites lacking SLA data for SPP02 where SPP02 makes up >30 % of BA, but only 5 have SPP01
-biomass$ComM_SLAs[which(biomass$ComM_SLAs==0)] <- NA
+biomass$cw_SLAp[which(biomass$cw_SLAp==0)] <- NA
+  # 91 plots missing substantial SLA data
+# length(which(is.na(biomass$cw_SLAp)))
+  
+##### Comparing SLA w/ SLAp ######
+plot(cw_SLAp~cw_SLA, biomass, col=SPP_O1_ABBREV)
+ggplot(biomass, aes(x=cw_SLA, y=cw_SLAp, col=SPP_O1_ABBREV)) + geom_point() + geom_abline(slope=1)
+abline(a=0,b=1)
+summary(lm(cw_SLAp~cw_SLA, biomass))
+  # actually does a pretty shitty job getting cwunity-weighted traits from means rather than the species in the plots
+  # R2= .57
+quartz(width=3.5, height=6)
+par(mfrow=c(2,1), mar=c(3.5,3.5, 1,1), mgp=c(2.5,1,0))
+plot(cw_SLAp~MAP, biomass, col=SPP_O1_ABBREV, pch=16, ylim=c(40,250), ylab="CWM SLA, per site")
+abline(lm(cw_SLAp~MAP, biomass))
+mtext(text = paste("R2=", round(summary(lm(cw_SLAp~MAP, biomass))$r.squared, 3)), side = 3, line=-1.5, adj=.8)
+plot(cw_SLA~MAP, biomass[which(biomass$cw_SLAp>0),], col=SPP_O1_ABBREV, pch=16, ylim=c(40,250), ylab="CWM SLA, spp avg")
+abline(lm(cw_SLA~MAP, biomass[which(biomass$cw_SLAp>0),]))
+mtext(text = paste("R2=", round(summary(lm(cw_SLA~MAP, biomass[which(biomass$cw_SLAp>0),]))$r.squared, 3)), side = 3, line=-1.5, adj=.8)
 
 
-#### Community weighted LEAf_LIFE based on plot values
-biomass$LIFEs1 <- spp.plot.traits$mLIFE[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]
-biomass$LIFEs2 <- spp.plot.traits$mLIFE[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)]
-biomass$LIFEs3 <- spp.plot.traits$mLIFE[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)]
-biomass$LIFEs4 <- spp.plot.traits$mLIFE[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)]
 
-biomass$wLIFEs1 <- biomass$LIFEs1 * biomass$SPP_O1_BASAL_AREA_FRACTION/100
-biomass$wLIFEs2 <- biomass$LIFEs2 * biomass$SPP_O2_BASAL_AREA_FRACTION/100
-biomass$wLIFEs3 <- biomass$LIFEs3 * biomass$SPP_O3_BASAL_AREA_FRACTION/100
-biomass$wLIFEs4 <- biomass$LIFEs4 * biomass$SPP_O4_BASAL_AREA_FRACTION/100
-biomass$ComM_LIFEs <- apply(biomass[,c("wLIFEs1", "wLIFEs2","wLIFEs3","wLIFEs4")],MARGIN=1,FUN=sum, na.rm=T)
+
+######### LMA rather than SLA ##############
+# can't just calculate this from SLA, because I'm using LMA_PSA rather than HSA
+biomass$wLMAp1 <- spp.plot.traits$mLMA[match(as.character(biomass$SP1.PLOT), as.character(spp.plot.traits$SP.PLOT))] * biomass$SPP_O1_BASAL_AREA_FRACTION/100
+biomass$wLMAp2 <- spp.plot.traits$mLMA[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)] * biomass$SPP_O2_BASAL_AREA_FRACTION/100
+biomass$wLMAp3 <- spp.plot.traits$mLMA[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)] * biomass$SPP_O3_BASAL_AREA_FRACTION/100
+biomass$wLMAp4 <- spp.plot.traits$mLMA[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)] * biomass$SPP_O4_BASAL_AREA_FRACTION/100
+
+biomass$cw_LMAp <- apply(biomass[,c("wLMAp1", "wLMAp2","wLMAp3","wLMAp4")],MARGIN=1,FUN=sum, na.rm=T)
 # now need to remove values that got smoothed over due to na.rm=T in the apply function
-biomass$ComM_LIFEs[which(is.na(biomass$LIFEs1))] <- NA # 94 sites lacking LeafLife of SPP01
-biomass$ComM_LIFEs[which(is.na(biomass$LIFEs2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
+biomass$cw_LMAp[which(is.na(biomass$wLMAp1))] <- NA # 86 plots lacking LMA data of SPP01
+biomass$cw_LMAp[which(is.na(biomass$wLMAp2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
+#18 sites lacking LMA data for SPP02 where SPP02 makes up >30 % of BA, but only 5 have SPP01
+biomass$cw_LMAp[which(biomass$cw_LMAp==0)] <- NA
+# 91 plots missing substantial LMA data
+# length(which(is.na(biomass$cw_LMAp)))
+
+
+
+
+#### cwunity weighted new: LLmonths  old: LEAf_LIFE based on plot values
+biomass$wLLp1 <- spp.plot.traits$mLLmonths[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O1_BASAL_AREA_FRACTION/100
+biomass$wLLp2 <- spp.plot.traits$mLLmonths[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O2_BASAL_AREA_FRACTION/100
+biomass$wLLp3 <- spp.plot.traits$mLLmonths[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O3_BASAL_AREA_FRACTION/100
+biomass$wLLp4 <- spp.plot.traits$mLLmonths[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O4_BASAL_AREA_FRACTION/100
+
+# biomass$wLLp1 <- biomass$LLp1 * biomass$SPP_O1_BASAL_AREA_FRACTION/100
+# biomass$wLLp2 <- biomass$LLp2 * biomass$SPP_O2_BASAL_AREA_FRACTION/100
+# biomass$wLLp3 <- biomass$LLp3 * biomass$SPP_O3_BASAL_AREA_FRACTION/100
+# biomass$wLLp4 <- biomass$LLp4 * biomass$SPP_O4_BASAL_AREA_FRACTION/100
+biomass$cw_LLp <- apply(biomass[,c("wLLp1", "wLLp2","wLLp3","wLLp4")],MARGIN=1,FUN=sum, na.rm=T)
+# now need to remove values that got smoothed over due to na.rm=T in the apply function
+biomass$cw_LLp[which(is.na(biomass$wLLp1))] <- NA # 94 sites lacking LeafLL of SPP01
+biomass$cw_LLp[which(is.na(biomass$wLLp2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
 # 22 sites lack SPP02 leaf life, 9 of them unique
+length(which(is.na(biomass$cw_LLp))) # 103 plots sans significant LL
 
+#### cwunity weighted LEAf_NITROGEN based on plot values
+biomass$wNmassp1 <- spp.plot.traits$mNmass[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O1_BASAL_AREA_FRACTION/100
+biomass$wNmassp2 <- spp.plot.traits$mNmass[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O2_BASAL_AREA_FRACTION/100
+biomass$wNmassp3 <- spp.plot.traits$mNmass[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O3_BASAL_AREA_FRACTION/100
+biomass$wNmassp4 <- spp.plot.traits$mNmass[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O4_BASAL_AREA_FRACTION/100
 
-#### Community weighted LEAf_NITROGEN based on plot values
-biomass$NITROGENs1 <- spp.plot.traits$mNITROGEN[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]
-biomass$NITROGENs2 <- spp.plot.traits$mNITROGEN[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)]
-biomass$NITROGENs3 <- spp.plot.traits$mNITROGEN[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)]
-biomass$NITROGENs4 <- spp.plot.traits$mNITROGEN[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)]
-
-biomass$wNITROGENs1 <- biomass$NITROGENs1 * biomass$SPP_O1_BASAL_AREA_FRACTION/100
-biomass$wNITROGENs2 <- biomass$NITROGENs2 * biomass$SPP_O2_BASAL_AREA_FRACTION/100
-biomass$wNITROGENs3 <- biomass$NITROGENs3 * biomass$SPP_O3_BASAL_AREA_FRACTION/100
-biomass$wNITROGENs4 <- biomass$NITROGENs4 * biomass$SPP_O4_BASAL_AREA_FRACTION/100
-biomass$ComM_NITROGENs <- apply(biomass[,c("wNITROGENs1", "wNITROGENs2","wNITROGENs3","wNITROGENs4")],MARGIN=1,FUN=sum, na.rm=T)
+# biomass$wNmassp1 <- biomass$Nmassp1 * biomass$SPP_O1_BASAL_AREA_FRACTION/100
+# biomass$wNmassp2 <- biomass$Nmassp2 * biomass$SPP_O2_BASAL_AREA_FRACTION/100
+# biomass$wNmassp3 <- biomass$Nmassp3 * biomass$SPP_O3_BASAL_AREA_FRACTION/100
+# biomass$wNmassp4 <- biomass$Nmassp4 * biomass$SPP_O4_BASAL_AREA_FRACTION/100
+biomass$cw_Nmassp <- apply(biomass[,c("wNmassp1", "wNmassp2","wNmassp3","wNmassp4")],MARGIN=1,FUN=sum, na.rm=T)
 # now need to remove values that got smoothed over due to na.rm=T in the apply function
-biomass$ComM_NITROGENs[which(is.na(biomass$NITROGENs1))] <- NA # 98 sites lacking LeafNITROGEN of SPP01
-biomass$ComM_NITROGENs[which(is.na(biomass$NITROGENs2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
-biomass$ComM_NITROGENs[which(biomass$ComM_NITROGENs==0)] <- NA
+biomass$cw_Nmassp[which(is.na(biomass$wNmassp1))] <- NA # 98 sites lacking LeafNITROGEN of SPP01
+biomass$cw_Nmassp[which(is.na(biomass$wNmassp2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
+biomass$cw_Nmassp[which(biomass$cw_Nmassp==0)] <- NA
 # 26 sites lack SPP02 leaf NITROGEN, 3 of them unique
+# length(which(is.na(biomass$cw_Nmassp))) # 102 sites sans Nmass
 
 
 
 
-
-#### Community weighted Narea based on plot values
-biomass$Nareas1 <- spp.plot.traits$mNarea[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]
-biomass$Nareas2 <- spp.plot.traits$mNarea[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)]
-biomass$Nareas3 <- spp.plot.traits$mNarea[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)]
-biomass$Nareas4 <- spp.plot.traits$mNarea[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)]
-
-biomass$wNareas1 <- biomass$Nareas1 * biomass$SPP_O1_BASAL_AREA_FRACTION/100
-biomass$wNareas2 <- biomass$Nareas2 * biomass$SPP_O2_BASAL_AREA_FRACTION/100
-biomass$wNareas3 <- biomass$Nareas3 * biomass$SPP_O3_BASAL_AREA_FRACTION/100
-biomass$wNareas4 <- biomass$Nareas4 * biomass$SPP_O4_BASAL_AREA_FRACTION/100
-biomass$ComM_Nareas <- apply(biomass[,c("wNareas1", "wNareas2","wNareas3","wNareas4")],MARGIN=1,FUN=sum, na.rm=T)
+#### cwunity weighted Narea based on plot values
+biomass$wNareap1 <- spp.plot.traits$mNarea[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O1_BASAL_AREA_FRACTION/100
+biomass$wNareap2 <- spp.plot.traits$mNarea[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O2_BASAL_AREA_FRACTION/100
+biomass$wNareap3 <- spp.plot.traits$mNarea[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O3_BASAL_AREA_FRACTION/100
+biomass$wNareap4 <- spp.plot.traits$mNarea[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O4_BASAL_AREA_FRACTION/100
+# 
+# biomass$wNareap1 <- biomass$Nareap1 * biomass$SPP_O1_BASAL_AREA_FRACTION/100
+# biomass$wNareap2 <- biomass$Nareap2 * biomass$SPP_O2_BASAL_AREA_FRACTION/100
+# biomass$wNareap3 <- biomass$Nareap3 * biomass$SPP_O3_BASAL_AREA_FRACTION/100
+# biomass$wNareap4 <- biomass$Nareap4 * biomass$SPP_O4_BASAL_AREA_FRACTION/100
+biomass$cw_Nareap <- apply(biomass[,c("wNareap1", "wNareap2","wNareap3","wNareap4")],MARGIN=1,FUN=sum, na.rm=T)
 # now need to remove values that got smoothed over due to na.rm=T in the apply function
-biomass$ComM_Nareas[which(is.na(biomass$Nareas1))] <- NA # 98 sites lacking LeafNarea of SPP01
-biomass$ComM_Nareas[which(is.na(biomass$Nareas2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
-biomass$ComM_Nareas[which(biomass$ComM_Nareas==0)] <- NA
+biomass$cw_Nareap[which(is.na(biomass$wNareap1))] <- NA # 98 sites lacking LeafNarea of SPP01
+biomass$cw_Nareap[which(is.na(biomass$wNareap2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
+biomass$cw_Nareap[which(biomass$cw_Nareap==0)] <- NA
 # 26 sites lack SPP02 leaf Narea, 3 of them unique
+
+
+
+
+biomass$log.cw_LMAp <- log(biomass$cw_LMAp, base=10)
+biomass$log.cw_LLp <- log(biomass$cw_LLp, base=10)
+biomass$log.cw_Nmassp <- log(biomass$cw_Nmassp, base=10)
+biomass$log.cw_Nareap <- log(biomass$cw_Nareap, base=10)
+
+
+#______________________________________________________
+######### Calculating with mean log(traits) rather than mean traits that are then logged ##########
+
+######### log.LMA 
+# can't just calculate this from SLA, because I'm using LMA_PSA rather than HSA
+biomass$wlog.LMAp1 <- spp.plot.traits$mlog.LMA[match(as.character(biomass$SP1.PLOT), as.character(spp.plot.traits$SP.PLOT))] * biomass$SPP_O1_BASAL_AREA_FRACTION/100
+biomass$wlog.LMAp2 <- spp.plot.traits$mlog.LMA[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)] * biomass$SPP_O2_BASAL_AREA_FRACTION/100
+biomass$wlog.LMAp3 <- spp.plot.traits$mlog.LMA[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)] * biomass$SPP_O3_BASAL_AREA_FRACTION/100
+biomass$wlog.LMAp4 <- spp.plot.traits$mlog.LMA[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)] * biomass$SPP_O4_BASAL_AREA_FRACTION/100
+
+biomass$cw_log.LMAp <- apply(biomass[,c("wlog.LMAp1", "wlog.LMAp2","wlog.LMAp3","wlog.LMAp4")],MARGIN=1,FUN=sum, na.rm=T)
+# now need to remove values that got smoothed over due to na.rm=T in the apply function
+biomass$cw_log.LMAp[which(is.na(biomass$wlog.LMAp1))] <- NA # 86 plots lacking log.LMA data of SPP01
+biomass$cw_log.LMAp[which(is.na(biomass$wlog.LMAp2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
+#18 sites lacking log.LMA data for SPP02 where SPP02 makes up >30 % of BA, but only 5 have SPP01
+biomass$cw_log.LMAp[which(biomass$cw_log.LMAp==0)] <- NA
+# 91 plots missing substantial LMA data
+# length(which(is.na(biomass$cw_LMAp)))
+
+
+###### log.LL
+biomass$wlog.LLp1 <- spp.plot.traits$mlog.LL[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O1_BASAL_AREA_FRACTION/100
+biomass$wlog.LLp2 <- spp.plot.traits$mlog.LL[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O2_BASAL_AREA_FRACTION/100
+biomass$wlog.LLp3 <- spp.plot.traits$mlog.LL[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O3_BASAL_AREA_FRACTION/100
+biomass$wlog.LLp4 <- spp.plot.traits$mlog.LL[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O4_BASAL_AREA_FRACTION/100
+
+biomass$cw_log.LLp <- apply(biomass[,c("wlog.LLp1", "wlog.LLp2","wlog.LLp3","wlog.LLp4")],MARGIN=1,FUN=sum, na.rm=T)
+# now need to remove values that got smoothed over due to na.rm=T in the apply function
+biomass$cw_log.LLp[which(is.na(biomass$wlog.LLp1))] <- NA # 94 sites lacking Leaflog.LL of SPP01
+biomass$cw_log.LLp[which(is.na(biomass$wlog.LLp2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
+# 22 sites lack SPP02 leaf life, 9 of them unique
+length(which(is.na(biomass$cw_log.LLp))) # 103 plots sans significant log.LL
+
+###### log.Nmass
+biomass$wlog.Nmassp1 <- spp.plot.traits$mlog.Nmass[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O1_BASAL_AREA_FRACTION/100
+biomass$wlog.Nmassp2 <- spp.plot.traits$mlog.Nmass[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O2_BASAL_AREA_FRACTION/100
+biomass$wlog.Nmassp3 <- spp.plot.traits$mlog.Nmass[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O3_BASAL_AREA_FRACTION/100
+biomass$wlog.Nmassp4 <- spp.plot.traits$mlog.Nmass[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O4_BASAL_AREA_FRACTION/100
+
+biomass$cw_log.Nmassp <- apply(biomass[,c("wlog.Nmassp1", "wlog.Nmassp2","wlog.Nmassp3","wlog.Nmassp4")],MARGIN=1,FUN=sum, na.rm=T)
+# now need to remove values that got smoothed over due to na.rm=T in the apply function
+biomass$cw_log.Nmassp[which(is.na(biomass$wlog.Nmassp1))] <- NA # 98 sites lacking LeafNITROGEN of SPP01
+biomass$cw_log.Nmassp[which(is.na(biomass$wlog.Nmassp2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
+biomass$cw_log.Nmassp[which(biomass$cw_log.Nmassp==0)] <- NA
+# 26 sites lack SPP02 leaf NITROGEN, 3 of them unique
+# length(which(is.na(biomass$cw_log.Nmassp))) # 102 sites sans log.Nmass
+
+##### log.Narea
+biomass$wlog.Nareap1 <- spp.plot.traits$mlog.Narea[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O1_BASAL_AREA_FRACTION/100
+biomass$wlog.Nareap2 <- spp.plot.traits$mlog.Narea[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O2_BASAL_AREA_FRACTION/100
+biomass$wlog.Nareap3 <- spp.plot.traits$mlog.Narea[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O3_BASAL_AREA_FRACTION/100
+biomass$wlog.Nareap4 <- spp.plot.traits$mlog.Narea[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O4_BASAL_AREA_FRACTION/100
+#
+biomass$cw_log.Nareap <- apply(biomass[,c("wlog.Nareap1", "wlog.Nareap2","wlog.Nareap3","wlog.Nareap4")],MARGIN=1,FUN=sum, na.rm=T)
+# now need to remove values that got smoothed over due to na.rm=T in the apply function
+biomass$cw_log.Nareap[which(is.na(biomass$wlog.Nareap1))] <- NA # 98 sites lacking Leaflog.Narea of SPP01
+biomass$cw_log.Nareap[which(is.na(biomass$wlog.Nareap2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
+biomass$cw_log.Nareap[which(biomass$cw_log.Nareap==0)] <- NA
+# 26 sites lack SPP02 leaf log.Narea, 3 of them unique
+
+# lost roughly 100 sites per trait, leaving ~160 sites. not bad, but infilling might be better?
+
+
+###### add the climPCs to biomass########
+biomass$climPC1 <-spp.plot.traits$climPC1[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]
+biomass$climPC2 <-spp.plot.traits$climPC2[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]
+
+
+### Plot what happens if I log before or after averaging ##
+
+quartz(width=7, height=6)
+par(mfrow=c(2,2),mar=c(3.5,3.5,1,1), mgp=c(2.5,1,0))
+plot(log.cw_LMAp~cw_log.LMAp, biomass)
+plot(log.cw_LLp~cw_log.LLp, biomass)
+plot(log.cw_Nareap~cw_log.Nareap, biomass)
+plot(log.cw_Nmassp~cw_log.Nmassp, biomass)
+
+
+
+
+
+
+
+
+############# Growth~Trait analysis without infilling #############
+
+
+
+
+LLmod <- lm(RGR~log.cw_LLp, biomass)
+LLmod2 <- lm(log(RGR)~log.cw_LLp, biomass)
+#LLmod2 <- lm(RGR~cw_log.LLp, biomass)
+summary(LLmod)
+summary(LLmod2) # p = 8.5e-7
+
+LMAmod <- lm(RGR~log.cw_LMAp, biomass)
+LMAmod2 <- lm(log(RGR)~log.cw_LMAp, biomass)
+#LMAmod2 <- lm(RGR~cw_log.LMAp, biomass)
+summary(LMAmod)
+summary(LMAmod2) # p=0.84
+
+
+Nmassmod <- lm(RGR~log.cw_Nmassp, biomass)
+Nmassmod2 <- lm(log(RGR)~log.cw_Nmassp, biomass)
+#Nmassmod2 <- lm(RGR~cw_log.Nmassp, biomass)
+summary(Nmassmod)
+summary(Nmassmod2) # p=0.019
+
+Nareamod <- lm(RGR~log.cw_Nareap, biomass)
+Nareamod2 <- lm(log(RGR)~log.cw_Nareap, biomass)
+#Nareamod2 <- lm(RGR~cw_log.Nareap, biomass)
+summary(Nareamod)
+summary(Nareamod2) # p=0.96
+
+## on second thought, I think I should use average and then log, so I don't strangely weight things
+# so I should use all the log.cw variables
+# also definitely need to log(RGR) in order to normalize it.
+
+
+
+############## New Figure ##########
+
+quartz(width=4.3, height=5)
+#pdf(file="Traits-v-Growth-90Dom_v1_RGRonly.pdf", width=4.3, height=5)
+par(mar=c(2.5,2,1.2,1), oma=c(2,2,0,0),mfrow=c(2,2), cex=1,mgp=c(2.5,.5,0))
+
+plot(log(RGR)~log.cw_LLp, biomass, pch=16)
+abline(lm(log(RGR)~log.cw_LLp, biomass), lwd=2)
+mtext(text = paste0("p<", round(anova(LLmod2)$`Pr(>F)`[1],6), ","), side=1, adj=.1, line=-1, cex=.9)
+mtext(text = bquote(~R^2==.(round(summary(LLmod2)$r.squared,2))), side=1, adj = .95, line=-1 , cex=.9)
+mtext("log(RGR)", side=2, line=2, cex=1.1)
+mtext("log(cwm Leaf Life)", side=1, line=1.5, cex=1.1)
+mtext("a)", side=3, adj=0)
+
+plot(log(RGR)~log.cw_LMAp, biomass, pch=16)
+abline(lm(log(RGR)~log.cw_LMAp, biomass), lwd=2, lty=2)
+mtext(text = paste0("p=", round(anova(LMAmod2)$`Pr(>F)`[1],2)), side=1, adj=.8, line=-1, cex=.9)
+mtext("log(cwm LMA)", side=1, line=1.5, cex=1.1)
+mtext("b)", side=3, adj=0)
+
+plot(log(RGR)~log.cw_Nmassp, biomass, pch=16)
+abline(lm(log(RGR)~log.cw_Nmassp, biomass), lwd=2, lyt=2)
+mtext(text = paste0("p=", round(anova(Nmassmod2)$`Pr(>F)`[1],3),","), side=1, adj=.05, line=-1, cex=.9)
+mtext(text = bquote(~R^2==.(round(summary(Nmassmod2)$r.squared,2))), side=1, adj = .95, line=-1, cex=.9 )
+mtext("log(RGR)", side=2, line=2, cex=1.1)
+mtext("log(cwm Nmass)", side=1, line=1.5, cex=1.1)
+mtext("c)", side=3, adj=0)
+
+plot(log(RGR)~log.cw_Nareap, biomass, pch=16)#, yaxt="n")
+#axis(2,at = log(c(.01,.02,.03,0.04,.1,0.2,0.3)), labels =c(.01,.02,.03,0.04,.1,0.2,0.3) )
+abline(lm(log(RGR)~log.cw_Nareap, biomass), lwd=2, lty=2)
+mtext(text = paste0("p=", round(anova(Nareamod2)$`Pr(>F)`[1],2)), side=1, adj=.05, line=-1)
+mtext("log(cwm Narea)", side=1, line=1.5, cex=1.1)
+mtext("d)", side=3, adj=0)
+
+
+
+
+
+########### Analysis with stGrowth ##########
+
+
+LLmod.g <- lm(BIOstGROWTHgam~log.cw_LLp, biomass)
+#LLmod2.g <- lm(log(BIOstGROWTHgam)~log.cw_LLp, biomass)
+#LLmod2 <- lm(BIOstGROWTHgam~cw_log.LLp, biomass)
+summary(LLmod.g) # p = 7.073e-05, r2 = 0.09
+#summary(LLmod2.g)
+
+LMAmod.g <- lm(BIOstGROWTHgam~log.cw_LMAp, biomass)
+#LMAmod2 <- lm(log(BIOstGROWTHgam)~log.cw_LMAp, biomass)
+#LMAmod2 <- lm(BIOstGROWTHgam~cw_log.LMAp, biomass)
+summary(LMAmod.g) # p=0.00131, R2 = 0.054
+#summary(LMAmod2)
+
+
+Nmassmod.g <- lm(BIOstGROWTHgam~log.cw_Nmassp, biomass)
+# Nmassmod2 <- lm(log(BIOstGROWTHgam)~log.cw_Nmassp, biomass)
+#Nmassmod2 <- lm(BIOstGROWTHgam~cw_log.Nmassp, biomass)
+summary(Nmassmod.g)# p=0.007553, r2 = 0.03898
+#summary(Nmassmod2) 
+
+Nareamod.g <- lm(BIOstGROWTHgam~log.cw_Nareap, biomass)
+# Nareamod2 <- lm(log(BIOstGROWTHgam)~log.cw_Nareap, biomass)
+#Nareamod2 <- lm(BIOstGROWTHgam~cw_log.Nareap, biomass)
+summary(Nareamod.g) # p=0.04692, r2 - 0.02523
+#summary(Nareamod2)
+
+
+
+
+
+
+quartz(width=4.3, height=5)
+#pdf(file="Traits-v-Growth-90Dom_v1_RGRonly.pdf", width=4.3, height=5)
+par(mar=c(2.5,2,1.2,1), oma=c(2,2,0,0),mfrow=c(2,2), cex=1,mgp=c(2.5,.5,0))
+
+plot(BIOstGROWTHgam~log.cw_LLp, biomass, pch=16, ylim=c(-400,850))
+abline(lm(BIOstGROWTHgam~log.cw_LLp, biomass), lwd=2)
+mtext(text = paste0("p<", round(anova(LLmod.g)$`Pr(>F)`[1],6), ","), side=3, adj=.1, line=-1, cex=.9)
+mtext(text = bquote(~R^2==.(round(summary(LLmod.g)$r.squared,2))), side=3, adj = .95, line=-1 , cex=.9)
+mtext("Emp st. Growth", side=2, line=2, cex=1.1)
+mtext("log(cwm Leaf Life)", side=1, line=1.5, cex=1.1)
+mtext("a)", side=3, adj=0)
+
+plot(BIOstGROWTHgam~log.cw_LMAp, biomass, pch=16, ylim=c(-400,850))
+abline(lm(BIOstGROWTHgam~log.cw_LMAp, biomass), lwd=2, lty=1)
+mtext(text = paste0("p=", round(anova(LMAmod.g)$`Pr(>F)`[1],3),","), side=3, adj=.1, line=-1, cex=.9)
+mtext(text = bquote(~R^2==.(round(summary(LMAmod.g)$r.squared,2))), side=3, adj = .95, line=-1 , cex=.9)
+mtext("log(cwm LMA)", side=1, line=1.5, cex=1.1)
+mtext("b)", side=3, adj=0)
+
+plot(BIOstGROWTHgam~log.cw_Nmassp, biomass, pch=16, ylim=c(-400,850))
+abline(lm(BIOstGROWTHgam~log.cw_Nmassp, biomass), lwd=2, lty=1)
+mtext(text = paste0("p=", round(anova(Nmassmod2)$`Pr(>F)`[1],3),","), side=3, adj=.05, line=-1, cex=.9)
+mtext(text = bquote(~R^2==.(round(summary(Nmassmod.g)$r.squared,2))), side=3, adj = .95, line=-1, cex=.9 )
+mtext("Emp st. Growth", side=2, line=2, cex=1.1)
+mtext("log(cwm Nmass)", side=1, line=1.5, cex=1.1)
+mtext("c)", side=3, adj=0)
+
+plot(BIOstGROWTHgam~log.cw_Nareap, biomass, pch=16, ylim=c(-400,850))#, yaxt="n")
+#axis(2,at = log(c(.01,.02,.03,0.04,.1,0.2,0.3)), labels =c(.01,.02,.03,0.04,.1,0.2,0.3) )
+abline(lm(BIOstGROWTHgam~log.cw_Nareap, biomass), lwd=2, lty=1)
+mtext(text = paste0("p=", round(anova(Nareamod.g)$`Pr(>F)`[1],2)), side=3, adj=.05, line=-1)
+mtext(text = bquote(~R^2==.(round(summary(Nareamod.g)$r.squared,2))), side=3, adj = .95, line=-1, cex=.9 )
+mtext("log(cwm Narea)", side=1, line=1.5, cex=1.1)
+mtext("d)", side=3, adj=0)
+
+
+
+
+
+
+
+
+
+
+
+#____________________________________________________________________________
+########### Test whether traits or env better predict RGR ###################
+#____________________________________________________________________________
+
+
+# make a dataset without any NAs for model selection
+tmpbiomass <- biomass[with(biomass, which(!is.na(log.cw_Nmassp) & !is.na(log.cw_Nareap) & !is.na(log.cw_LLp) & !is.na(log.cw_LMAp) & !is.na(soil_N) & !is.na(ASA))),]
+traitsmod <- lm(RGR ~ log.cw_Nmassp + log.cw_LLp + log.cw_LMAp + log.cw_Nareap, tmpbiomass)
+summary(traitsmod) # R2= 0.1567, LL is all that really matters
+enviromod <- lm(RGR ~ climPC1 + climPC2 + soil_N + log(ASA), tmpbiomass)
+summary(enviromod) #R2m =0.5527, climPC1, climPC2, and log(ASA) are important
+
+# things are even worse with stGrowth
+traitsmod <- lm(BIOstGROWTHgam ~ log.cw_Nmassp + log.cw_LLp + log.cw_LMAp + log.cw_Nareap , tmpbiomass)
+# R2m = 0.2087 # also only LL matters
+enviromod <- lm(BIOstGROWTHgam ~ climPC1 + climPC2 + soil_N + log(ASA), tmpbiomass)
+# R2m = 0.4848, climPC2 and log(ASA) matter
+
+traitsmod <- lm(log(RGR) ~ log.cw_Nmassp + log.cw_LLp + log.cw_LMAp + log.cw_Nareap, tmpbiomass)
+enviromod <- lm(log(RGR) ~ climPC1 + climPC2 + soil_N + log(ASA), tmpbiomass)
+summary(traitsmod) # log R2m = .1923 , only LL matters
+summary(enviromod) # log R2m = 0.6424, climPC1, climPC2, and ASA matter.
+
+
+
+
+
+
+
+
+
 
 
 
@@ -200,8 +514,8 @@ wSLAif3 <- biomass$wSLAs3
 wSLAif3[which(is.na(wSLAif3))] <- biomass$wSLA3[which(is.na(wSLAif3))]
 wSLAif4 <- biomass$wSLAs4
 wSLAif4[which(is.na(wSLAif4))] <- biomass$wSLA4[which(is.na(wSLAif4))]
-ComM_SLAs_if  <- apply(data.frame(wSLAif1, wSLAif2, wSLAif3, wSLAif4),MARGIN=1, FUN=sum, na.rm=T)
-ComM_SLAs_if[which(ComM_SLAs_if==0)] <- NA
+cw_SLAs_if  <- apply(data.frame(wSLAif1, wSLAif2, wSLAif3, wSLAif4),MARGIN=1, FUN=sum, na.rm=T)
+cw_SLAs_if[which(cw_SLAs_if==0)] <- NA
 # infilled 85 plots
 
 ##### Infilling LEAF_LIFE with species mean values ######
@@ -216,55 +530,55 @@ wLIFE3 <- LIFE3 * biomass$SPP_O3_BASAL_AREA_FRACTION/100
 wLIFE4 <- LIFE4 * biomass$SPP_O4_BASAL_AREA_FRACTION/100
 
 ### now infill missing values with species means
-wLIFEif1 <- biomass$wLIFEs1
+wLIFEif1 <- biomass$wLIFEp1
 wLIFEif1[which(is.na(wLIFEif1))] <- wLIFE1[which(is.na(wLIFEif1))]
-wLIFEif2 <- biomass$wLIFEs2
+wLIFEif2 <- biomass$wLIFEp2
 wLIFEif2[which(is.na(wLIFEif2))] <- wLIFE2[which(is.na(wLIFEif2))]
-wLIFEif3 <- biomass$wLIFEs3
+wLIFEif3 <- biomass$wLIFEp3
 wLIFEif3[which(is.na(wLIFEif3))] <- wLIFE3[which(is.na(wLIFEif3))]
-wLIFEif4 <- biomass$wLIFEs4
+wLIFEif4 <- biomass$wLIFEp4
 wLIFEif4[which(is.na(wLIFEif4))] <- wLIFE4[which(is.na(wLIFEif4))]
-ComM_LIFEs_if  <- apply(data.frame(wLIFEif1, wLIFEif2, wLIFEif3, wLIFEif4),MARGIN=1, FUN=sum, na.rm=T)
-ComM_LIFEs_if[which(is.na(wLIFEif1))] <- NA
-which(is.na(biomass$ComM_LIFEs) & ComM_LIFEs_if>0)
+cw_LIFEp_if  <- apply(data.frame(wLIFEif1, wLIFEif2, wLIFEif3, wLIFEif4),MARGIN=1, FUN=sum, na.rm=T)
+cw_LIFEp_if[which(is.na(wLIFEif1))] <- NA
+which(is.na(biomass$cw_LIFEp) & cw_LIFEp_if>0)
 # infilled 90 plots
 
 ##### Infilling LEAF_NITROGEN with species mean values ######
 # note, need to make species average values first.
 
-NITROGEN1 <- species.means$mNITROGEN[match(biomass$SPP_O1_ABBREV, species.means$SP.ID)]
-NITROGEN2 <- species.means$mNITROGEN[match(biomass$SPP_O2_ABBREV, species.means$SP.ID)]
-NITROGEN3 <- species.means$mNITROGEN[match(biomass$SPP_O3_ABBREV, species.means$SP.ID)]
-NITROGEN4 <- species.means$mNITROGEN[match(biomass$SPP_O4_ABBREV, species.means$SP.ID)]
-wNITROGEN1 <- NITROGEN1 * biomass$SPP_O1_BASAL_AREA_FRACTION/100 # 13 total plots either lack NITROGEN for the dominant spp or don't have SPP data
-wNITROGEN2 <- NITROGEN2 * biomass$SPP_O2_BASAL_AREA_FRACTION/100
-wNITROGEN3 <- NITROGEN3 * biomass$SPP_O3_BASAL_AREA_FRACTION/100
-wNITROGEN4 <- NITROGEN4 * biomass$SPP_O4_BASAL_AREA_FRACTION/100
+Nmass1 <- species.means$mNmass[match(biomass$SPP_O1_ABBREV, species.means$SP.ID)]
+Nmass2 <- species.means$mNmass[match(biomass$SPP_O2_ABBREV, species.means$SP.ID)]
+Nmass3 <- species.means$mNmass[match(biomass$SPP_O3_ABBREV, species.means$SP.ID)]
+Nmass4 <- species.means$mNmass[match(biomass$SPP_O4_ABBREV, species.means$SP.ID)]
+wNmass1 <- Nmass1 * biomass$SPP_O1_BASAL_AREA_FRACTION/100 # 13 total plots either lack Nmass for the dominant spp or don't have SPP data
+wNmass2 <- Nmass2 * biomass$SPP_O2_BASAL_AREA_FRACTION/100
+wNmass3 <- Nmass3 * biomass$SPP_O3_BASAL_AREA_FRACTION/100
+wNmass4 <- Nmass4 * biomass$SPP_O4_BASAL_AREA_FRACTION/100
 
 ### now infill missing values with species means
-wNITROGENif1 <- biomass$wNITROGENs1
-wNITROGENif1[which(is.na(wNITROGENif1))] <- wNITROGEN1[which(is.na(wNITROGENif1))]
-wNITROGENif2 <- biomass$wNITROGENs2
-wNITROGENif2[which(is.na(wNITROGENif2))] <- wNITROGEN2[which(is.na(wNITROGENif2))]
-wNITROGENif3 <- biomass$wNITROGENs3
-wNITROGENif3[which(is.na(wNITROGENif3))] <- wNITROGEN3[which(is.na(wNITROGENif3))]
-wNITROGENif4 <- biomass$wNITROGENs4
-wNITROGENif4[which(is.na(wNITROGENif4))] <- wNITROGEN4[which(is.na(wNITROGENif4))]
-ComM_NITROGENs_if  <- apply(data.frame(wNITROGENif1, wNITROGENif2, wNITROGENif3, wNITROGENif4),MARGIN=1, FUN=sum, na.rm=T)
-ComM_NITROGENs_if[which(is.na(wNITROGENif1))] <- NA
-length(which(is.na(biomass$ComM_NITROGENs) & ComM_NITROGENs_if>0))
+wNmassif1 <- biomass$wNmassp1
+wNmassif1[which(is.na(wNmassif1))] <- wNmass1[which(is.na(wNmassif1))]
+wNmassif2 <- biomass$wNmassp2
+wNmassif2[which(is.na(wNmassif2))] <- wNmass2[which(is.na(wNmassif2))]
+wNmassif3 <- biomass$wNmassp3
+wNmassif3[which(is.na(wNmassif3))] <- wNmass3[which(is.na(wNmassif3))]
+wNmassif4 <- biomass$wNmassp4
+wNmassif4[which(is.na(wNmassif4))] <- wNmass4[which(is.na(wNmassif4))]
+cw_Nmassp_if  <- apply(data.frame(wNmassif1, wNmassif2, wNmassif3, wNmassif4),MARGIN=1, FUN=sum, na.rm=T)
+cw_Nmassp_if[which(is.na(wNmassif1))] <- NA
+length(which(is.na(biomass$cw_Nmassp) & cw_Nmassp_if>0))
 # infilled 96 plots
 
-# plot(AG_PROD_TREE_TOTAL_AS_CARBON~ComM_NITROGENs_if, biomass, pch=16, cex=1.1)
-# points(AG_PROD_TREE_TOTAL_AS_CARBON~ComM_NITROGENs, biomass, pch=16, cex=.9, col="red")
+# plot(AG_PROD_TREE_TOTAL_AS_CARBON~cw_Nmassp_if, biomass, pch=16, cex=1.1)
+# points(AG_PROD_TREE_TOTAL_AS_CARBON~cw_Nmassp, biomass, pch=16, cex=.9, col="red")
 
-length(biomass$PLOT_ID[which(biomass$LAI_O>0 & biomass$AG_PROD_TREE_TOTAL_AS_CARBON>0 & ComM_NITROGENs_if>0 & ComM_LIFEs_if>0 & ComM_SLAs_if>0)]) 
-length(biomass$PLOT_ID[which(biomass$LAI_O>0 & biomass$AG_PROD_TREE_TOTAL_AS_CARBON>0 & biomass$ComM_NITROGENs>0 & biomass$ComM_LIFEs>0 & biomass$ComM_SLAs>0)]) 
+length(biomass$PLOT_ID[which(biomass$LAI_O>0 & biomass$AG_PROD_TREE_TOTAL_AS_CARBON>0 & cw_Nmassp_if>0 & cw_LIFEp_if>0 & cw_SLAs_if>0)]) 
+length(biomass$PLOT_ID[which(biomass$LAI_O>0 & biomass$AG_PROD_TREE_TOTAL_AS_CARBON>0 & biomass$cw_Nmassp>0 & biomass$cw_LIFEp>0 & biomass$cw_SLAs>0)]) 
 
 ##### Export best dataset ## NOTE: THIS IS HARD CODED AND MIGHT NOT WORK IF COLUMNS ARE CHANGED
 # combine things together and remove the columns we don't actually need
-biomassbest <- data.frame(biomass[,-c(35:43,48:55,57:64,66:73)],ComM_SLAs_if,ComM_LIFEs_if,ComM_NITROGENs_if)
-colnames(biomassbest)[grep("ComM", colnames(biomassbest))] <- c("plotSLA", "plotLIFE","plotNITROGEN","plotSLA_if","plotLIFE_if","plotNITROGEN_if")
+biomassbest <- data.frame(biomass[,-c(35:43,48:55,57:64,66:73)],cw_SLAs_if,cw_LIFEp_if,cw_Nmassp_if)
+colnames(biomassbest)[grep("cw", colnames(biomassbest))] <- c("plotSLA", "plotLIFE","plotNmass","plotSLA_if","plotLIFE_if","plotNmass_if")
 write.csv(biomassbest, "PACNW_Biomass_plus_traits_120716.csv")
 
 

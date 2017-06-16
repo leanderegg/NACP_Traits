@@ -431,6 +431,61 @@ After many false starts, I think my function works appropriately, and I've now r
   - LMA vs Nmass, Nmass is on the Y (good!)
 
 
+outsourced Community Weighted traits calculations to a new script. Decided to commit before I go further
+
+
+########## New Commit: 06.14.17
+-removed the community weighted calculations from Cd-Initial_Analysis.R
+-removed the trait x Environment analyses (lots of plotting code and then final model averaging approach) from 
+  Cd-Initial_Analysis.R to Cd-Trait-Environment-Analysis.R
+-removed trait x Growth analyses and exported ot Cd-Trait_Growth_Analyses.R
+
+
++ added RGRdom90 and stGrowthdom90 to traits and traits.common to make a more restrictive cuttoff for single species growth analyses.
+  I also figured out how RGR was initially filtered by RGRdom in traits, rather than in the creation of the stand average dataset from traits.common. This is not elegant, or parsimonious, but it works.
++ added RGR90 and stGrowth90 to the stand averages for more restrictive growth analysis.
+
+Reran the Growth~Trait analysis with plotavs90, and results are nearly identical. significances are weaker, but R2 are almost identical.
+ + updated the code and automated the R2 and p values for the Dom90 versions...
+
+
+## notes from working on community-weighted trait averages:
+Plot #s
+801-820 : no trait data
+10 : missing PSME traits (SPP_O1 w/ 37% of BA)
+26 : no trait data (PINPON dominant)
+45 : have PSEMEN traits (3), but missing PINCON
+48 : missing ABIPRO but have Tsuga Het, Tsuga Mert, and PSEMEN
+54 : missing THUPLI and PSME, but have TSUHET and ABIGRA
+55 : no spp data
+61-62 : no spp data
+64 : missing PSEMEN (1) and TSUHET (3)
+73 : no spp data
+79 : no spp data
+82 : Missing PSEMEN but have others
+99 : no spp data (PINPON forest w/ no plot data)
+312,313 : missing majority of SLA data
+Metolius River : 901 - 976 - missing the majority of SLA data
+
+
+
++ added comparison between cwm SLA from spp averages and from actual plots. very similar trend with MAP. but spp means only explain ~57% of the variance of plot-specific cwms
++ made a new folder to hold these figures.
+- changeing ..s monicer for 'site specific' traits to ..p for 'plot specific'. because s becomes a nightmare w. Nmass
+
+
+*** logging before vs after community weighting ****
+LMA is pretty different
+LL is linear with a fair number of differences
+Narea is totally the same
+Nmnass is mostly the same with a handfull of bad ones.
+  --> I've decided that I should log afterwards. so I will use log.cw_Traitp variables
+*** This also means I should probably rerun my taxonomic analysis averaging before logging...
+
+*** climPCA is run on the freaking traits database, not the biomass database. practically, this means that I have to add it to biomass. But philosophically, I really should calculate it on biomass.
+But this means I have to rerun EVERYTHING climate related...
+
+
 ############# USEFUL PACKAGES ########################
 TR8 for pulling life history, height, growth form, etc. data from various databases.
 see vignette("TR8")
