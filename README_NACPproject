@@ -480,10 +480,32 @@ LL is linear with a fair number of differences
 Narea is totally the same
 Nmnass is mostly the same with a handfull of bad ones.
   --> I've decided that I should log afterwards. so I will use log.cw_Traitp variables
+# The key take homes: The story is pretty similar with dom 50%, dom 90% and communite weighted traits, though things do change qualitatively in some cases.
+
+++dom 50% - old, LL and a little bit Nmass matter for RGR, nothing reall matters for stGrowth. Traits get ~15% of growth, ASA gets 60%
+
+++dom 90% - have to log RGR, and LL and Nmass still jump out. But really not predictive (~15% of variation)
+  - for stGrowth, everything has a significant relationship, but nothing is really predictive (r2 from .03-.1). 
+  - for RGR, log(RGR), and stGrowth, traits explain <20% (LL is always important), while environment (primarily ASA) explains ~50%.
+
 *** This also means I should probably rerun my taxonomic analysis averaging before logging...
 
 *** climPCA is run on the freaking traits database, not the biomass database. practically, this means that I have to add it to biomass. But philosophically, I really should calculate it on biomass.
 But this means I have to rerun EVERYTHING climate related...
+
+
+####### New commit 06.16.17
+Committed before I remake the trait-environment function to include ecoregion
+- succeeded (I think) in adding ecoregion, and tracking it's variable importance (can't track it's effect sizes because spp have variable # of ecoregions)
+- also added code to cacluate the best model for CW trait averages, and in general they're way more predictive than spp models! 
+  - For some reason I get my shit rocked when trying to automate the CW bit, so I couldn't make it a function and you have to individually run each model selection in order for it to work.
+- I also added in a function for doing the ensamble averaging without ECORGEION, because I need to rerun everything with scaled response variables or esle all the effect sizes are essentially meaningless.
+
+** Note: I've also converted my date convention from mmddyy to yyymmdd so that files index if updated across years. I should try to keep this going for all my other projects, cause it's just better.
+
+
+
+
 
 
 ############# USEFUL PACKAGES ########################

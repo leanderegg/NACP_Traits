@@ -362,7 +362,7 @@ mtext("log(cwm LMA)", side=1, line=1.5, cex=1.1)
 mtext("b)", side=3, adj=0)
 
 plot(log(RGR)~log.cw_Nmassp, biomass, pch=16)
-abline(lm(log(RGR)~log.cw_Nmassp, biomass), lwd=2, lyt=2)
+abline(lm(log(RGR)~log.cw_Nmassp, biomass), lwd=2, lty=1)
 mtext(text = paste0("p=", round(anova(Nmassmod2)$`Pr(>F)`[1],3),","), side=1, adj=.05, line=-1, cex=.9)
 mtext(text = bquote(~R^2==.(round(summary(Nmassmod2)$r.squared,2))), side=1, adj = .95, line=-1, cex=.9 )
 mtext("log(RGR)", side=2, line=2, cex=1.1)
