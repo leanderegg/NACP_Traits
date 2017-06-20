@@ -504,6 +504,19 @@ Committed before I remake the trait-environment function to include ecoregion
 ** Note: I've also converted my date convention from mmddyy to yyymmdd so that files index if updated across years. I should try to keep this going for all my other projects, cause it's just better.
 
 
+######## New commit 06.19.17
+About to rerun all the trait-environment relationships and remake Fig 5 and Table 2 (which may get outsources) 
+Also updating all trait-environmnet models without ECOREG becuase they didn't previously use scaled traits so effect sizes were hard to interpret.
+
+-reran all the models, and w. and w.out ECOREGION for individual spp. (not for CW)
++updated the exported dataframes, but did not create an imps or avg for .ne models.
++initially exported everything as _20170619,
+- but then added in CWmeans and exported as _20170619_v2
+
+Notes from plotting: I think 2/3 page should do it, but I think I have to use boxplots rather than dotplots or else variable importances get almost impossible to interpret
+
++ added in CWmeans to the ttbest csvs and saved as _20170619_v2
+
 
 
 

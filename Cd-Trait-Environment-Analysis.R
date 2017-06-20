@@ -394,8 +394,8 @@ trait.mods <- function(traitdata =traits.common, species, trait="log.LL", modcri
 }
 
 
-
-trait.mods.noECOREG <- function(traitdata =traits.common, species, trait="log.LL", modcrit=F ){
+####### Function for fitting models without ECOREGION ######
+trait.mods.ne <- function(traitdata =traits.common, species, trait="log.LL", modcrit=F ){
   dataz <- data.frame(traitdata) %>% filter(SP.ID==species) %>% select(PLOT_ID, ECOREGION, get(trait), climPC1, climPC2, soil_N, ASA, LAI_O, AG_TGROWTH) %>% filter(complete.cases(.))
   print(nrow(dataz))
   dataz$log.ASA <- log(dataz$ASA)
@@ -483,206 +483,9 @@ ARBMENnarea <- trait.mods(traitdata = traits.common, species = "ARBMEN",trait = 
 ARBMENnmass <- trait.mods(traitdata = traits.common, species = "ARBMEN",trait = "log.Nmass")
 
 
-
-####### Combining all environmental trait models ######
-llbestmods <- rbind(PSEMENll$best, PINPONll$best,PINCONll$best,PINJEFll$best, ABICONll$best, TSUHETll$best)
-llbestmods$n <- rbind(PSEMENll$n, PINPONll$n,PINCONll$n,PINJEFll$n, ABICONll$n, TSUHETll$n)
-llbestmods$nplots <- rbind(PSEMENll$nplots, PINPONll$nplots,PINCONll$nplots,PINJEFll$nplots, ABICONll$nplots, TSUHETll$nplots)
-llbestmods$necos <- rbind(PSEMENll$necos, PINPONll$necos,PINCONll$necos,PINJEFll$necos, ABICONll$necos, TSUHETll$necos)
-llbestmods$deltas <-rbind(PSEMENll$deltaNULL, PINPONll$deltaNULL,PINCONll$deltaNULL,PINJEFll$deltaNULL, ABICONll$deltaNULL, TSUHETll$deltaNULL)
-llbestmods$SP.ID <-  c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
-
-lmabestmods <- rbind(PSEMENlma$best, PINPONlma$best,PINCONlma$best,PINJEFlma$best, ABICONlma$best, TSUHETlma$best)
-lmabestmods$n <- rbind(PSEMENlma$n, PINPONlma$n,PINCONlma$n,PINJEFlma$n, ABICONlma$n, TSUHETlma$n)
-lmabestmods$deltas <-rbind(PSEMENlma$deltaNULL, PINPONlma$deltaNULL,PINCONlma$deltaNULL,PINJEFlma$deltaNULL, ABICONlma$deltaNULL, TSUHETlma$deltaNULL)
-lmabestmods$SP.ID <-  c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
-
-
-nareabestmods <- rbind(PSEMENnarea$best, PINPONnarea$best,PINCONnarea$best,PINJEFnarea$best, ABICONnarea$best, TSUHETnarea$best)
-nareabestmods$n <- rbind(PSEMENnarea$n, PINPONnarea$n,PINCONnarea$n,PINJEFnarea$n, ABICONnarea$n, TSUHETnarea$n)
-nareabestmods$deltas <-rbind(PSEMENnarea$deltaNULL, PINPONnarea$deltaNULL,PINCONnarea$deltaNULL,PINJEFnarea$deltaNULL, ABICONnarea$deltaNULL, TSUHETnarea$deltaNULL)
-nareabestmods$SP.ID <-  c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
-nareabestmods$Species <-  c("Pseudotsuga menziesii","Pinus ponderosa","Pinus contorta","Pinus jeffreyii","Abies concolor","Tsuga heterophylla")
-
-
-nmassbestmods <- rbind(PSEMENnmass$best, PINPONnmass$best,PINCONnmass$best,PINJEFnmass$best, ABICONnmass$best, TSUHETnmass$best)
-nmassbestmods$n <- rbind(PSEMENnmass$n, PINPONnmass$n,PINCONnmass$n,PINJEFnmass$n, ABICONnmass$n, TSUHETnmass$n)
-nmassbestmods$deltas <-rbind(PSEMENnmass$deltaNULL, PINPONnmass$deltaNULL,PINCONnmass$deltaNULL,PINJEFnmass$deltaNULL, ABICONnmass$deltaNULL, TSUHETnmass$deltaNULL)
-nmassbestmods$SP.ID <-  c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
-nmassbestmods$Species <-  c("Pseudotsuga menziesii","Pinus ponderosa","Pinus contorta","Pinus jeffreyii","Abies concolor","Tsuga heterophylla")
-
-
-# write.csv(llbestmods, "Trait_models/LeafLife_bestmodels_031617.csv")
-# write.csv(lmabestmods, "Trait_models/LMA_bestmodels_031617.csv")
-# write.csv(nareabestmods, "Trait_models/Narea_bestmodels_031617.csv")
-# write.csv(nmassbestmods, "Trait_models/Nmass_bestmodels_041517.csv")
-# with ECOREGION in the models
-write.csv(llbestmods, "Trait_models/LeafLife_bestmodels_wECOREG_061617.csv")
-write.csv(lmabestmods, "Trait_models/LMA_bestmodels_wECOREG_061617.csv")
-write.csv(nareabestmods, "Trait_models/Narea_bestmodels_wECOREG_061617.csv")
-write.csv(nmassbestmods, "Trait_models/Nmass_bestmodels_wECOREG_061617.csv")
-
-#### Rerun for quality control with and without Ecoregions #### -> also switched my date convention to to go year month day
-write.csv(llbestmods, "Trait_models/LeafLife_bestmodels_wECOREG_20170619.csv")
-write.csv(lmabestmods, "Trait_models/LMA_bestmodels_wECOREG_20170619.csv")
-write.csv(nareabestmods, "Trait_models/Narea_bestmodels_wECOREG_20170619.csv")
-write.csv(nmassbestmods, "Trait_models/Nmass_bestmodels_wECOREG_20170619.csv")
-write.csv(llbestmods, "Trait_models/LeafLife_bestmodels_wECOREG_20170619.csv")
-write.csv(lmabestmods, "Trait_models/LMA_bestmodels_20170619.csv")
-write.csv(nareabestmods, "Trait_models/Narea_bestmodels_20170619.csv")
-write.csv(nmassbestmods, "Trait_models/Nmass_bestmodels_20170619.csv")
-
-
-
-
-#### Variable Importances ######
-llimps <- data.frame(rbind(PSEMENll$imp, PINPONll$imp,PINCONll$imp,PINJEFll$imp, ABICONll$imp, TSUHETll$imp)[,-1])
-colnames(llimps) <- c("climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION")
-llimps$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
-llimps$trait <- rep("LeafLife", times=nrow(llimps))
-
-lmaimps <- data.frame(rbind(PSEMENlma$imp, PINPONlma$imp,PINCONlma$imp,PINJEFlma$imp, ABICONlma$imp, TSUHETlma$imp)[,-1])
-colnames(lmaimps) <- c("climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION")
-lmaimps$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
-lmaimps$trait <- rep("LMA", times=nrow(lmaimps))
-
-nareaimps <- data.frame(rbind(PSEMENnarea$imp, PINPONnarea$imp,PINCONnarea$imp,PINJEFnarea$imp, ABICONnarea$imp, TSUHETnarea$imp)[,-1])
-colnames(nareaimps) <- c("climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION")
-nareaimps$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
-nareaimps$trait <- rep("Narea", times=nrow(nareaimps))
-
-
-nmassimps <- data.frame(rbind(PSEMENnmass$imp, PINPONnmass$imp,PINCONnmass$imp,PINJEFnmass$imp, ABICONnmass$imp, TSUHETnmass$imp)[,-1])
-colnames(nmassimps) <- c("climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION")
-nmassimps$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
-nmassimps$trait <- rep("Nmass", times=nrow(nmassimps))
-
-
-importances <- rbind(llimps, lmaimps, nareaimps, nmassimps)
-colnames(importances) <- c("climPC1", "climPC2","soil_N","Stand_Age","LAI","Growth", "ECOREGION", "SP.ID", "trait")
-# write.csv(importances, "Trait_models/VariableImportances_wide_031617aiccuttoff.csv")
-# write.csv(importances, "Trait_models/VariableImportances_wide_041517aiccuttoff.csv")
-write.csv(importances, "Trait_models/VariableImportances_wide_wECOREGION_061617aiccuttoff.csv")
-
-
-
-
-########### Plotting Model Ensamble Output ########################
-importances <- read.csv("Trait_models/VariableImportances_wide_041517aiccuttoff.csv", row.names = 1)
-importances.we <- read.csv("Trait_models/VariableImportances_wide_wECOREGION_061617aiccuttoff.csv", row.names = 1)
-importances.we$ECOREGION[which(is.na(importances.we$ECOREGION))] <- 0
-impslong <- melt(importances, id.vars = c("SP.ID","trait"))
-impslong.we <- melt(importances.we, id.vars= c("SP.ID", "trait"))
-
-p1 <- ggplot(impslong.we, aes(x=variable, y=value, col=variable)) + geom_boxplot() + 
-  geom_abline(slope = 0, intercept = 0) + facet_grid(trait~.) +
-  theme(axis.text.x=element_text(angle=90), legend.position="none") + ylab("Variable Importnce")
-
-##### Model Averaged Effects Sizes ######
-llavgmods <- data.frame(rbind(PSEMENll$avg, PINPONll$avg,PINCONll$avg,PINJEFll$avg, ABICONll$avg, TSUHETll$avg))
-llavgmods$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
-llavgmods$trait <- rep("LeafLife", times=nrow(llavgmods))
-
-lmaavgmods <- data.frame(rbind(PSEMENlma$avg, PINPONlma$avg,PINCONlma$avg,PINJEFlma$avg, ABICONlma$avg, TSUHETlma$avg))
-lmaavgmods$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
-lmaavgmods$trait <- rep("LMA", times=nrow(lmaavgmods))
-
-nareaavgmods <- data.frame(rbind(PSEMENnarea$avg, PINPONnarea$avg,PINCONnarea$avg,PINJEFnarea$avg, ABICONnarea$avg, TSUHETnarea$avg))
-nareaavgmods$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
-nareaavgmods$trait <- rep("Narea", times=nrow(nareaavgmods))
-
-nmassavgmods <- data.frame(rbind(PSEMENnmass$avg, PINPONnmass$avg,PINCONnmass$avg,PINJEFnmass$avg, ABICONnmass$avg, TSUHETnmass$avg))
-nmassavgmods$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
-nmassavgmods$trait <- rep("Nmass", times=nrow(nmassavgmods))
-
-avgmods <- rbind(llavgmods, lmaavgmods, nareaavgmods, nmassavgmods)[,-1]
-colnames(avgmods) <- c("climPC1", "climPC2","soil_N","Stand_Age","LAI","Growth", "SP.ID", "trait")
-#write.csv(avgmods, "Trait_models/Model_Averages_wide_031617aiccuttoff.csv")
-#write.csv(avgmods, "Trait_models/Model_Averages_wide_041517aiccuttoff.csv")
-#write.csv(avgmods, "Trait_models/Model_Averages_wide_061617aiccutoff.csv")
-
-#avgmods <- read.csv("Trait_models/Model_Averages_wide_041517aiccuttoff.csv", row.names = 1)
-avglong <- melt(avgmods, id.vars = c("SP.ID","trait"))
-levels(avglong$variable) <- list(climPC1="climPC1",climPC2= "climPC2", soil_N="soil_N",Stand_Age="Stand_Age",LAI="LAI",Growth="Growth", Ecoregion="ECOREGION")
-avglong$variable <- as.character(avglong$variable)
-
-tmp <- data.frame(SP.ID="PSEMEN", trait=c("LeafLife","LMA","Narea","Nmass"), vairable = "Ecoregion", value=NA)
-avglong[145,] <- data.frame(SP.ID=NA, trait=NA, vairable = "Ecoregion", value=NA)
-
-avglong$variable <- as.factor(avglong$variable)
-
-(p2 <- ggplot(avglong, aes(x=variable, y=value, col=variable)) + geom_boxplot() + 
-    geom_abline(slope = 0, intercept = 0) + facet_grid(trait~.) +
-    theme(axis.text.x=element_text(angle=90), legend.position="None") + ylab("Model-averaged Standardized Effect Sizes"))
-
-
-quartz(width=6, height=5)
-multiplot(p2,p1, cols = 2)
-
-
-### PICSIT and ABIAMA are right on the edge of useful ###
-#### yeeee, not sure I trust these.
-PICSITll <- trait.mods(traitdata = traits.common, species = "PICSIT",trait = "log.LL")
-PICSITlma <- trait.mods(traitdata = traits.common, species = "PICSIT",trait = "log.LMA")
-PICSITnarea <- trait.mods(traitdata = traits.common, species = "PICSIT",trait = "log.Narea")
-
-
-ABIAMAll <- trait.mods(traitdata = traits.common, species = "ABIAMA",trait = "log.LL")
-ABIAMAlma <- trait.mods(traitdata = traits.common, species = "ABIAMA",trait = "log.LMA")
-ABIAMAnarea <- trait.mods(traitdata = traits.common, species = "ABIAMA",trait = "log.Narea")
-
-
-
-ABIGRAll <- trait.mods(traitdata = traits.common, species = "ABIGRA",trait = "log.LL")
-ABIGRAlma <- trait.mods(traitdata = traits.common, species = "ABIGRA",trait = "log.LMA")
-ABIGRAnarea <- trait.mods(traitdata = traits.common, species = "ABIGRA",trait = "log.Narea")
-# n= 12... and the main troubles are soil_N, ASA, log.Narea
-# PLOT_ID     log.LL    climPC1    climPC2     soil_N        ASA      LAI_O AG_TGROWTH 
-#     0          5          0          0         51         34          8          8 
-
-# JUNOCCll <- trait.mods(traitdata = traits.common, species = "JUNOCC",trait = "log.LL")
-JUNOCClma <- trait.mods(traitdata = traits.common, species = "JUNOCC",trait = "log.LMA")
-JUNOCCnarea <- trait.mods(traitdata = traits.common, species = "JUNOCC",trait = "log.Narea")
-# damn. missing lots of rows. NAs:
-# PLOT_ID     log.LL    climPC1    climPC2     soil_N        ASA      LAI_O AG_TGROWTH 
-# 0         68          0          0         55         10          0          0 
-
-
-# ll <- lmer(log.LL~climPC1sc + climPC2sc + soil_Nsc + log.ASAsc + LAI_Osc + AG_TGROWTHsc + (1|PLOT_ID), datazall, REML=F)
-# # lllm <- lm(log.LL~climPC1sc + climPC2sc + soil_Nsc + scale(log(ASA)) + LAI_Osc + AG_TGROWTHsc , datazall)
-# # AIC(ll1,ll2,ll3,ll4)
-# lldredge <- dredge(ll, extra=list(r.squaredGLMM))
-# llmods <- dredge(ll, evaluate = F)
-# llmodavg <- model.avg(lldredge,subset=cumsum(weight)<=.90)
-# lma <- lmer(log.LMA~climPC1 + climPC2 + soil_N + scale(log(ASA)) + LAI_O + AG_TGROWTH + (1|PLOT_ID), dataz, REML=F)
-# lmadredge <- dredge(lma,extra=list(r.squaredGLMM) )
-# lmamodavg <- model.avg(lmadredge,subset=cumsum(weight)<=.90)
-# Narea1 <- lmer(log.Narea~climPC1 + climPC2 + soil_N + scale(log(ASA)) + LAI_O + AG_TGROWTH + (1|PLOT_ID), dataz, REML=F)
-# Nareadredge <- dredge(Narea1, extra=list(r.squaredGLMM))
-# Nareamodavg <- model.avg(Nareadredge, subset=cumsum(weight)<=.90)
-
-
-
-
-
-
-
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-######### Ecoregion Analysis ###############
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
-ggplot(traits.common[which(traits.common$GE.SP %in% c("Pseudotsuga.menziesii","Pinus.ponderosa")),], aes(x=ECOREGION, y=log.LL, col=ECOREGION)) + geom_boxplot() + facet_grid(GE.SP~.)
-# it actually looks like ecoregion might explain a fair amount of LL variation, and maybe Nmass
-# though the effect is not consistent between ponderosa and doug fir, maybe data driven param but not mechanistic?
-plot(log.LMA~log.Nmass, traits.common[which(traits.common$GE.SP %in% c("Pseudotsuga.menziesii")),], col=ECOREGION, pch=16)
-# also, ecoregions cluster rather suprisingly in log.LMA vs log.Nmass space...
-# good for doug fir, less good for ponderosa
-
-
-
+###### Apply to CWmeans  ###########
 ###applying to the cw traits ####
-  # just copied the function code to taylor to biomass
+# just copied the function code to taylor to biomass
 
 cw.trait.mods <- function(traitdata =biomass, trait="log.cw_LLp", modcrit=F ){
   dataz <- data.frame(biomass)  %>% select(PLOT_ID, ECOREGION, get(trait), climPC1, climPC2, soil_N, ASA, LAI_O, AG_PROD_TREE_TOTAL_AS_CARBON) %>% filter(complete.cases(.))
@@ -705,28 +508,62 @@ cw.trait.mods <- function(traitdata =biomass, trait="log.cw_LLp", modcrit=F ){
     scatter.smooth(resid(bestmodobject)~fitted(bestmodobject)); abline(h=0)
     plot(datazall[,traitsc]~predict(bestmodobject, re.form=NA));abline(a=0,b=1)
     qqp(resid(bestmodobject), main="residuals")
-   # qqp(ranef(bestmodobject)[[1]][,1], main='Random Effects')
+    # qqp(ranef(bestmodobject)[[1]][,1], main='Random Effects')
   }
-
-    results <- list(best = traitdredge[1,c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION","r.squaredGLMM.R2m","R^2",'AICc')]
-                    , avg = traitmodavg$coefficients[1,c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc")] # note: If I try to get ecoregion effects, this can blow up. I think I need to leave ECOREGION out of this
-                    , imp = as.vector(traitmodavg$importance)[match(c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION"),names(traitmodavg$importance))]
-                    , fulldredge = traitdredge
-                    , fullmodavg = traitmodavg
-                    , modnum = rownames(traitdredge)[1]
-                    , bestmodcall = traitmodcalls[[rownames(traitdredge)[1]]]
-                    , bestmodobject = bestmodobject
-                    , n=nrow(datazall)
-                    , nplots = nrow(datazall)
-                    , necos = length(unique(datazall$ECOREGION))
-                    , deltaNULL = traitdredge[which(rownames(traitdredge)==1),"delta"])
-
+  
+  results <- list(best = traitdredge[1,c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION","r.squaredGLMM.R2m","R^2",'AICc')]
+                  , avg = traitmodavg$coefficients[1,c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc")] # note: If I try to get ecoregion effects, this can blow up. I think I need to leave ECOREGION out of this
+                  , imp = as.vector(traitmodavg$importance)[match(c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION"),names(traitmodavg$importance))]
+                  , fulldredge = traitdredge
+                  , fullmodavg = traitmodavg
+                  , modnum = rownames(traitdredge)[1]
+                  , bestmodcall = traitmodcalls[[rownames(traitdredge)[1]]]
+                  , bestmodobject = bestmodobject
+                  , n=nrow(datazall)
+                  , nplots = nrow(datazall)
+                  , necos = length(unique(datazall$ECOREGION))
+                  , deltaNULL = traitdredge[which(rownames(traitdredge)==1),"delta"])
+  
   return(results)
 }
 
-trait <- "log.cw_LLp"
-CWll <- cw.trait.mods(traitdata=biomass, trait="log.cw_LLp", modcrit=T)
 
+####### .CW Leaf Lifespan ######
+trait <- "log.cw_LLp"
+dataz <- data.frame(biomass)  %>% select(PLOT_ID, ECOREGION, get(trait), climPC1, climPC2, soil_N, ASA, LAI_O, AG_PROD_TREE_TOTAL_AS_CARBON) %>% filter(complete.cases(.))
+print(nrow(dataz))
+dataz$log.ASA <- log(dataz$ASA)
+datazsc <- scale(dataz[,-c(1:2)]) # originally, this just scaled the predictors, but I think I also want to scale the traits.
+colnames(datazsc) <- paste0(colnames(dataz[,-c(1:2)]),'sc')
+colnames(datazsc)[grep("AG_", colnames(datazsc))] <- "AG_TGROWTHsc" # change this column name for compatibility
+datazall <- data.frame(dataz, datazsc)
+tn <- trait
+traitsc <- paste(tn, "sc", sep="")
+traitmod <- lm(get(traitsc)~climPC1sc + climPC2sc + soil_Nsc + log.ASAsc + LAI_Osc + AG_TGROWTHsc + ECOREGION , datazall)
+traitdredge <- dredge(traitmod, extra=list(r.squaredGLMM, "R^2"))
+traitmodcalls <- dredge(traitmod, evaluate = F)
+traitmodavg <- model.avg(traitdredge,subset=delta<=4)
+bestmodobject <- eval(traitmodcalls[[rownames(traitdredge)[1]]])
+  scatter.smooth(resid(bestmodobject)~fitted(bestmodobject)); abline(h=0)
+  plot(datazall[,traitsc]~predict(bestmodobject, re.form=NA));abline(a=0,b=1)
+  qqp(resid(bestmodobject), main="residuals")
+  # qqp(ranef(bestmodobject)[[1]][,1], main='Random Effects')
+
+CWll <- list(best = traitdredge[1,c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION","r.squaredGLMM.R2m","R^2",'AICc')]
+                , avg = traitmodavg$coefficients[1,c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc")] # note: If I try to get ecoregion effects, this can blow up. I think I need to leave ECOREGION out of this
+                , imp = as.vector(traitmodavg$importance)[match(c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION"),names(traitmodavg$importance))]
+                , fulldredge = traitdredge
+                , fullmodavg = traitmodavg
+                , modnum = rownames(traitdredge)[1]
+                , bestmodcall = traitmodcalls[[rownames(traitdredge)[1]]]
+                , bestmodobject = bestmodobject
+                , n=nrow(datazall)
+                , nplots = nrow(datazall)
+                , necos = length(unique(datazall$ECOREGION))
+                , deltaNULL = traitdredge[which(rownames(traitdredge)==1),"delta"])
+
+
+####### .CW LMA ####
 ## NOTE: This is non-replicable, and I don't know why. You actually have to run all the code above for some strange assignment error reason
 trait="log.cw_LMAp"
 dataz <- data.frame(biomass)  %>% select(PLOT_ID, ECOREGION, get(trait), climPC1, climPC2, soil_N, ASA, LAI_O, AG_PROD_TREE_TOTAL_AS_CARBON) %>% filter(complete.cases(.))
@@ -746,24 +583,24 @@ traitmodavg <- model.avg(traitdredge,subset=delta<=4)
 
 bestmodobject <- eval(traitmodcalls[[rownames(traitdredge)[1]]])
 
-  scatter.smooth(resid(bestmodobject)~fitted(bestmodobject)); abline(h=0)
-  plot(datazall[,traitsc]~predict(bestmodobject, re.form=NA));abline(a=0,b=1)
-  qqp(resid(bestmodobject), main="residuals")
-  # qqp(ranef(bestmodobject)[[1]][,1], main='Random Effects')
+scatter.smooth(resid(bestmodobject)~fitted(bestmodobject)); abline(h=0)
+plot(datazall[,traitsc]~predict(bestmodobject, re.form=NA));abline(a=0,b=1)
+qqp(resid(bestmodobject), main="residuals")
+# qqp(ranef(bestmodobject)[[1]][,1], main='Random Effects')
 
 
 CWlma <- list(best = traitdredge[1,c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION","r.squaredGLMM.R2m","R^2",'AICc')]
-                , avg = traitmodavg$coefficients[1,c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc")] # note: If I try to get ecoregion effects, this can blow up. I think I need to leave ECOREGION out of this
-                , imp = as.vector(traitmodavg$importance)[match(c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION"),names(traitmodavg$importance))]
-                , fulldredge = traitdredge
-                , fullmodavg = traitmodavg
-                , modnum = rownames(traitdredge)[1]
-                , bestmodcall = traitmodcalls[[rownames(traitdredge)[1]]]
-                , bestmodobject = bestmodobject
-                , n=nrow(datazall)
-                , nplots = nrow(datazall)
-                , necos = length(unique(datazall$ECOREGION))
-                , deltaNULL = traitdredge[which(rownames(traitdredge)==1),"delta"])
+              , avg = traitmodavg$coefficients[1,c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc")] # note: If I try to get ecoregion effects, this can blow up. I think I need to leave ECOREGION out of this
+              , imp = as.vector(traitmodavg$importance)[match(c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION"),names(traitmodavg$importance))]
+              , fulldredge = traitdredge
+              , fullmodavg = traitmodavg
+              , modnum = rownames(traitdredge)[1]
+              , bestmodcall = traitmodcalls[[rownames(traitdredge)[1]]]
+              , bestmodobject = bestmodobject
+              , n=nrow(datazall)
+              , nplots = nrow(datazall)
+              , necos = length(unique(datazall$ECOREGION))
+              , deltaNULL = traitdredge[which(rownames(traitdredge)==1),"delta"])
 
 
 #### Nmass ####
@@ -792,17 +629,17 @@ qqp(resid(bestmodobject), main="residuals")
 
 
 CWnmass <- list(best = traitdredge[1,c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION","r.squaredGLMM.R2m","R^2",'AICc')]
-              , avg = traitmodavg$coefficients[1,c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc")] # note: If I try to get ecoregion effects, this can blow up. I think I need to leave ECOREGION out of this
-              , imp = as.vector(traitmodavg$importance)[match(c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION"),names(traitmodavg$importance))]
-              , fulldredge = traitdredge
-              , fullmodavg = traitmodavg
-              , modnum = rownames(traitdredge)[1]
-              , bestmodcall = traitmodcalls[[rownames(traitdredge)[1]]]
-              , bestmodobject = bestmodobject
-              , n=nrow(datazall)
-              , nplots = nrow(datazall)
-              , necos = length(unique(datazall$ECOREGION))
-              , deltaNULL = traitdredge[which(rownames(traitdredge)==1),"delta"])
+                , avg = traitmodavg$coefficients[1,c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc")] # note: If I try to get ecoregion effects, this can blow up. I think I need to leave ECOREGION out of this
+                , imp = as.vector(traitmodavg$importance)[match(c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION"),names(traitmodavg$importance))]
+                , fulldredge = traitdredge
+                , fullmodavg = traitmodavg
+                , modnum = rownames(traitdredge)[1]
+                , bestmodcall = traitmodcalls[[rownames(traitdredge)[1]]]
+                , bestmodobject = bestmodobject
+                , n=nrow(datazall)
+                , nplots = nrow(datazall)
+                , necos = length(unique(datazall$ECOREGION))
+                , deltaNULL = traitdredge[which(rownames(traitdredge)==1),"delta"])
 
 
 ###### Narea ###########
@@ -831,18 +668,522 @@ qqp(resid(bestmodobject), main="residuals")
 
 
 CWnarea <- list(best = traitdredge[1,c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION","r.squaredGLMM.R2m","R^2",'AICc')]
-              , avg = traitmodavg$coefficients[1,c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc")] # note: If I try to get ecoregion effects, this can blow up. I think I need to leave ECOREGION out of this
-              , imp = as.vector(traitmodavg$importance)[match(c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION"),names(traitmodavg$importance))]
-              , fulldredge = traitdredge
-              , fullmodavg = traitmodavg
-              , modnum = rownames(traitdredge)[1]
-              , bestmodcall = traitmodcalls[[rownames(traitdredge)[1]]]
-              , bestmodobject = bestmodobject
-              , n=nrow(datazall)
-              , nplots = nrow(datazall)
-              , necos = length(unique(datazall$ECOREGION))
-              , deltaNULL = traitdredge[which(rownames(traitdredge)==1),"delta"])
+                , avg = traitmodavg$coefficients[1,c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc")] # note: If I try to get ecoregion effects, this can blow up. I think I need to leave ECOREGION out of this
+                , imp = as.vector(traitmodavg$importance)[match(c("(Intercept)","climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION"),names(traitmodavg$importance))]
+                , fulldredge = traitdredge
+                , fullmodavg = traitmodavg
+                , modnum = rownames(traitdredge)[1]
+                , bestmodcall = traitmodcalls[[rownames(traitdredge)[1]]]
+                , bestmodobject = bestmodobject
+                , n=nrow(datazall)
+                , nplots = nrow(datazall)
+                , necos = length(unique(datazall$ECOREGION))
+                , deltaNULL = traitdredge[which(rownames(traitdredge)==1),"delta"])
 
+
+
+
+
+colnames(CWll$best)[10] <- "r.squaredGLMM.R2c"
+colnames(CWlma$best)[10] <- "r.squaredGLMM.R2c"
+colnames(CWnmass$best)[10] <- "r.squaredGLMM.R2c"
+colnames(CWnarea$best)[10] <- "r.squaredGLMM.R2c"
+
+
+
+####### Combining all environmental trait models ######
+llbestmods <- rbind(PSEMENll$best, PINPONll$best,PINCONll$best,PINJEFll$best, ABICONll$best, TSUHETll$best, CWll$best)
+llbestmods$n <- rbind(PSEMENll$n, PINPONll$n,PINCONll$n,PINJEFll$n, ABICONll$n, TSUHETll$n, CWll$n)
+llbestmods$nplots <- rbind(PSEMENll$nplots, PINPONll$nplots,PINCONll$nplots,PINJEFll$nplots, ABICONll$nplots, TSUHETll$nplots, CWll$nplots)
+llbestmods$necos <- rbind(PSEMENll$necos, PINPONll$necos,PINCONll$necos,PINJEFll$necos, ABICONll$necos, TSUHETll$necos, CWll$necos)
+llbestmods$deltas <-rbind(PSEMENll$deltaNULL, PINPONll$deltaNULL,PINCONll$deltaNULL,PINJEFll$deltaNULL, ABICONll$deltaNULL, TSUHETll$deltaNULL,CWll$deltaNULL)
+llbestmods$SP.ID <-  c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET","CWmean")
+
+lmabestmods <- rbind(PSEMENlma$best, PINPONlma$best,PINCONlma$best,PINJEFlma$best, ABICONlma$best, TSUHETlma$best, CWlma$best)
+lmabestmods$n <- rbind(PSEMENlma$n, PINPONlma$n,PINCONlma$n,PINJEFlma$n, ABICONlma$n, TSUHETlma$n, CWlma$n)
+lmabestmods$nplots <- rbind(PSEMENlma$nplots, PINPONlma$nplots,PINCONlma$nplots,PINJEFlma$nplots, ABICONlma$nplots, TSUHETlma$nplots,CWlma$n)
+lmabestmods$necos <- rbind(PSEMENlma$necos, PINPONlma$necos,PINCONlma$necos,PINJEFlma$necos, ABICONlma$necos, TSUHETlma$necos,CWlma$necos)
+lmabestmods$deltas <-rbind(PSEMENlma$deltaNULL, PINPONlma$deltaNULL,PINCONlma$deltaNULL,PINJEFlma$deltaNULL, ABICONlma$deltaNULL, TSUHETlma$deltaNULL,CWlma$deltaNULL)
+lmabestmods$SP.ID <-  c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET", "CWmean")
+
+
+nareabestmods <- rbind(PSEMENnarea$best, PINPONnarea$best,PINCONnarea$best,PINJEFnarea$best, ABICONnarea$best, TSUHETnarea$best, CWnarea$best)
+nareabestmods$n <- rbind(PSEMENnarea$n, PINPONnarea$n,PINCONnarea$n,PINJEFnarea$n, ABICONnarea$n, TSUHETnarea$n, CWnarea$n)
+nareabestmods$nplots <- rbind(PSEMENnarea$nplots, PINPONnarea$nplots,PINCONnarea$nplots,PINJEFnarea$nplots, ABICONnarea$nplots, TSUHETnarea$nplots, CWnarea$nplots)
+nareabestmods$necos <- rbind(PSEMENnarea$necos, PINPONnarea$necos,PINCONnarea$necos,PINJEFnarea$necos, ABICONnarea$necos, TSUHETnarea$necos, CWnarea$necos)
+nareabestmods$deltas <-rbind(PSEMENnarea$deltaNULL, PINPONnarea$deltaNULL,PINCONnarea$deltaNULL,PINJEFnarea$deltaNULL, ABICONnarea$deltaNULL, TSUHETnarea$deltaNULL, CWnarea$deltaNULL)
+nareabestmods$SP.ID <-  c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET", "CWmean")
+nareabestmods$Species <-  c("Pseudotsuga menziesii","Pinus ponderosa","Pinus contorta","Pinus jeffreyii","Abies concolor","Tsuga heterophylla", "Community-Weighted Mean")
+
+
+nmassbestmods <- rbind(PSEMENnmass$best, PINPONnmass$best,PINCONnmass$best,PINJEFnmass$best, ABICONnmass$best, TSUHETnmass$best, CWnmass$best)
+nmassbestmods$n <- rbind(PSEMENnmass$n, PINPONnmass$n,PINCONnmass$n,PINJEFnmass$n, ABICONnmass$n, TSUHETnmass$n, CWnmass$n)
+nmassbestmods$nplots <- rbind(PSEMENnmass$nplots, PINPONnmass$nplots,PINCONnmass$nplots,PINJEFnmass$nplots, ABICONnmass$nplots, TSUHETnmass$nplots, CWnmass$nplots)
+nmassbestmods$necos <- rbind(PSEMENnmass$necos, PINPONnmass$necos,PINCONnmass$necos,PINJEFnmass$necos, ABICONnmass$necos, TSUHETnmass$necos, CWnmass$necos)
+nmassbestmods$deltas <-rbind(PSEMENnmass$deltaNULL, PINPONnmass$deltaNULL,PINCONnmass$deltaNULL,PINJEFnmass$deltaNULL, ABICONnmass$deltaNULL, TSUHETnmass$deltaNULL, CWnmass$deltaNULL)
+nmassbestmods$SP.ID <-  c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET", "CWmean")
+nmassbestmods$Species <-  c("Pseudotsuga menziesii","Pinus ponderosa","Pinus contorta","Pinus jeffreyii","Abies concolor","Tsuga heterophylla", "Community-Weighted Mean")
+
+
+
+
+#___________________________________________________________________________________
+############ Fitting all models without ecoregions #############
+#___________________________________________________________________________________
+
+
+PSEMENll.ne <- trait.mods.ne(traitdata = traits.common, species = "PSEMEN",trait = "log.LL", modcrit=T)
+PSEMENlma.ne <- trait.mods.ne(traitdata = traits.common, species = "PSEMEN",trait = "log.LMA", modcrit=T)
+PSEMENnarea.ne <- trait.mods.ne(traitdata = traits.common, species = "PSEMEN",trait = "log.Narea", modcrit=T)
+PSEMENnmass.ne <- trait.mods.ne(traitdata = traits.common, species = "PSEMEN",trait = "log.Nmass", modcrit=T)
+
+PINPONll.ne <- trait.mods.ne(traitdata = traits.common, species = "PINPON",trait = "log.LL")
+PINPONlma.ne <- trait.mods.ne(traitdata = traits.common, species = "PINPON",trait = "log.LMA")
+PINPONnarea.ne <- trait.mods.ne(traitdata = traits.common, species = "PINPON",trait = "log.Narea")
+PINPONnmass.ne <- trait.mods.ne(traitdata = traits.common, species = "PINPON",trait = "log.Nmass")
+
+ABICONll.ne <- trait.mods.ne(traitdata = traits.common, species = "ABICON",trait = "log.LL")
+ABICONlma.ne <- trait.mods.ne(traitdata = traits.common, species = "ABICON",trait = "log.LMA")
+ABICONnarea.ne <- trait.mods.ne(traitdata = traits.common, species = "ABICON",trait = "log.Narea")
+ABICONnmass.ne <- trait.mods.ne(traitdata = traits.common, species = "ABICON",trait = "log.Nmass")
+
+TSUHETll.ne <- trait.mods.ne(traitdata = traits.common, species = "TSUHET",trait = "log.LL")
+TSUHETlma.ne <- trait.mods.ne(traitdata = traits.common, species = "TSUHET",trait = "log.LMA")
+TSUHETnarea.ne <- trait.mods.ne(traitdata = traits.common, species = "TSUHET",trait = "log.Narea") # might be one outlier that's leveraging things?
+TSUHETnmass.ne <- trait.mods.ne(traitdata = traits.common, species = "TSUHET",trait = "log.Nmass") # might be one outlier that's leveraging things?
+
+PINCONll.ne <- trait.mods.ne(traitdata = traits.common, species = "PINCON",trait = "log.LL")
+PINCONlma.ne <- trait.mods.ne(traitdata = traits.common, species = "PINCON",trait = "log.LMA")
+PINCONnarea.ne <- trait.mods.ne(traitdata = traits.common, species = "PINCON",trait = "log.Narea")
+PINCONnmass.ne <- trait.mods.ne(traitdata = traits.common, species = "PINCON",trait = "log.Nmass")
+
+PINJEFll.ne <- trait.mods.ne(traitdata = traits.common, species = "PINJEF",trait = "log.LL")
+PINJEFlma.ne <- trait.mods.ne(traitdata = traits.common, species = "PINJEF",trait = "log.LMA") # two outliers
+PINJEFnarea.ne <- trait.mods.ne(traitdata = traits.common, species = "PINJEF",trait = "log.Narea")
+PINJEFnmass.ne <- trait.mods.ne(traitdata = traits.common, species = "PINJEF",trait = "log.Nmass")
+
+# #ARBMENll.ne <- trait.mods.ne(traitdata = traits.common, species = "ARBMEN",trait = "log.LL")
+# ARBMENlma.ne <- trait.mods.ne(traitdata = traits.common, species = "ARBMEN",trait = "log.LMA") 
+# ARBMENnarea.ne <- trait.mods.ne(traitdata = traits.common, species = "ARBMEN",trait = "log.Narea")
+# ARBMENnmass.ne <- trait.mods.ne(traitdata = traits.common, species = "ARBMEN",trait = "log.Nmass")
+
+
+
+####### Combining all environmental trait models without ECOREGION######
+llbestmods.ne <- rbind(PSEMENll.ne$best, PINPONll.ne$best,PINCONll.ne$best,PINJEFll.ne$best, ABICONll.ne$best, TSUHETll.ne$best)
+llbestmods.ne$n <- rbind(PSEMENll.ne$n, PINPONll.ne$n,PINCONll.ne$n,PINJEFll.ne$n, ABICONll.ne$n, TSUHETll.ne$n)
+llbestmods.ne$nplots <- rbind(PSEMENll.ne$nplots, PINPONll.ne$nplots,PINCONll.ne$nplots,PINJEFll.ne$nplots, ABICONll.ne$nplots, TSUHETll.ne$nplots)
+llbestmods.ne$necos <- rbind(PSEMENll.ne$necos, PINPONll.ne$necos,PINCONll.ne$necos,PINJEFll.ne$necos, ABICONll.ne$necos, TSUHETll.ne$necos)
+llbestmods.ne$deltas <-rbind(PSEMENll.ne$deltaNULL, PINPONll.ne$deltaNULL,PINCONll.ne$deltaNULL,PINJEFll.ne$deltaNULL, ABICONll.ne$deltaNULL, TSUHETll.ne$deltaNULL)
+llbestmods.ne$SP.ID <-  c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
+
+lmabestmods.ne <- rbind(PSEMENlma.ne$best, PINPONlma.ne$best,PINCONlma.ne$best,PINJEFlma.ne$best, ABICONlma.ne$best, TSUHETlma.ne$best)
+lmabestmods.ne$n <- rbind(PSEMENlma.ne$n, PINPONlma.ne$n,PINCONlma.ne$n,PINJEFlma.ne$n, ABICONlma.ne$n, TSUHETlma.ne$n)
+lmabestmods.ne$nplots <- rbind(PSEMENlma.ne$nplots, PINPONlma.ne$nplots,PINCONlma.ne$nplots,PINJEFlma.ne$nplots, ABICONlma.ne$nplots, TSUHETlma.ne$nplots)
+lmabestmods.ne$necos <- rbind(PSEMENlma.ne$necos, PINPONlma.ne$necos,PINCONlma.ne$necos,PINJEFlma.ne$necos, ABICONlma.ne$necos, TSUHETlma.ne$necos)
+lmabestmods.ne$deltas <-rbind(PSEMENlma.ne$deltaNULL, PINPONlma.ne$deltaNULL,PINCONlma.ne$deltaNULL,PINJEFlma.ne$deltaNULL, ABICONlma.ne$deltaNULL, TSUHETlma.ne$deltaNULL)
+lmabestmods.ne$SP.ID <-  c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
+
+
+nareabestmods.ne <- rbind(PSEMENnarea.ne$best, PINPONnarea.ne$best,PINCONnarea.ne$best,PINJEFnarea.ne$best, ABICONnarea.ne$best, TSUHETnarea.ne$best)
+nareabestmods.ne$n <- rbind(PSEMENnarea.ne$n, PINPONnarea.ne$n,PINCONnarea.ne$n,PINJEFnarea.ne$n, ABICONnarea.ne$n, TSUHETnarea.ne$n)
+nareabestmods.ne$nplots <- rbind(PSEMENnarea.ne$nplots, PINPONnarea.ne$nplots,PINCONnarea.ne$nplots,PINJEFnarea.ne$nplots, ABICONnarea.ne$nplots, TSUHETnarea.ne$nplots)
+nareabestmods.ne$necos <- rbind(PSEMENnarea.ne$necos, PINPONnarea.ne$necos,PINCONnarea.ne$necos,PINJEFnarea.ne$necos, ABICONnarea.ne$necos, TSUHETnarea.ne$necos)
+nareabestmods.ne$deltas <-rbind(PSEMENnarea.ne$deltaNULL, PINPONnarea.ne$deltaNULL,PINCONnarea.ne$deltaNULL,PINJEFnarea.ne$deltaNULL, ABICONnarea.ne$deltaNULL, TSUHETnarea.ne$deltaNULL)
+nareabestmods.ne$SP.ID <-  c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
+nareabestmods.ne$Species <-  c("Pseudotsuga menziesii","Pinus ponderosa","Pinus contorta","Pinus jeffreyii","Abies concolor","Tsuga heterophylla")
+
+
+nmassbestmods.ne <- rbind(PSEMENnmass.ne$best, PINPONnmass.ne$best,PINCONnmass.ne$best,PINJEFnmass.ne$best, ABICONnmass.ne$best, TSUHETnmass.ne$best)
+nmassbestmods.ne$n <- rbind(PSEMENnmass.ne$n, PINPONnmass.ne$n,PINCONnmass.ne$n,PINJEFnmass.ne$n, ABICONnmass.ne$n, TSUHETnmass.ne$n)
+nmassbestmods.ne$nplots <- rbind(PSEMENnmass.ne$nplots, PINPONnmass.ne$nplots,PINCONnmass.ne$nplots,PINJEFnmass.ne$nplots, ABICONnmass.ne$nplots, TSUHETnmass.ne$nplots)
+nmassbestmods.ne$necos <- rbind(PSEMENnmass.ne$necos, PINPONnmass.ne$necos,PINCONnmass.ne$necos,PINJEFnmass.ne$necos, ABICONnmass.ne$necos, TSUHETnmass.ne$necos)
+nmassbestmods.ne$deltas <-rbind(PSEMENnmass.ne$deltaNULL, PINPONnmass.ne$deltaNULL,PINCONnmass.ne$deltaNULL,PINJEFnmass.ne$deltaNULL, ABICONnmass.ne$deltaNULL, TSUHETnmass.ne$deltaNULL)
+nmassbestmods.ne$SP.ID <-  c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET")
+nmassbestmods.ne$Species <-  c("Pseudotsuga menziesii","Pinus ponderosa","Pinus contorta","Pinus jeffreyii","Abies concolor","Tsuga heterophylla")
+
+
+
+
+
+
+
+# write.csv(llbestmods, "Trait_models/LeafLife_bestmodels_031617.csv")
+# write.csv(lmabestmods, "Trait_models/LMA_bestmodels_031617.csv")
+# write.csv(nareabestmods, "Trait_models/Narea_bestmodels_031617.csv")
+# write.csv(nmassbestmods, "Trait_models/Nmass_bestmodels_041517.csv")
+# with ECOREGION in the models
+# write.csv(llbestmods, "Trait_models/LeafLife_bestmodels_wECOREG_061617.csv")
+# write.csv(lmabestmods, "Trait_models/LMA_bestmodels_wECOREG_061617.csv")
+# write.csv(nareabestmods, "Trait_models/Narea_bestmodels_wECOREG_061617.csv")
+# write.csv(nmassbestmods, "Trait_models/Nmass_bestmodels_wECOREG_061617.csv")
+
+#### Rerun for quality control with and without Ecoregions #### -> also switched my date convention to to go year month day
+# write.csv(llbestmods, "Trait_models/LeafLife_bestmodels_20170619.csv")
+# write.csv(lmabestmods, "Trait_models/LMA_bestmodels_20170619.csv")
+# write.csv(nareabestmods, "Trait_models/Narea_bestmodels_20170619.csv")
+# write.csv(nmassbestmods, "Trait_models/Nmass_bestmodels_20170619.csv")
+write.csv(llbestmods.ne, "Trait_models/LeafLife_bestmodels_noECOREG_20170619.csv")
+write.csv(lmabestmods.ne, "Trait_models/LMA_bestmodels_noECOREG_20170619.csv")
+write.csv(nareabestmods.ne, "Trait_models/Narea_bestmodels_noECOREG_20170619.csv")
+write.csv(nmassbestmods.ne, "Trait_models/Nmass_bestmodels_noECOREG_20170619.csv")
+# _v2 has CWmeans added on
+write.csv(llbestmods, "Trait_models/LeafLife_bestmodels_20170619_v2.csv")
+write.csv(lmabestmods, "Trait_models/LMA_bestmodels_20170619_v2.csv")
+write.csv(nareabestmods, "Trait_models/Narea_bestmodels_20170619_v2.csv")
+write.csv(nmassbestmods, "Trait_models/Nmass_bestmodels_20170619_v2.csv")
+
+
+
+#### Variable Importances ######
+llimps <- data.frame(rbind(PSEMENll$imp, PINPONll$imp,PINCONll$imp,PINJEFll$imp, ABICONll$imp, TSUHETll$imp, CWll$imp)[,-1])
+colnames(llimps) <- c("climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION")
+llimps$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET", "CWmean")
+llimps$trait <- rep("LeafLife", times=nrow(llimps))
+
+lmaimps <- data.frame(rbind(PSEMENlma$imp, PINPONlma$imp,PINCONlma$imp,PINJEFlma$imp, ABICONlma$imp, TSUHETlma$imp, CWlma$imp)[,-1])
+colnames(lmaimps) <- c("climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION")
+lmaimps$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET", "CWmean")
+lmaimps$trait <- rep("LMA", times=nrow(lmaimps))
+
+nareaimps <- data.frame(rbind(PSEMENnarea$imp, PINPONnarea$imp,PINCONnarea$imp,PINJEFnarea$imp, ABICONnarea$imp, TSUHETnarea$imp, CWnarea$imp)[,-1])
+colnames(nareaimps) <- c("climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION")
+nareaimps$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET", "CWmean")
+nareaimps$trait <- rep("Narea", times=nrow(nareaimps))
+
+
+nmassimps <- data.frame(rbind(PSEMENnmass$imp, PINPONnmass$imp,PINCONnmass$imp,PINJEFnmass$imp, ABICONnmass$imp, TSUHETnmass$imp, CWnmass$imp)[,-1])
+colnames(nmassimps) <- c("climPC1sc","climPC2sc","soil_Nsc","log.ASAsc","LAI_Osc","AG_TGROWTHsc","ECOREGION")
+nmassimps$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET", "CWmean")
+nmassimps$trait <- rep("Nmass", times=nrow(nmassimps))
+
+
+importances <- rbind(llimps, lmaimps, nareaimps, nmassimps)
+colnames(importances) <- c("climPC1", "climPC2","soil_N","Stand_Age","LAI","Growth", "ECOREGION", "SP.ID", "trait")
+importances$ECOREGION[which(is.na(importances$ECOREGION))] <- 0 # change NAs to 0s (i.e. when no model contained ECOREGION, it should have an importance of 0)
+# write.csv(importances, "Trait_models/VariableImportances_wide_031617aiccuttoff.csv")
+# write.csv(importances, "Trait_models/VariableImportances_wide_041517aiccuttoff.csv")
+# write.csv(importances, "Trait_models/VariableImportances_wide_wECOREGION_061617aiccuttoff.csv")
+# write.csv(importances, "Trait_models/VariableImportances_wide_20170619aiccuttoff.csv")
+write.csv(importances, "Trait_models/VariableImportances_wide_20170619_v2aiccuttoff.csv") # same models but with CWmeans added
+
+
+
+##### Model Averaged Effects Sizes ######
+llavgmods <- data.frame(rbind(PSEMENll$avg, PINPONll$avg,PINCONll$avg,PINJEFll$avg, ABICONll$avg, TSUHETll$avg, CWll$avg))
+llavgmods$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET","CWmean")
+llavgmods$trait <- rep("LeafLife", times=nrow(llavgmods))
+
+lmaavgmods <- data.frame(rbind(PSEMENlma$avg, PINPONlma$avg,PINCONlma$avg,PINJEFlma$avg, ABICONlma$avg, TSUHETlma$avg, CWlma$avg))
+lmaavgmods$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET", "CWmean")
+lmaavgmods$trait <- rep("LMA", times=nrow(lmaavgmods))
+
+nareaavgmods <- data.frame(rbind(PSEMENnarea$avg, PINPONnarea$avg,PINCONnarea$avg,PINJEFnarea$avg, ABICONnarea$avg, TSUHETnarea$avg, CWnarea$avg))
+nareaavgmods$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET","CWmean")
+nareaavgmods$trait <- rep("Narea", times=nrow(nareaavgmods))
+
+nmassavgmods <- data.frame(rbind(PSEMENnmass$avg, PINPONnmass$avg,PINCONnmass$avg,PINJEFnmass$avg, ABICONnmass$avg, TSUHETnmass$avg, CWnmass$avg))
+nmassavgmods$SP.ID <- c("PSEMEN","PINPON","PINCON","PINJEF","ABICON","TSUHET","CWmean")
+nmassavgmods$trait <- rep("Nmass", times=nrow(nmassavgmods))
+
+avgmods <- rbind(llavgmods, lmaavgmods, nareaavgmods, nmassavgmods)[,-1]
+colnames(avgmods) <- c("climPC1", "climPC2","soil_N","Stand_Age","LAI","Growth", "SP.ID", "trait")
+#write.csv(avgmods, "Trait_models/Model_Averages_wide_031617aiccuttoff.csv")
+#write.csv(avgmods, "Trait_models/Model_Averages_wide_041517aiccuttoff.csv")
+#write.csv(avgmods, "Trait_models/Model_Averages_wide_061617aiccutoff.csv")
+#write.csv(avgmods, "Trait_models/Model_Averages_wide_20170619aiccutoff.csv")
+write.csv(avgmods, "Trait_models/Model_Averages_wide_20170619_v2aiccutoff.csv")
+
+
+#_______________________________________________________________________________________________
+########### Plotting Model Ensamble Output ########################
+### Currently no code for replotting the importances w/out ECOREGION (ie .ne results)
+#_______________________________________________________________________________________________
+
+importances <- read.csv("Trait_models/VariableImportances_wide_20170619_v2aiccuttoff.csv", row.names = 1)
+#importances.we <- read.csv("Trait_models/VariableImportances_wide_wECOREGION_061617aiccuttoff.csv", row.names = 1)
+#importances.we$ECOREGION[which(is.na(importances.we$ECOREGION))] <- 0
+impslong <- melt(importances, id.vars = c("SP.ID","trait"))
+#impslong.we <- melt(importances.we, id.vars= c("SP.ID", "trait"))
+
+#avgmods <- read.csv("Trait_models/Model_Averages_wide_041517aiccuttoff.csv", row.names = 1)
+avgmods <- read.csv("Trait_models/Model_Averages_wide_20170619_v2aiccutoff.csv", row.names = 1)
+avglong <- melt(avgmods, id.vars = c("SP.ID","trait"))
+
+avglong$xvals <- as.numeric(avglong$variable)
+impslong$xvals <- as.numeric(impslong$variable)
+
+
+
+# old code for adding ECOREGION in to boxplots. Not needed with dotplots
+#levels(avglong$variable) <- list(climPC1="climPC1",climPC2= "climPC2", soil_N="soil_N",Stand_Age="Stand_Age",LAI="LAI",Growth="Growth", Ecoregion="ECOREGION")
+#avglong$variable <- as.character(avglong$variable)
+#tmp <- data.frame(SP.ID="PSEMEN", trait=c("LeafLife","LMA","Narea","Nmass"), vairable = "Ecoregion", value=NA)
+#avglong[145,] <- data.frame(SP.ID=NA, trait=NA, vairable = "Ecoregion", value=NA)
+#avglong$variable <- as.factor(avglong$variable)
+
+
+
+# ##### OLD: Boxplots #########
+# p1 <- ggplot(impslong, aes(x=variable, y=value, col=variable)) + geom_boxplot() + 
+#   geom_abline(slope = 0, intercept = 0) + facet_grid(trait~.) +
+#   theme(axis.text.x=element_text(angle=90), legend.position="none") + ylab("Variable Importnce")
+# 
+# (p2 <- ggplot(avglong, aes(x=variable, y=value, col=variable)) + geom_boxplot() + 
+#     geom_abline(slope = 0, intercept = 0) + facet_grid(trait~.) +
+#     theme(axis.text.x=element_text(angle=90), legend.position="None") + ylab("Model-averaged Standardized Effect Sizes"))
+# 
+# 
+# quartz(width=6, height=5)
+# multiplot(p2,p1, cols = 2)
+# 
+# #__________________________________________________
+
+
+
+
+########## NEW: Dotplots with CW traits added on top #########
+
+
+
+quartz(width=4.33, height=6) # full page = 6.81
+par(mfcol=c(4,2), mar=c(0,3.5,0,0), oma=c(5,0,2,1), mgp=c(2.5,.75,0), cex=.9)
+panlab.cex <- .9
+panlab.ln <- -1.2
+CWbg <- "white"
+
+### Effect Sizes #####
+boxplot(value~xvals, avglong[which(avglong$trait=="LeafLife" & avglong$SP.ID!="CWmean"),], at=c(1,2,3,4,5,6)
+        , ylim=c(-.7,1), xaxt="n", xlim=c(0.5,7.5)
+        ,outpch=1, border="grey", col="grey", outcol="grey"
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol="grey" #, boxwex=1, medlwd=3
+        ,las=2)
+#plot(value~xvals, avglong[which(avglong$trait=="LeafLife" & avglong$SP.ID!="CWmean"),], pch=16, xaxt="n", ylab="", ylim=c(-0.7,1), xlab="", xlim=c(0.6,6.4))
+abline(h=0)
+points(value~xvals, avglong[which(avglong$trait=="LeafLife" & avglong$SP.ID=="CWmean"),], pch=24, bg=CWbg)
+mtext(text = "B)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+mtext(text = "log(LL)",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+text(x=7, y=0, pos=3, labels = "NA",cex=.7)
+
+boxplot(value~xvals, avglong[which(avglong$trait=="LMA" & avglong$SP.ID!="CWmean"),], at=c(1,2,3,4,5,6)
+        , ylim=c(-.7,1), xaxt="n", xlim=c(0.5,7.5)
+        ,outpch=1, border="grey", col="grey", outcol="grey"
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol="grey" #, boxwex=1, medlwd=3
+        ,las=2)
+#plot(value~xvals, avglong[which(avglong$trait=="LMA" & avglong$SP.ID!="CWmean"),], pch=16, xaxt="n", ylab="", ylim=c(-0.7,1), xlab="", xlim=c(0.6,6.4))
+abline(h=0)
+points(value~xvals, avglong[which(avglong$trait=="LMA" & avglong$SP.ID=="CWmean"),], pch=24, bg=CWbg)
+mtext(text = "D)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+mtext(text = "log(LMA)",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+text(x=7, y=0, pos=3, labels = "NA",cex=.7)
+
+boxplot(value~xvals, avglong[which(avglong$trait=="Nmass" & avglong$SP.ID!="CWmean"),], at=c(1,2,3,4,5,6)
+        , ylim=c(-.7,1), xaxt="n", xlim=c(0.5,7.5)
+        ,outpch=1, border="grey", col="grey", outcol="grey"
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol="grey" #, boxwex=1, medlwd=3
+        ,las=2)
+# plot(value~xvals, avglong[which(avglong$trait=="Nmass" & avglong$SP.ID!="CWmean"),], pch=16, xaxt="n", ylab="", ylim=c(-0.7,1), xlab="", xlim=c(0.6,6.4))
+abline(h=0)
+points(value~xvals, avglong[which(avglong$trait=="Nmass" & avglong$SP.ID=="CWmean"),], pch=24, bg=CWbg)
+mtext(text = "F)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+mtext(text = "log(Nmass)",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+mtext(text="Standardized Effect Sizes",side = 2, adj=-.1, line=2.1)
+text(x=7, y=0, pos=3, labels = "NA",cex=.7)
+
+boxplot(value~xvals, avglong[which(avglong$trait=="Narea" & avglong$SP.ID!="CWmean"),], at=c(1,2,3,4,5,6)
+        , ylim=c(-.7,1), xaxt="n", xlim=c(0.5,7.5)
+        ,outpch=1, border="grey", col="grey", outcol="grey"
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol="grey" #, boxwex=1, medlwd=3
+        ,las=2)
+#plot(value~xvals, avglong[which(avglong$trait=="Narea" & avglong$SP.ID!="CWmean"),], pch=16, xaxt="n", ylab="", ylim=c(-0.7,1), xlab="", xlim=c(0.6,6.4))
+abline(h=0)
+points(value~xvals, avglong[which(avglong$trait=="Narea" & avglong$SP.ID=="CWmean"),], pch=24, bg=CWbg)
+mtext(text = "H)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+mtext(text = "log(Narea)",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+text(x=7, y=0, pos=3, labels = "NA",cex=.7)
+
+axis(side = 1,at = c(1,2,3,4,5,6,7), labels = c("Wetness", "Warmth","Soil N", "log(Age)","LAI","Gr Rate", "Ecoreg"), xpd=NA, las=3, srt=50, xlim=c(0.6,6.4))
+
+
+### Variable Importances #####
+
+boxplot(value~xvals, impslong[which(impslong$trait=="LeafLife" & impslong$SP.ID!="CWmean"),], at=c(1,2,3,4,5,6,7)
+        , ylim=c(0,1.3), yaxt="n", xaxt="n"
+        ,outpch=1, border="grey", col="grey", outcol="grey"
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol="grey" #, boxwex=1, medlwd=3
+        ,las=2)
+points(value~xvals, impslong[which(impslong$trait=="LeafLife" & impslong$SP.ID=="CWmean"),], pch=24, bg=CWbg)
+axis(2,at=c(0,.25,.5,.75,1), labels = c(0,.25,.5,.75,1))
+mtext(text = "C)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+
+boxplot(value~xvals, impslong[which(impslong$trait=="LMA" & impslong$SP.ID!="CWmean"),], at=c(1,2,3,4,5,6,7)
+        , ylim=c(0,1.3), yaxt="n", xaxt="n"
+        ,outpch=1, border="grey", col="grey", outcol="grey"
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol="grey" #, boxwex=1, medlwd=3
+        ,las=2)
+points(value~xvals, impslong[which(impslong$trait=="LMA" & impslong$SP.ID=="CWmean"),], pch=24, bg=CWbg)
+axis(2,at=c(0,.25,.5,.75,1), labels = c(0,.25,.5,.75,1))
+mtext(text = "E)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+
+boxplot(value~xvals, impslong[which(impslong$trait=="Nmass" & impslong$SP.ID!="CWmean"),], at=c(1,2,3,4,5,6,7)
+        , ylim=c(0,1.3), yaxt="n", xaxt="n"
+        ,outpch=1, border="grey", col="grey", outcol="grey"
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol="grey" #, boxwex=1, medlwd=3
+        ,las=2)
+points(value~xvals, impslong[which(impslong$trait=="Nmass" & impslong$SP.ID=="CWmean"),], pch=24, bg=CWbg)
+axis(2,at=c(0,.25,.5,.75,1), labels = c(0,.25,.5,.75,1))
+mtext(text = "G)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+mtext(text="Vairable Importances",side = 2, adj=-.2, line=2.1)
+
+boxplot(value~xvals, impslong[which(impslong$trait=="Narea" & impslong$SP.ID!="CWmean"),], at=c(1,2,3,4,5,6,7)
+        , ylim=c(0,1.3), yaxt="n", xaxt="n"
+        ,outpch=1, border="grey", col="grey", outcol="grey"
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol="grey" #, boxwex=1, medlwd=3
+        ,las=2)
+points(value~xvals, impslong[which(impslong$trait=="Narea" & impslong$SP.ID=="CWmean"),], pch=24, bg=CWbg)
+axis(2,at=c(0,.25,.5,.75,1), labels = c(0,.25,.5,.75,1))
+mtext(text = "I)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+axis(side = 1,at = c(1,2,3,4,5,6,7), labels = c("Wetness", "Warmth","Soil N", "log(Age)","LAI","Gr Rate","Ecoreg"), xpd=NA, las=3, srt=50, xlim=c(0.6,6.4))
+
+
+
+###### Old version with dotplot
+# plot(value~xvals, impslong[which(impslong$trait=="LeafLife"),], pch=16, xaxt="n", ylab="", ylim=c(0,1.3), xlab="", xlim=c(0.6,7.4))
+# #abline(h=0)
+# mtext(text = "E)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+# #mtext(text = "log(LL)",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+# plot(value~xvals, impslong[which(impslong$trait=="LMA"),], pch=16, xaxt="n", ylab="", ylim=c(0,1.3), xlab="", xlim=c(0.6,7.4))
+# #abline(h=0)
+# mtext(text = "F)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+# #mtext(text = "log(LMA)",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+# plot(value~xvals, impslong[which(impslong$trait=="Nmass"),], pch=16, xaxt="n", ylab="", ylim=c(0,1.3), xlab="", xlim=c(0.6,7.4))
+# #abline(h=0)
+# mtext(text = "G)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+# #mtext(text = "log(Nmass)",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+# mtext(text="Standardized Effect Sizes",side = 2, adj=-.1, line=2.1)
+# plot(value~xvals, impslong[which(impslong$trait=="Narea"),], pch=16, xaxt="n", ylab="", ylim=c(0,1.3), xlab="", xlim=c(0.6,7.4))
+# #abline(h=0)
+# mtext(text = "H)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+# #mtext(text = "log(Narea)",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+
+
+
+
+
+
+#________________________________________________________
+#### figure of R2s for the different traits
+
+
+
+quartz(width=4.33, height=2)
+par(mar=c(.2,5,3,3), mgp=c(2,.75,0))
+boxplot(llbestmods$r.squaredGLMM.R2m[-which(llbestmods$SP.ID=="CWmean")]~rep(1, times=6), horizontal=T, at=4, xlim=c(0,5), ylim=c(0,1)
+        , yaxt="n", xaxt="n"
+        ,outpch=1, border="grey", col="grey", outcol="grey"
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol="grey" )
+boxplot(lmabestmods$r.squaredGLMM.R2m[-which(lmabestmods$SP.ID=="CWmean")]~rep(1, times=6), horizontal=T, at=3, xlim=c(0,5), ylim=c(0,1)
+        , yaxt="n", xaxt="n"
+        ,outpch=1, border="grey", col="grey", outcol="grey"
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol="grey", add=T )
+boxplot(nmassbestmods$r.squaredGLMM.R2m[-which(nmassbestmods$SP.ID=="CWmean")]~rep(1, times=6), horizontal=T, at=2, xlim=c(0,5), ylim=c(0,1)
+        , yaxt="n", xaxt="n"
+        ,outpch=1, border="grey", col="grey", outcol="grey"
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol="grey", add=T )
+boxplot(llbestmods$r.squaredGLMM.R2m[-which(llbestmods$SP.ID=="CWmean")]~rep(1, times=6), horizontal=T, at=1, xlim=c(0,5), ylim=c(0,1)
+        , yaxt="n", xaxt="n"
+        ,outpch=1, border="grey", col="grey", outcol="grey"
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol="grey", add=T )
+
+
+#plot(llbestmods$r.squaredGLMM.R2m[-which(llbestmods$SP.ID=="CWmean")]~rep(1, times=6), ylim=c(0,1), xlim=c(0,5), xaxt="n", ylab=expression(paste(R^2," or marginal ",R^2)), pch=16)
+#points(lmabestmods$r.squaredGLMM.R2m[-which(lmabestmods$SP.ID=="CWmean")]~rep(2, times=6), pch=16)
+#points(nmassbestmods$r.squaredGLMM.R2m[-which(nmassbestmods$SP.ID=="CWmean")]~rep(3, times=6), pch=16)
+#points(nareabestmods$r.squaredGLMM.R2m[-which(nareabestmods$SP.ID=="CWmean")]~rep(4, times=6), pch=16)
+points(c(4)~llbestmods$r.squaredGLMM.R2m[which(llbestmods$SP.ID=="CWmean")], pch=24,bg="white")
+points(c(3)~lmabestmods$r.squaredGLMM.R2m[which(lmabestmods$SP.ID=="CWmean")], pch=24,bg="white")
+points(c(2)~nmassbestmods$r.squaredGLMM.R2m[which(nmassbestmods$SP.ID=="CWmean")], pch=24,bg="white")
+points(c(1)~nareabestmods$r.squaredGLMM.R2m[which(nareabestmods$SP.ID=="CWmean")], pch=24,bg="white")
+axis(3)
+axis(2, labels = c("Narea","Nmass","LMA","Leaf Life"), at=c(1,2,3,4), las=2)
+mtext(side=3,text = expression(paste(R^2," or marginal ", R^2)), line=1.7)
+legend(x=.675, y=1, legend = "Ind. Spp", fill="gray", bty="n",col = "grey",border = "grey", cex=.8)
+legend(x=.7, y=1.5, legend = "CW mean", bg="white", bty="n",pch=24, cex=.8)
+mtext("A)", cex=panlab.cex, side=3, adj=0.02, line=panlab.ln)
+
+
+
+########### Other SPP without large enough sample sizes #######################
+# ### PICSIT and ABIAMA are right on the edge of useful ###
+# #### yeeee, not sure I trust these.
+# PICSITll <- trait.mods(traitdata = traits.common, species = "PICSIT",trait = "log.LL")
+# PICSITlma <- trait.mods(traitdata = traits.common, species = "PICSIT",trait = "log.LMA")
+# PICSITnarea <- trait.mods(traitdata = traits.common, species = "PICSIT",trait = "log.Narea")
+# 
+# 
+# ABIAMAll <- trait.mods(traitdata = traits.common, species = "ABIAMA",trait = "log.LL")
+# ABIAMAlma <- trait.mods(traitdata = traits.common, species = "ABIAMA",trait = "log.LMA")
+# ABIAMAnarea <- trait.mods(traitdata = traits.common, species = "ABIAMA",trait = "log.Narea")
+# 
+# 
+# 
+# ABIGRAll <- trait.mods(traitdata = traits.common, species = "ABIGRA",trait = "log.LL")
+# ABIGRAlma <- trait.mods(traitdata = traits.common, species = "ABIGRA",trait = "log.LMA")
+# ABIGRAnarea <- trait.mods(traitdata = traits.common, species = "ABIGRA",trait = "log.Narea")
+# # n= 12... and the main troubles are soil_N, ASA, log.Narea
+# # PLOT_ID     log.LL    climPC1    climPC2     soil_N        ASA      LAI_O AG_TGROWTH 
+# #     0          5          0          0         51         34          8          8 
+# 
+# # JUNOCCll <- trait.mods(traitdata = traits.common, species = "JUNOCC",trait = "log.LL")
+# JUNOCClma <- trait.mods(traitdata = traits.common, species = "JUNOCC",trait = "log.LMA")
+# JUNOCCnarea <- trait.mods(traitdata = traits.common, species = "JUNOCC",trait = "log.Narea")
+# # damn. missing lots of rows. NAs:
+# # PLOT_ID     log.LL    climPC1    climPC2     soil_N        ASA      LAI_O AG_TGROWTH 
+# # 0         68          0          0         55         10          0          0 
+# 
+# 
+# # ll <- lmer(log.LL~climPC1sc + climPC2sc + soil_Nsc + log.ASAsc + LAI_Osc + AG_TGROWTHsc + (1|PLOT_ID), datazall, REML=F)
+# # # lllm <- lm(log.LL~climPC1sc + climPC2sc + soil_Nsc + scale(log(ASA)) + LAI_Osc + AG_TGROWTHsc , datazall)
+# # # AIC(ll1,ll2,ll3,ll4)
+# # lldredge <- dredge(ll, extra=list(r.squaredGLMM))
+# # llmods <- dredge(ll, evaluate = F)
+# # llmodavg <- model.avg(lldredge,subset=cumsum(weight)<=.90)
+# # lma <- lmer(log.LMA~climPC1 + climPC2 + soil_N + scale(log(ASA)) + LAI_O + AG_TGROWTH + (1|PLOT_ID), dataz, REML=F)
+# # lmadredge <- dredge(lma,extra=list(r.squaredGLMM) )
+# # lmamodavg <- model.avg(lmadredge,subset=cumsum(weight)<=.90)
+# # Narea1 <- lmer(log.Narea~climPC1 + climPC2 + soil_N + scale(log(ASA)) + LAI_O + AG_TGROWTH + (1|PLOT_ID), dataz, REML=F)
+# # Nareadredge <- dredge(Narea1, extra=list(r.squaredGLMM))
+# # Nareamodavg <- model.avg(Nareadredge, subset=cumsum(weight)<=.90)
+# 
+# 
+# 
+
+
+
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+######### Ecoregion Analysis ###############
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+ggplot(traits.common[which(traits.common$GE.SP %in% c("Pseudotsuga.menziesii","Pinus.ponderosa")),], aes(x=ECOREGION, y=log.LL, col=ECOREGION)) + geom_boxplot() + facet_grid(GE.SP~.)
+# it actually looks like ecoregion might explain a fair amount of LL variation, and maybe Nmass
+# though the effect is not consistent between ponderosa and doug fir, maybe data driven param but not mechanistic?
+plot(log.LMA~log.Nmass, traits.common[which(traits.common$GE.SP %in% c("Pseudotsuga.menziesii")),], col=ECOREGION, pch=16)
+# also, ecoregions cluster rather suprisingly in log.LMA vs log.Nmass space...
+# good for doug fir, less good for ponderosa
 
 
 

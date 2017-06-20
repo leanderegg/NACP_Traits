@@ -5,6 +5,9 @@
 ###         data downloaded from: http://dx.doi.org/10.3334/ORNLDAAC/1292 
 ###            on 01/23/16 by LDLA
 ###############################################################
+#### Ecology Letters widths: single column (82 mm), two-thirds page width (110 mm) or full page width (173 mm)
+# 3.23', 4.33', or 6.81'
+
 
 require(lmodel2)
 plot.MAR <- function(xvar, yvar, data, method="SMA", linecol, lwd=1) {
