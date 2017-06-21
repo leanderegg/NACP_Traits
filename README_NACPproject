@@ -517,6 +517,38 @@ Notes from plotting: I think 2/3 page should do it, but I think I have to use bo
 
 + added in CWmeans to the ttbest csvs and saved as _20170619_v2
 
+##### New commit 06.20.17
+Restarting computer, then we'll revise this manuscript!
+
++ realized that I should really average before I log, not after. Otherwise I'm implicitly weighting values. This might make some of my plots look funny, though. Also, I averaged multiple measurements per individual up to individual before I logged to create my full dataset. So that's ok.
+But for everything else, I need to rerun everything with rlog.TRAIT values rather than log.TRAIT values. This is going to be an almighty cluster fuck. I'm tempted to start an entirely new script for this...
+In fact, I think I should, so I can just kill the old columns and literally rerun everything with my new columns...
+
++++ Created Cd-TaxonomicsRevisited.R, which is now the front line for taxo analysis..
+
+** Recalculating all the SMA slopes and corr coeffs doesn't really change much. There are one or two points that really change for LMA.Nmass and LMA.Narea, but everything else looks pretty darn similar. Hopefully it didn't screw my shit up too badly...
+
+-- Realized that 1) all of my statistics use all taxa, not just those with >5 samples.
+            2) LMA vs Narea stats were getting royally screwed by Protea repens, and Abies genus, which have ridiculously negative slopes, and only get appropriately outweighted in some formulations
+            
+*removed these outliers and reran stats for LMA vs Narea. everythings sig or near sig now for SLOPE increase
+- This cleaned some things up for LMA v Narea slope.
+- This also made everything LL v Narea significant
+- sort of helped with LL v Nmass
+- didn't really change LMA v LL. or LMA vs Nmass
+
+
+
+
+######## New Commit: 06.21.17
+- In describing my community-weighting scheme, I realized that I really need to infill some missing spp traits 
+Because I've got a handful of plots that are missing >15% of their basal area. Which means I massively underpridict their traits...
+So I need to update the infilling and rerun the stats.
+
+
+
+
+
 
 
 

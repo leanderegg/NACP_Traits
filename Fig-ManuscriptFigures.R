@@ -207,7 +207,7 @@ p <- boxplot(Slope_LMA.N~Type, all.results.cl[which(all.results.cl$n_LMA.N>5& !a
              , ylim=c(-2.2,1.5),las=3, ylab="MA Slope" #, main="log(LMA)~log(Nmass) strict"
              , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
-             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+             , staplelwd=0, outpch=16, outcex=.7, outcol=mypal[colchoices]
              , boxwex=.7, xaxt="n")
   # add global and bewteen family points and error bars
 m <- lmodel2(log.Nmass~log.LMA, allspp)
@@ -228,7 +228,7 @@ p <- boxplot(Rho_LMA.N~Type, all.results.cl[which(all.results.cl$n_LMA.N>5 & !al
              , ylim=c(-1,1.1),las=3, ylab="Rho"
              , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
-             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+             , staplelwd=0, outpch=16, outcex=.7, outcol=mypal[colchoices]
              , boxwex=.7, xaxt="n")
   # add global and between family points
 m <- cor.test(x=allspp$log.LMA, y=allspp$log.Nmass)
@@ -282,7 +282,7 @@ p <- boxplot(Slope_LL.N~Type, all.results.cl[which(all.results.cl$n_LL.N>5& !all
              , ylim=c(-1.2,1.2),las=3, ylab="MA Slope" #, main="log(LMA)~log(Nmass) strict"
              , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
-             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+             , staplelwd=0, outpch=16, outcex=.7, outcol=mypal[colchoices]
              , boxwex=.7, xaxt="n")
 m <- lmodel2(log.Nmass~log.LL, allspp)
 points(y=m$regression.results$Slope[3],x=5, pch=16, cex=1.3, col="darkgrey")
@@ -303,7 +303,7 @@ p <- boxplot(Rho_LL.N~Type, all.results.cl[which(all.results.cl$n_LL.N>5& !all.r
              , ylim=c(-1,1.1),las=3, ylab="Rho"
              , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
-             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+             , staplelwd=0, outpch=16, outcex=.7, outcol=mypal[colchoices]
              , boxwex=.7, xaxt="n")
 axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
 abline(h=0, lty=2)
@@ -367,29 +367,45 @@ palette(mypal[colchoices])
 quartz(width=7.008, height=4)
 layout(mat)
 par(mar=c(0,4,6,1))
-p <- boxplot(Slope_LMA.LL~Type, all.results.cl[which(all.results.cl$n_LMA.LL>5),]
+p <- boxplot(Slope_LMA.LL~Type, all.results.cl[which(all.results.cl$n_LMA.LL>5& !all.results.cl$Type %in% c("global","Famclean")),]
              , ylim=c(-2.5,4),las=3, ylab="MA Slope" #, main="log(LMA)~log(Nmass) strict"
              , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
-             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+             , staplelwd=0, outpch=16, outcex=.7, outcol=mypal[colchoices]
              , boxwex=.7, xaxt="n")
 abline(h=0, lty=2)
+m <- lmodel2(log.LL~log.LMA, allspp)
+points(y=m$regression.results$Slope[3],x=5, pch=16, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+m <- lmodel2(log.LL~log.LMA, fam.dataclean)
+points(y=m$regression.results$Slope[3],x=4, pch=16, cex=1.3, col="black")
+arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3)
+arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3)
+
 #text(y=par()$usr[3]+.2, x=c(1,2,3,4,5,6), labels = p$n)
 #text(y=par()$usr[4]-.2,x=.5, labels = "a)")
 mtext(text = "a)", side = 3, adj=0, line=.2)
 mtext(text= "LMA vs LL", side=3, line=.2)
 par(mar=c(6,4,0,1))
-p <- boxplot(Rho_LMA.LL~Type, all.results.cl[which(all.results.cl$n_LMA.LL>5),]
+p <- boxplot(Rho_LMA.LL~Type, all.results.cl[which(all.results.cl$n_LMA.LL>5& !all.results.cl$Type %in% c("global","Famclean")),]
              , ylim=c(-1,1.4),las=3, ylab="Rho"
              , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
-             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+             , staplelwd=0, outpch=16, outcex=.7, outcol=mypal[colchoices]
              , boxwex=.7, xaxt="n")
 axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
 abline(h=0, lty=2)
 text(y=par()$usr[4]-.2, x=c(1,2,3), labels = p$n[1:3])
 text(y=par()$usr[4]-.2, x=c(4,5), labels=paste0("(",all.results.cl$n_LMA.LL[c((nrow(all.results.cl)-1),nrow(all.results.cl))],")"),cex=.8)
 #polygon(x = c(1,2,3,3,2,1), y=na.omit(c(meancis$m10_LMA.LL, rev(meancis$m90_LMA.LL))), border="#EEEEEE",col="#EEEEEE")#lightgrey",col = "lightgrey")
+m <- cor.test(x=allspp$log.LMA, y=allspp$log.LL)
+points(y=m$estimate,x=5, pch=16, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3, col="darkgrey")
+m <- cor.test(x=fam.dataclean$log.LMA, y=fam.dataclean$log.LL)
+points(y=m$estimate,x=4, pch=16, cex=1.3, col="black")
+arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
+
 
 par(mar=c(4,4,1.5,1.5))
 ## scatterplot
@@ -436,29 +452,45 @@ palette(mypal[colchoices])
 quartz(width=7.008, height=4)
 layout(mat)
 par(mar=c(0,4,6,1))
-p <- boxplot(Slope_LMA.Narea~Type, all.results.cl[which(all.results.cl$n_LMA.LL>5),]
+p <- boxplot(Slope_LMA.Narea~Type, all.results.cl[which(all.results.cl$n_LMA.Narea>5& !all.results.cl$Type %in% c("global","Famclean")& all.results.cl$Slope_LMA.Narea>-1),]
              , ylim=c(-0.5,2.5),las=3, ylab="MA Slope" #, main="log(LMA)~log(Nmass) strict"
              , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
-             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+             , staplelwd=0, outpch=16, outcex=.7, outcol=mypal[colchoices]
              , boxwex=.7, xaxt="n")
+  # had to remove the two crazy outliers (Protea repens and genus Abies)
 abline(h=0, lty=2)
 abline(h=1, col="grey")
+m <- lmodel2(log.Narea~log.LMA, allspp)
+points(y=m$regression.results$Slope[3],x=5, pch=16, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+m <- lmodel2(log.Marea~log.LMA, fam.dataclean)
+points(y=m$regression.results$Slope[3],x=4, pch=16, cex=1.3, col="black")
+arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3)
+arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3)
+
 #text(y=par()$usr[3]+.2, x=c(1,2,3,4,5,6), labels = p$n)
 #text(y=par()$usr[4]-.2,x=.5, labels = "a)")
 mtext(text = "a)", side = 3, adj=0, line=.2)
 mtext(text= "LMA vs Narea", side=3, line=.2)
 par(mar=c(6,4,0,1))
-p <- boxplot(Rho_LMA.Narea~Type, all.results.cl[which(all.results.cl$n_LMA.Narea>5),]
+p <- boxplot(Rho_LMA.Narea~Type, all.results.cl[which(all.results.cl$n_LMA.Narea>5& !all.results.cl$Type %in% c("global","Famclean")& all.results.cl$Slope_LMA.Narea>-1),]
              , ylim=c(-1,1.4),las=3, ylab="Rho"
              , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
              ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
-             , staplelwd=0, outpch=16, outcex=.5, outcol=mypal[colchoices]
+             , staplelwd=0, outpch=16, outcex=.7, outcol=mypal[colchoices]
              , boxwex=.7, xaxt="n")
 axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
 abline(h=0, lty=2)
 text(y=par()$usr[4]-.2, x=c(1,2,3), labels = p$n[1:3])
 text(y=par()$usr[4]-.2, x=c(4,5), labels=paste0("(",all.results.cl$n_LMA.Narea[c((nrow(all.results.cl)-1),nrow(all.results.cl))],")"),cex=.8)
+m <- cor.test(x=allspp$log.LMA, y=allspp$log.Narea)
+points(y=m$estimate,x=5, pch=16, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3, col="darkgrey")
+m <- cor.test(x=fam.dataclean$log.LMA, y=fam.dataclean$log.Narea)
+points(y=m$estimate,x=4, pch=16, cex=1.3, col="black")
+arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
 
 par(mar=c(4,4,1.5,1.5))
 ## scatterplot
@@ -466,7 +498,7 @@ par(mar=c(4,4,1.5,1.5))
 plot(log.Narea~log.LMA, LES, col="grey", pch=16, ylab="log(Narea)", xlab="log(LMA)")
 
 tax <- "w.inGen"
-for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.Narea>5)])){
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.Narea>5)& all.results.cl$Slope_LMA.Narea>-1])){
   plot.MAR(xvar = "log.LMA", yvar = "log.Narea",data= gen.data[which(gen.data$Genus==i),], linecol = mypal[2])
 }
 
@@ -482,7 +514,7 @@ abline(a=all.results.cl$Int_LMA.Narea[nrow(all.results.cl)], b=all.results.cl$Sl
 # 
 # plot.MAR(xvar="log.LMA", yvar="log.Narea", data= LES, linecol = "black", lwd=2)
 tax <- "w.inSpp"
-for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.Narea>5)])){
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.Narea>5& all.results.cl$Slope_LMA.Narea>-1)])){
   plot.MAR(xvar = "log.LMA", yvar = "log.Narea",data= spp.data[which(spp.data$Species==i),], linecol = mypal[1])
 }
 mtext(text = "b)", side = 3, adj=0, line=.2)
@@ -493,7 +525,7 @@ mtext(text = "b)", side = 3, adj=0, line=.2)
 
 
 #________________________________________________________________
-###### FIG ??:LL v Narea Relations ######
+###### FIG 5cd:LL v Narea Relations ######
 #________________________________________________________________
 # 2 panel figure with boxplots and scatterplot
 # width = 1.5 columns -> 11.4 cm,4.89

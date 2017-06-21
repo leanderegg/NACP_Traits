@@ -1,57 +1,14 @@
-#############################################################
-###      Analysis of PNW and GLOPNET trait datasets to 
-###         assess taxonomic scales of trait variation
-###         data downloaded from: http://dx.doi.org/10.3334/ORNLDAAC/1292 
-###            on 01/23/16 by LDLA
-#############################################################
 
 
+#################################################################################################################
+#________________________________________________________________________________________________________________
+########################## *** +++AVERAGED RAW TRAITS+++ rather than averaged log.traits ****** ##############################
+#________________________________________________________________________________________________________________
+#################################################################################################################
+# This script is copied exactly from Cd-TaxonomicAnalysis.R.
+# But I'm going to rename previously 'log.TRAIT' columns and switch rlog.TRAIT columns to be log.TRAIT so that we use those instead.
 
-### Note: As of 06.20.17 this code is deprecated because it uses traits logged before averaging. 
-# I completely copied this script (minus some of the comments) into:
-# Cd-TaxonomicsRevisited.R
-
-## ^ this is the new script to use for creating all.results.cl!!^
-
-
-
-#________________________________________________________________________
-############ **Data preparation** ###############################################################
-#________________________________________________________________________
-
-# Requires: LES dataframe (GLOPNET)
-#           traits.common (PNW with >10 records)
-#           traits.common5 (PNW with 5 or more records)
-
-levels(LES$Needle.Broad.lf) <- list(B="B",N="N",unknown="")
-
-# ### common spp and genera and families in GLOPNE. only used in plotting subsetting
-# commonspp <- names(which(xtabs(~Species, LES)>=5)) # 6 have >5 records, 14 have >4 records, 36 have >3 records
-# commongen <- names(which(xtabs(~Genus, LES)>=5))
-# commonfam <- names(which(xtabs(~Family, LES)>=5))
-# 
-
-
-####### Making complete INTRA-SPECIFIC dataset ##################
-
-# # PNW species with 5 or more records
-# spp.data1 <- traits.common5 %>% select(FullSpecies,log.Nmass, log.LL, log.LMA_PSA, GENUS, Family, log.Narea)
-# colnames(spp.data1)[c(1,4,5)]<- c("Species","log.LMA", "Genus")
-#   # NOTE: there are 95 trait measurements where LL is set at 1 year (log.LL = 1.079181). Luckily, I think my variance test in fit.MAR weeds these out...
-#   ## NOTE: I orginally was using log.LMA_PSA, but as of 3.14.17, I had some NAs in the traits dataset. I had to fill them in.
-# 
-# ## LES species with 5 or more records
-# commonspp <- names(which(xtabs(~Species, LES)>=5)) # 9 have >5 records, 16 have >4 records, 39 have >3 records
-# spp.data2 <- LES %>% filter(Species %in% commonspp) %>% select(Species, log.Nmass, log.LL, log.LMA, Genus, Family, log.Narea)
-# 
-# data.supp <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/OtherData_Combined_033017.csv", header=T, row.names=1)
-# spp.data3 <- data.supp %>% select(Species,log.Nmass,log.LL, log.LMA, Genus, Family,log.Narea)
-# 
-# ## created combined dataset with 29 total species that have >5 observations
-# spp.data <- rbind(spp.data1, spp.data2, spp.data3)
-# spp.data$Species <- factor(spp.data$Species)
-# ## look to make sure the combination worked 
-# #ggplot(spp.data, aes(x=log.LMA, y=log.Nmass, col=Species)) + geom_point() + geom_smooth(method="lm", se=F)
+# I've also cut out my running commentary 
 
 ## as of 04.01.17 working with the full dataset already combined in Cd-Initial_Analysis for the Variance Decomp
 commonspp <-  names(which(xtabs(~Species, data.all)>=5))
@@ -59,74 +16,34 @@ spp.data<- data.all %>% filter(Species %in% commonspp)
 spp.data$Species <- factor(spp.data$Species)
 spp.data$Genus <- factor(spp.data$Genus)
 spp.data$Family <- factor(spp.data$Family)
-  # this actually keeps 26 more records than the old version, 44 spp, 26 genera, and 15 families
-
-
 
 
 ########## Species level trait averages ########
 
-allspp <- data.all %>% group_by(Species, Genus, Family) %>% summarise( slog.LL = mean(log.LL, na.rm=T), slog.LMA = mean(log.LMA, na.rm=T), slog.Nmass = mean(log.Nmass, na.rm=T),slog.Narea = mean(log.Narea, na.rm=T)
-                                                                       ,rslog.LL = log(mean(10^log.LL, na.rm=T),base=10), rslog.LMA = log(mean(10^log.LMA, na.rm=T),base=10), rslog.Nmass = log(mean(10^log.Nmass, na.rm=T),base=10), rslog.Narea = log(mean(10^log.Narea, na.rm=T),base=10)
+allspp <- data.all %>% group_by(Species, Genus, Family) %>% summarise( lslog.LL = mean(log.LL, na.rm=T), lslog.LMA = mean(log.LMA, na.rm=T), lslog.Nmass = mean(log.Nmass, na.rm=T), lslog.Narea = mean(log.Narea, na.rm=T)
+                                                                       ,slog.LL = log(mean(10^log.LL, na.rm=T),base=10), slog.LMA = log(mean(10^log.LMA, na.rm=T),base=10), slog.Nmass = log(mean(10^log.Nmass, na.rm=T),base=10), slog.Narea = log(mean(10^log.Narea, na.rm=T),base=10)
                                                                        ,MAT = mean(MAT, na.rm=T), MAP=mean(MAP, na.rm=T), VPD=mean(VPD, na.rm=T) )
 colnames(allspp) <- gsub("slog", "log", colnames(allspp))
-  # this results in 1993 entries, 67 fewer entries than old (20 that may have been replicates and the 47 w/out family)
-## LES species means
-# LESspp <- LES %>% group_by(Species, GE.SP, Genus, Family) %>% summarise(GrForm = unique(GF)[1], DecidEver = unique(Decid.E.green)[1], NeedleBroad = unique(Needle.Broad.lf)[1], C3.C4 = unique(C3C4)[1], slog.LL = mean(log.LL, na.rm=T), slog.LMA = mean(log.LMA, na.rm=T), slog.Nmass = mean(log.Nmass, na.rm=T),slog.Narea = mean(log.Narea, na.rm=T)
-#                                                                         ,rslog.LL = log(mean(10^log.LL, na.rm=T),base=10), rslog.LMA = log(mean(10^log.LMA, na.rm=T),base=10), rslog.Nmass = log(mean(10^log.Nmass, na.rm=T),base=10) )
-# # have to rename things slog to keep for summarise, but want them just as log
-# colnames(LESspp) <- gsub("slog", "log", colnames(LESspp))
-# # xtabs(~Species, LES)[which(xtabs(~Species, LES)>1)]
-# # ~500 entries are doubled species. not many of them have more than 5 entries though. 
-# # evidently some of those have conflicting binary IDs
-# ### code for cleaning out problem genera that have multiple families
-# # LESgenprobs <- LESspp %>% group_by(Genus) %>% summarise(nFam= length(unique(na.omit(Family))))
-# # prob.gen <- LESgenprobs$Genus[which(LESgenprobs$nFam>1)]                                                   
-# # tmp <- LESspp[which(LESspp$Genus %in% prob.gen),]
-# ## PNW species means
-# traitsspp <- traits %>% group_by(GE.SP, GENUS, Family) %>% summarise(slog.LL = mean(log.LL, na.rm=T), slog.LMA = mean(log.LMA, na.rm=T), slog.Nmass = mean(log.Nmass, na.rm=T),slog.Narea = mean(log.Narea, na.rm=T)
-#                                                                      ,rslog.LL = log(mean(10^log.LL, na.rm=T),base=10), rslog.LMA = log(mean(10^log.LMA, na.rm=T),base=10), rslog.Nmass = log(mean(10^log.Nmass, na.rm=T),base=10))
-# # get species names with spaces that can be merged with LES style names
-# traitsspp$Species <- gsub("\\."," ", traitsspp$GE.SP)
-# traitsspp$GrForm <- rep("T", times=nrow(traitsspp))
-# shrubs <- c("Rhododendron.macrophyllum", "Ribes.divaricatum","Frangula.purshiana","Holodiscus.discolor","Purshia.tridentate" ,
-#             "Cercocarpus.unknown","Corylus.cornuta","Ceanothus.velutinus")
-# ## 03.20.17, removed Arbutus and Alnus, Lithocarpus (actually now Notholighocarpus), Calocedrus, cause they're trees. Chrysolepis.chrysophylla is now a tree too, cause it can be both. Cornus.unknown is also prob a tree.
-# traitsspp$GrForm[which(traitsspp$GE.SP %in% shrubs)] <- "S"
-# traitsspp$DecidEver <- "E"
-# # we'll just super quickly call everything in shrubs decid and ignore the rest ***** NOT CORRECT ********
-# traitsspp$DecidEver[which(traitsspp$GE.SP %in% c(shrubs,"Acer.circinatum", "Acer.macrophyllum","Larix.occidentalis"  ))] <- "D"
-# traitsspp$NeedleBroad <- "NA"
-# traitsspp$C3.C4 <- "C3"
-# colnames(traitsspp)[2] <- "Genus"
-# colnames(traitsspp) <- gsub("slog", "log", colnames(traitsspp))
-# # reorder columns to match LESspp
-# traitsspp <- traitsspp[,match(colnames(LESspp), colnames(traitsspp))]
-# 
-# ### combine LES species means and traits species means
-# allspp <- rbind(data.frame(LESspp), data.frame(traitsspp))
-# #*** This has a handful of duplicate spp. But I haven't solved it yet.
-
 
 
 
 
 #### Genus mean dataframe ####
-allgen <- allspp %>% group_by(Genus)  %>% summarise(Fam = sort(unique(Family))[1],  glog.LL = mean(log.LL, na.rm=T), glog.LMA = mean(log.LMA, na.rm=T), glog.Nmass = mean(log.Nmass, na.rm=T),glog.Narea = mean(log.Narea, na.rm=T)
-                                                    ,rglog.LL = log(mean(10^rlog.LL, na.rm=T),base=10), rglog.LMA = log(mean(10^rlog.LMA, na.rm=T),base=10), rglog.Nmass = log(mean(10^rlog.Nmass, na.rm=T),base=10), rglog.Narea = log(mean(10^rlog.Narea, na.rm=T),base=10), nspp = n() 
+allgen <- allspp %>% group_by(Genus)  %>% summarise(Fam = sort(unique(Family))[1], lglog.LL = mean(log.LL, na.rm=T),lglog.LMA = mean(log.LMA, na.rm=T),lglog.Nmass = mean(log.Nmass, na.rm=T), lglog.Narea = mean(log.Narea, na.rm=T)
+                                                    ,glog.LL = log(mean(10^rlog.LL, na.rm=T),base=10), glog.LMA = log(mean(10^rlog.LMA, na.rm=T),base=10), glog.Nmass = log(mean(10^rlog.Nmass, na.rm=T),base=10), glog.Narea = log(mean(10^rlog.Narea, na.rm=T),base=10), nspp = n() 
                                                     ,MAT = mean(MAT, na.rm=T), MAP=mean(MAP, na.rm=T), VPD=mean(VPD, na.rm=T) )
 # taking mean of raw values or logged values doesn't matter all that much yet
 colnames(allgen) <- gsub("glog", "log", colnames(allgen))
 colnames(allgen)[2] <- "Family"
-  # 939 genera from 211 families
+# 939 genera from 211 families
 # allgen <- allspp %>% group_by(Genus)  %>% summarise(Fam = sort(unique(Family))[1], Needle.Broad = unique(na.omit(NeedleBroad))[1], glog.LL = mean(log.LL, na.rm=T), glog.LMA = mean(log.LMA, na.rm=T), glog.Nmass = mean(log.Nmass, na.rm=T),glog.Narea = mean(log.Narea, na.rm=T)
 #                                                     ,rglog.LL = log(mean(10^rlog.LL, na.rm=T),base=10), rglog.LMA = log(mean(10^rlog.LMA, na.rm=T),base=10), rglog.Nmass = log(mean(10^rlog.Nmass, na.rm=T),base=10), nspp = n() )
 
 
 
 #### Family Mean dataframe ####
-allfam <- allgen %>% group_by(Family) %>% summarise(flog.LL = mean(log.LL, na.rm=T), flog.LMA = mean(log.LMA, na.rm=T), flog.Nmass = mean(log.Nmass, na.rm=T),flog.Narea = mean(log.Narea, na.rm=T)
-                                                    ,rflog.LL = log(mean(10^rlog.LL, na.rm=T),base=10), rflog.LMA = log(mean(10^rlog.LMA, na.rm=T),base=10), rflog.Nmass = log(mean(10^rlog.Nmass, na.rm=T),base=10), rflog.Narea = log(mean(10^rlog.Narea, na.rm=T), base=10)
+allfam <- allgen %>% group_by(Family) %>% summarise(lflog.LL = mean(log.LL, na.rm=T), lflog.LMA = mean(log.LMA, na.rm=T), lflog.Nmass = mean(log.Nmass, na.rm=T),lflog.Narea = mean(log.Narea, na.rm=T)
+                                                    ,flog.LL = log(mean(10^rlog.LL, na.rm=T),base=10), flog.LMA = log(mean(10^rlog.LMA, na.rm=T),base=10), flog.Nmass = log(mean(10^rlog.Nmass, na.rm=T),base=10), flog.Narea = log(mean(10^rlog.Narea, na.rm=T), base=10)
                                                     , tnspp = sum(nspp), ngen=n() )
 colnames(allfam) <- gsub("flog", "log", colnames(allfam))
 # still doesn't matter too too much. just moves some of the points towards larger values in rlog things
@@ -170,91 +87,6 @@ fam.dataclean <- allfam[which(allfam$tnspp>2),] # 101 families, up from 97 famil
 
 
 ############# End: Dataset Creation #################################################
-
-
-
-
-
-# 
-# 
-# nsp <- spp.data %>% group_by (Species) %>% summarise(nLL = length(which(!is.na(log.LL))), nLMA = length(which(!is.na(log.LMA))), nN = length(which(!is.na(log.Nmass))))
-# # apply(nsp[,2:4],MARGIN = 2, FUN=mean)
-# ngen <- gen.data %>% group_by (Genus) %>% summarise(nLL = length(which(!is.na(log.LL))), nLMA = length(which(!is.na(log.LMA))), nN = length(which(!is.na(log.Nmass))))
-# # apply(ngen[,2:4],MARGIN = 2, FUN=mean)
-# nfam <- sppinfam.data %>% group_by (Family) %>% summarise(nLL = length(which(!is.na(log.LL))), nLMA = length(which(!is.na(log.LMA))), nN = length(which(!is.na(log.Nmass))))
-# # apply(nfam[,2:4],MARGIN = 2, FUN=mean)
-# nfamg <- geninfam.data %>% group_by (Family) %>% summarise(nLL = length(which(!is.na(log.LL))), nLMA = length(which(!is.na(log.LMA))), nN = length(which(!is.na(log.Nmass))))
-# # apply(nfamg[,2:4],MARGIN = 2, FUN=mean)
-# 
-# 
-# 
-# # Plotting what happens if you average logged versus unlogged. Turns out it shifts things, but doesn't really change anything....
-# ggplot(allspp , aes(x=log.Nmass, y=log.LMA)) +
-#   geom_point(col="grey") +
-#   geom_point(data=LESgen, size=2) +
-#   geom_point(data=LESfam, col="darkred", aes(size=log(tnspp)) ,alpha=1/2)
-# 
-# 
-# ### family on top of genus on top of spp
-# ggplot(LES, aes(x=log.Nmass, y=log.LMA)) + geom_point(col="grey") + geom_point(data=LESgen, aes(x=rlog.Nmass, y=rlog.LMA), size=3) + geom_point(data=LESfam[which(LESfam$tnspp>2),], aes(x=rlog.Nmass,y=rlog.LMA, size=ngen), col='darkred')
-# 
-# ggplot(data.all, aes(x=log.Nmass, y=log.LMA)) + geom_point(col="grey") + geom_smooth(col="black", method="lm",se=FALSE) +
-#   geom_point(data=data.all, aes(col=Genus)) + 
-#   geom_point(data=LESfam[which(LESfam$tnspp>2),], aes(x=rlog.Nmass,y=rlog.LMA, size=ngen), col='darkred')
-
-
-
-
-
-
-
-
-
-# #LESgens <- LES[which(LES$Genus %in% names(which(xtabs(~Genus, LES)>4))), ]
-# ### plot the LES + species.means from PACNW.
-# ggplot(LES, aes(x=log.LMA, y=log.Nmass, col=Needle.Broad.lf)) + geom_point() + geom_smooth(method = "lm") + 
-#  geom_point(data=allspp, aes(x=log.LMA, y=log.Nmass, col=NULL))
-# 
-# 
-# ### looking at species w/>5 points in the GLOPNET dataset
-# p1 <- ggplot(LES, aes(x=log.LL, y=log.LMA)) + geom_point(color="grey") + geom_point(data=traits.common, aes(y=log.LMA_PSA, colour=SP.ID), alpha=1/5) +
-#   geom_smooth(method="lm", se=F, colour='darkgrey') + geom_smooth(data=traits.common, aes(y=log.LMA_PSA, colour=SP.ID),method="lm", se=F) +
-#   geom_point(data=LES[which(LES$Species %in% commonspp),], aes(colour=Species)) + geom_smooth(data=LES[which(LES$Species %in% commonspp),], aes(colour=Species), method="lm",se=F) +
-#   theme(legend.position="none")
-# 
-# 
-# ### looking at across genus relationships
-# p2 <- ggplot(LES, aes(x=log.LL, y=log.LMA)) +
-#   geom_point(color="grey") + geom_smooth(method="lm", se=F, colour='darkgrey') +
-#   geom_smooth(data=LES[which(LES$Genus %in% commongna),], aes(colour=Genus), method="lm",se=F) +
-#   theme(legend.position="none")
-# 
-# geom_point(data=LES[which(LES$Genus %in% commongna),], aes(colour=Genus)) +
-#   
-#   multiplot(p1,p2, cols=2)
-# 
-# 
-# ######### LL vs LMA
-# 
-# ggplot(LES, aes(x=log.LMA, y=log.LL)) + geom_point(color="grey") + geom_point(data=traits.common, aes(x=log.LMA_PSA, colour=SP.ID), alpha=1/5) +
-#   geom_smooth(method="lm", se=F, colour='darkgrey') + geom_smooth(data=traits.common, aes(x=log.LMA_PSA, colour=SP.ID),method="lm", se=F) +
-#   geom_point(data=LES[which(LES$Species %in% commonspp),], aes(colour=Species)) + geom_smooth(data=LES[which(LES$Species %in% commonspp),], aes(colour=Species), method="lm",se=F)
-# 
-# 
-# ### looking at across genus relationships
-# ggplot(LES, aes(x=log.LMA, y=log.LL)) + geom_point(color="grey") + geom_smooth(method="lm", se=F, colour='darkgrey') +
-#   geom_point(data=LES[which(LES$Genus %in% commongen),], aes(colour=Genus)) + geom_smooth(data=LES[which(LES$Genus %in% commongen),], aes(colour=Genus), method="lm",se=F)
-# 
-# win.spp.mod <- lmer(log.LL~log.LMA + (1|SP.ID) + (0 + log.LMA|SP.ID), traits.common)
-# win.genus.mod <- lmer(log.LL~log.LMA  + (1|Genus) + (0 + log.LMA|Genus), LES)
-# summary(win.spp.mod)
-# summary(win.genus.mod)
-# summary(lm(log.LL~log.LMA, LES))
-# 
-
-
-
-
 
 
 
@@ -312,6 +144,48 @@ fit.MAR <- function(xvar, yvar, data, method="SMA") {
 }
 
 
+# from Cd-NullModel.R
+test.sig <- function(x, test){
+  if(x<test[1] | x>test[6]) return(0.025)
+  else
+    if(x<test[2] | x>test[5]) return(0.05)
+  else
+    if(x<test[3] | x>test[4]) return(0.1)
+  else return(1)
+}
+# from Cd-NullModel.R - fits a null model based on the mean and range of the data
+fit.null <- function(xvar, yvar, observed, nulldata, nits){
+  # find the trait ranges to sample
+  rangeX <- range(observed[,xvar], na.rm=T)
+  difX <- rangeX[2]-rangeX[1]
+  #meanX <- mean(observed[,xvar], na.rm=T)
+  rangeY <- range(observed[,yvar], na.rm=T)
+  difY <- rangeY[2]-rangeY[1]
+  #meanY <- mean(observed[,yvar], na.rm=T)
+  # cut down the null data to just have non NAs
+  nulldata <- nulldata[which(!is.na(nulldata[,xvar]) & !is.na(nulldata[,yvar])),]
+  #nulldata2 <- nulldata %>% filter(!is.na(xvar) & !is.na(yvar))
+  restrictednull <- nulldata[which(nulldata[,xvar]> min(nulldata[,xvar], na.rm=T)+difX/2 & nulldata[,xvar]< max(nulldata[,xvar], na.rm=T)-difX/2 & nulldata[,yvar]> min(nulldata[,yvar], na.rm=T)+difY/2 & nulldata[,yvar]< max(nulldata[,yvar], na.rm=T)-difY/2),] 
+  if(nrow(restrictednull)<3){restrictednull <- nulldata}
+  nullcor <- c(rep(NA, times=nits))
+  for(i in 1:nits){
+    center <- restrictednull[sample(nrow(restrictednull),size = 1),]
+    #null <- nulldata %>% filter(xvar > center[,xvar]-rangeX/2) #, xvar < center[,xvar]+rangeX/2, yvar > center[,yvar]-rangeY/2, yvar < center[,yvar]-rangeY/2)
+    null <- nulldata[which(nulldata[,xvar] > as.numeric(center[,xvar])-difX/2 & nulldata[,xvar] < as.numeric(center[,xvar]+difX/2) & 
+                             nulldata[,yvar] > as.numeric(center[,yvar])-difY/2 & nulldata[,yvar] < as.numeric(center[,yvar]+difY/2)),]
+    if(nrow(null)<5){# var(null[,xvar])==0 | var(null[,yvar])==0){ # this is crappy as hell, but to get rid of bad centers I'm just going to try repicking them and hope the probability of getting two bad points in a row is low...
+      center <- restrictednull[sample(nrow(restrictednull),size = 1),]
+      #null <- nulldata %>% filter(xvar > center[,xvar]-rangeX/2) #, xvar < center[,xvar]+rangeX/2, yvar > center[,yvar]-rangeY/2, yvar < center[,yvar]-rangeY/2)
+      null <- nulldata[which(nulldata[,xvar] > as.numeric(center[,xvar])-difX/2 & nulldata[,xvar] < as.numeric(center[,xvar]+difX/2) & 
+                               nulldata[,yvar] > as.numeric(center[,yvar])-difY/2 & nulldata[,yvar] < as.numeric(center[,yvar]+difY/2)),]
+    }
+    ndist <- null[sample(nrow(null), size = nrow(observed), replace = TRUE),]
+    nullcor[i] <- cor(ndist[,c(xvar,yvar)])[2,1]
+  }
+  nullquantiles <- quantile (nullcor, probs=c(0.025,0.05,0.1,.9,.95,.975), na.rm=T)
+  names(nullquantiles) <- c("lci_2.5", "lci_5","lci_10","uci_10","uci_5","uci_2.5")
+  return(nullquantiles)
+}
 
 
 ############# **LMA vs Nmass** ###########
@@ -939,11 +813,11 @@ all.results <- cbind(LMALL, LMAN[,-c(1,7,16)], LLNmass[,-c(1,7,8,16)], LMANarea[
 #write.csv(all.results, "Results_SimpleMAreg_v5_040217.csv") # updated with NareaLL
 #write.csv(all.results, "Results_SimpleMAreg_v6_040717.csv") # switched to LLNarea
 #write.csv(all.results, "Results_SimpleMAreg_v7_051717.csv") # switched to LLNmass, and added CIs from null model
-write.csv(all.results, "Results_SimpleMAreg_v8_051717.csv") # fixed bug that screwed up LL.Narea null model (when taxa had more variance than all families)
-#all.resultsold <- read.csv("Results_SimpleMAreg_v2_031417.csv")
+#write.csv(all.results, "Results_SimpleMAreg_v8_051717.csv") # fixed bug that screwed up LL.Narea null model (when taxa had more variance than all families)
+write.csv(all.results, "Results_SimpleMAreg_v9rawavgs_20170620.csv")
+#all.resultsold <- read.csv("Results_SimpleMAreg_v8_051717.csv")
 
-##### NOTE: ^ THE ABOVE IS NO LONGER THE MAINTAINED all.results VERSION^
-# the newer version is _v9 created in Cd-TaxonomicsRevisited.R
+
 
 
 
@@ -958,7 +832,7 @@ write.csv(all.results, "Results_SimpleMAreg_v8_051717.csv") # fixed bug that scr
 #________________________________________________________________________
 ########## LOAD RESULTS DATA ##################
 
-all.results <- read.csv("Results_SimpleMAreg_v8_051717.csv", row.names = 1)
+all.results <- read.csv("Results_SimpleMAreg_v9rawavgs_20170620.csv", row.names = 1)
 levels(all.results$Type) <- list(w.inSpp = "w.inSpp", w.inGen = "w.inGen", Sppw.inFam= "Sppw.inFam",Genw.inFam="Genw.inFam", Fam="Fam",Famclean="Famclean", global="global")
 
 all.results.cl <- all.results %>% filter(Type %in% c("w.inSpp","w.inGen","Genw.inFam","Famclean","global"))
@@ -1313,146 +1187,153 @@ LMALL <- lm(Slope_LMA.LL~Type, weights = n_LMA.LL, all.results)
 
 
 #### SLOPE LMA v LL
-LMALL <- lm(Slope_LMA.LL~Type, all.results)
-LMALLnull <- lm(Slope_LMA.LL~1, all.results)
-anova(LMALL, LMALLnull) # p=0.044
-LMALL <- lm(Slope_LMA.LL~Type, weights = n_LMA.LL, all.results)
-LMALLnull <- lm(Slope_LMA.LL~1, weights = n_LMA.LL, all.results)
-anova(LMALL, LMALLnull) # p<0.0001
-LMALL <- lm(Slope_LMA.LL~Type, weights = varLL, all.results)
-LMALLnull <- lm(Slope_LMA.LL~1, weights = varLL, all.results)
-anova(LMALL, LMALLnull) # p=0.002
-LMALL <- lm(Slope_LMA.LL~Type, weights = varLMA, all.results)
-LMALLnull <- lm(Slope_LMA.LL~1, weights = varLMA, all.results)
-anova(LMALL, LMALLnull) # p=0.031
+  # one outlier (129), but it doesn't seem to really screw the model up too badly. And it goes away with different weightings
+LMALL <- lm(Slope_LMA.LL~Type, all.results[which(all.results.cl$n_LMA.LL>5),])
+LMALLnull <- lm(Slope_LMA.LL~1, all.results[which(all.results.cl$n_LMA.LL>5),])
+anova(LMALL, LMALLnull) #new average p = 0.018 old average of logs:p=0.044
+LMALL <- lm(Slope_LMA.LL~Type, weights = n_LMA.LL, all.results[which(all.results.cl$n_LMA.LL>5),])
+LMALLnull <- lm(Slope_LMA.LL~1, weights = n_LMA.LL, all.results[which(all.results.cl$n_LMA.LL>5),])
+anova(LMALL, LMALLnull) # new p=0.025, old p<0.0001 old
+LMALL <- lm(Slope_LMA.LL~Type, weights = varLMA, all.results[which(all.results.cl$n_LMA.LL>5),])
+LMALLnull <- lm(Slope_LMA.LL~1, weights = varLMA, all.results[which(all.results.cl$n_LMA.LL>5),])
+anova(LMALL, LMALLnull) #new: p=0.037, old p=0.031
+LMALL <- lm(Slope_LMA.LL~Type, weights = varLL, all.results[which(all.results.cl$n_LMA.LL>5),])
+LMALLnull <- lm(Slope_LMA.LL~1, weights = varLL, all.results[which(all.results.cl$n_LMA.LL>5),])
+anova(LMALL, LMALLnull) # new p=0.00077 old, p=0.002
 # Rho LMA v LL
-LMALL <- lm(Rho_LMA.LL~Type, all.results)
-LMALLnull <- lm(Rho_LMA.LL~1, all.results)
-anova(LMALL, LMALLnull) # p=0.007
-LMALL <- lm(Rho_LMA.LL~Type, weights = n_LMA.LL, all.results)
-LMALLnull <- lm(Rho_LMA.LL~1, weights = n_LMA.LL, all.results)
-anova(LMALL, LMALLnull) # p<0.0001
-LMALL <- lm(Rho_LMA.LL~Type, weights = varLL, all.results)
-LMALLnull <- lm(Rho_LMA.LL~1, weights = varLL, all.results)
-anova(LMALL, LMALLnull) # p<0.0001
-LMALL <- lm(Rho_LMA.LL~Type, weights = varLMA, all.results)
-LMALLnull <- lm(Rho_LMA.LL~1, weights = varLMA, all.results)
-anova(LMALL, LMALLnull) # p=0.0019
-
+LMALL <- lm(Rho_LMA.LL~Type, all.results[which(all.results.cl$n_LMA.LL>5),])
+LMALLnull <- lm(Rho_LMA.LL~1, all.results[which(all.results.cl$n_LMA.LL>5),])
+anova(LMALL, LMALLnull) # new: p<0.0001, p=0.007
+LMALL <- lm(Rho_LMA.LL~Type, weights = n_LMA.LL, all.results[which(all.results.cl$n_LMA.LL>5),])
+LMALLnull <- lm(Rho_LMA.LL~1, weights = n_LMA.LL, all.results[which(all.results.cl$n_LMA.LL>5),])
+anova(LMALL, LMALLnull) # p<0.0001 new and old
+LMALL <- lm(Rho_LMA.LL~Type, weights = varLMA, all.results[which(all.results.cl$n_LMA.LL>5),])
+LMALLnull <- lm(Rho_LMA.LL~1, weights = varLMA, all.results[which(all.results.cl$n_LMA.LL>5),])
+anova(LMALL, LMALLnull) #new p<0.0001, old p=0.0019
+LMALL <- lm(Rho_LMA.LL~Type, weights = varLL, all.results[which(all.results.cl$n_LMA.LL>5),])
+LMALLnull <- lm(Rho_LMA.LL~1, weights = varLL, all.results[which(all.results.cl$n_LMA.LL>5),])
+anova(LMALL, LMALLnull) # p<0.0001 new and old
 
 #### SLOPE LMA v Nmass
-LMAN <- lm(Slope_LMA.N~Type, all.results)
-LMANnull <- lm(Slope_LMA.N~1, all.results)
-anova(LMAN, LMANnull) # p=0.736
-LMAN <- lm(Slope_LMA.N~Type, weights = n_LMA.N, all.results)
-LMANnull <- lm(Slope_LMA.N~1, weights = n_LMA.N, all.results)
-anova(LMAN, LMANnull) # p=0.96
-LMAN <- lm(Slope_LMA.N~Type, weights = varNmass, all.results)
-LMANnull <- lm(Slope_LMA.N~1, weights = varNmass, all.results)
-anova(LMAN, LMANnull) # p=0.899
-LMAN <- lm(Slope_LMA.N~Type, weights = varLMA, all.results)
-LMANnull <- lm(Slope_LMA.N~1, weights = varLMA, all.results)
-anova(LMAN, LMANnull) # p=0.437
+  # Not the world's most normal
+  # The weighting scheme introduces pretty large parameter instability...
+LMAN <- lm(Slope_LMA.N~Type, all.results[which(all.results.cl$n_LMA.N>5),])
+LMANnull <- lm(Slope_LMA.N~1, all.results[which(all.results.cl$n_LMA.N>5),])
+anova(LMAN, LMANnull) #new raw averaged: p=0.507 p=0.736
+LMAN <- lm(Slope_LMA.N~Type, weights = n_LMA.N, all.results[which(all.results.cl$n_LMA.N>5),])
+LMANnull <- lm(Slope_LMA.N~1, weights = n_LMA.N, all.results[which(all.results.cl$n_LMA.N>5),])
+anova(LMAN, LMANnull) # new p=0.208 p=0.96
+LMAN <- lm(Slope_LMA.N~Type, weights = varLMA, all.results[which(all.results.cl$n_LMA.N>5),])
+LMANnull <- lm(Slope_LMA.N~1, weights = varLMA, all.results[which(all.results.cl$n_LMA.N>5),])
+anova(LMAN, LMANnull) #new p=0.274, old p=0.437
+LMAN <- lm(Slope_LMA.N~Type, weights = varNmass, all.results[which(all.results.cl$n_LMA.N>5),])
+LMANnull <- lm(Slope_LMA.N~1, weights = varNmass, all.results[which(all.results.cl$n_LMA.N>5),])
+anova(LMAN, LMANnull) #new 0.534, old p=0.899
 # Rho LMA v Nmass
-LMAN <- lm(Rho_LMA.N~Type, all.results)
-LMANnull <- lm(Rho_LMA.N~1, all.results)
-anova(LMAN, LMANnull) # p=0.0273
-LMAN <- lm(Rho_LMA.N~Type, weights = n_LMA.N, all.results)
-LMANnull <- lm(Rho_LMA.N~1, weights = n_LMA.N, all.results)
-anova(LMAN, LMANnull) # p<0.001
-LMAN <- lm(Rho_LMA.N~Type, weights = varNmass, all.results)
-LMANnull <- lm(Rho_LMA.N~1, weights = varNmass, all.results)
-anova(LMAN, LMANnull) # p=0.186
-LMAN <- lm(Rho_LMA.N~Type, weights = varLMA, all.results)
-LMANnull <- lm(Rho_LMA.N~1, weights = varLMA, all.results)
-anova(LMAN, LMANnull) # p=0.0008
-
+LMAN <- lm(Rho_LMA.N~Type, all.results[which(all.results.cl$n_LMA.N>5),])
+LMANnull <- lm(Rho_LMA.N~1, all.results[which(all.results.cl$n_LMA.N>5),])
+anova(LMAN, LMANnull) #new raw avgs p=0.007 , old p=0.0273
+LMAN <- lm(Rho_LMA.N~Type, weights = n_LMA.N, all.results[which(all.results.cl$n_LMA.N>5),])
+LMANnull <- lm(Rho_LMA.N~1, weights = n_LMA.N, all.results[which(all.results.cl$n_LMA.N>5),])
+anova(LMAN, LMANnull) # p<0.001 new and old 
+LMAN <- lm(Rho_LMA.N~Type, weights = varLMA, all.results[which(all.results.cl$n_LMA.N>5),])
+LMANnull <- lm(Rho_LMA.N~1, weights = varLMA, all.results[which(all.results.cl$n_LMA.N>5),])
+anova(LMAN, LMANnull) # p=0.003 new and old
+LMAN <- lm(Rho_LMA.N~Type, weights = varNmass, all.results[which(all.results.cl$n_LMA.N>5),])
+LMANnull <- lm(Rho_LMA.N~1, weights = varNmass, all.results[which(all.results.cl$n_LMA.N>5),])
+anova(LMAN, LMANnull) # new p=0.111, p=0.186
 
 
 #### SLOPE LL v Nmass
-LLNmass <- lm(Slope_LL.N~Type, all.results)
-LLNmassnull <- lm(Slope_LL.N~1, all.results)
-anova(LLNmass, LLNmassnull) # p=0.897
-LLNmass <- lm(Slope_LL.N~Type, weights = n_LL.N, all.results)
-LLNmassnull <- lm(Slope_LL.N~1, weights=n_LL.N, all.results)
-anova(LLNmass, LLNmassnull) # p=0.0878
-LLNmass <- lm(Slope_LL.N~Type, weights=varNmass, all.results)
-LLNmassnull <- lm(Slope_LL.N~1, all.results, weights=varNmass)
-anova(LLNmass, LLNmassnull) # p=0.61
-LLNmass <- lm(Slope_LL.N~Type, weights=varLL, all.results)
-LLNmassnull <- lm(Slope_LL.N~1, all.results, weights=varLL)
-anova(LLNmass, LLNmassnull) # p=0.31
+  # looks ok, and parameter uncertainty instability reasonably limited
+LLNmass <- lm(Slope_LL.N~Type, all.results[which(all.results.cl$n_LL.N>5),])
+LLNmassnull <- lm(Slope_LL.N~1, all.results[which(all.results.cl$n_LL.N>5),])
+anova(LLNmass, LLNmassnull) #new raw avg p=0.1729, old p=0.897
+LLNmass <- lm(Slope_LL.N~Type, weights = n_LL.N, all.results[which(all.results.cl$n_LL.N>5),])
+LLNmassnull <- lm(Slope_LL.N~1, weights=n_LL.N, all.results[which(all.results.cl$n_LL.N>5),])
+anova(LLNmass, LLNmassnull) #new p=0.687, old p=0.0878
+LLNmass <- lm(Slope_LL.N~Type, weights=varLL, all.results[which(all.results.cl$n_LL.N>5),])
+LLNmassnull <- lm(Slope_LL.N~1, all.results[which(all.results.cl$n_LL.N>5),], weights=varLL)
+anova(LLNmass, LLNmassnull) #new p=0.1953, old p=0.31
+LLNmass <- lm(Slope_LL.N~Type, weights=varNmass, all.results[which(all.results.cl$n_LL.N>5),])
+LLNmassnull <- lm(Slope_LL.N~1, all.results[which(all.results.cl$n_LL.N>5),], weights=varNmass)
+anova(LLNmass, LLNmassnull) #new p=0.0051, old p=0.61
 #### Rho LL v Nmass
-LLNmass <- lm(Rho_LL.N~Type, all.results)
-LLNmassnull <- lm(Rho_LL.N~1, all.results)
-anova(LLNmass, LLNmassnull) # p=0.018
-LLNmass <- lm(Rho_LL.N~Type, weights = n_LL.N, all.results)
-LLNmassnull <- lm(Rho_LL.N~1, weights=n_LL.N, all.results)
-anova(LLNmass, LLNmassnull) # p<0.0001
-LLNmass <- lm(Rho_LL.N~Type, weights=varNmass, all.results)
-LLNmassnull <- lm(Rho_LL.N~1, all.results, weights=varNmass)
-anova(LLNmass, LLNmassnull) # p=0.005
-LLNmass <- lm(Rho_LL.N~Type, weights=varLL, all.results)
-LLNmassnull <- lm(Rho_LL.N~1, all.results, weights=varLL)
-anova(LLNmass, LLNmassnull) # p<0.0001
+LLNmass <- lm(Rho_LL.N~Type, all.results[which(all.results.cl$n_LL.N>5),])
+LLNmassnull <- lm(Rho_LL.N~1, all.results[which(all.results.cl$n_LL.N>5),])
+anova(LLNmass, LLNmassnull) #new p=0.066, p=0.018
+LLNmass <- lm(Rho_LL.N~Type, weights = n_LL.N, all.results[which(all.results.cl$n_LL.N>5),])
+LLNmassnull <- lm(Rho_LL.N~1, weights=n_LL.N, all.results[which(all.results.cl$n_LL.N>5),])
+anova(LLNmass, LLNmassnull) # p=0.243, new and old 
+LLNmass <- lm(Rho_LL.N~Type, weights=varLL, all.results[which(all.results.cl$n_LL.N>5),])
+LLNmassnull <- lm(Rho_LL.N~1, all.results[which(all.results.cl$n_LL.N>5),], weights=varLL)
+anova(LLNmass, LLNmassnull) #new: p=0.0379 p<0.0001 old 
+LLNmass <- lm(Rho_LL.N~Type, weights=varNmass, all.results[which(all.results.cl$n_LL.N>5),])
+LLNmassnull <- lm(Rho_LL.N~1, all.results[which(all.results.cl$n_LL.N>5),], weights=varNmass)
+anova(LLNmass, LLNmassnull) #new p=0.017, old p=0.005
 
 
 
 #### SLOPE LMA v Narea
-LMANarea <- lm(Slope_LMA.Narea~Type, all.results.cl)
-LMANareanull <- lm(Slope_LMA.Narea~1, all.results.cl)
-anova(LMANarea, LMANareanull) # p=0.0632, cl=0.02992
-LMANarea <- lm(Slope_LMA.Narea~Type, weights = n_LMA.Narea, all.results.cl)
-LMANareanull <- lm(Slope_LMA.Narea~1, weights=n_LMA.Narea, all.results.cl)
-anova(LMANarea, LMANareanull) # p<0.0001 &cl
-LMANarea <- lm(Slope_LMA.Narea~Type, weights=varNarea, all.results.cl)
-LMANareanull <- lm(Slope_LMA.Narea~1, all.results.cl, weights=varNarea)
-anova(LMANarea, LMANareanull) # p=0.549, cl=0.4077 
-LMANarea <- lm(Slope_LMA.Narea~Type, weights=varLMA, all.results.cl)
-LMANareanull <- lm(Slope_LMA.Narea~1, all.results.cl, weights=varLMA)
-anova(LMANarea, LMANareanull) # p=0.135, cl=0.001735
+  # NOTE: Protea repens has a very strange and strong negative relationship, and Abies Alba really screws over the genus Abies, giving it a strong negative trend despite the rest being postive.
+  # I have to remove these outliers to keep from violating assumptions of normaility
+LMANarea <- lm(Slope_LMA.Narea~Type, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1),])
+LMANareanull <- lm(Slope_LMA.Narea~1, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1),])
+anova(LMANarea, LMANareanull) #new raw avg p=0.0.0009, old: p=0.0632, cl=0.02992
+LMANarea <- lm(Slope_LMA.Narea~Type, weights = n_LMA.Narea, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1),])
+LMANareanull <- lm(Slope_LMA.Narea~1, weights=n_LMA.Narea, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1),])
+anova(LMANarea, LMANareanull) # p<0.0001 &cl new and old 
+LMANarea <- lm(Slope_LMA.Narea~Type, weights=varLMA, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1),])
+LMANareanull <- lm(Slope_LMA.Narea~1, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1),], weights=varLMA)
+anova(LMANarea, LMANareanull) #new raw avg p=0.00319 p=0.135, cl=0.001735
+LMANarea <- lm(Slope_LMA.Narea~Type, weights=varNarea, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1),])
+LMANareanull <- lm(Slope_LMA.Narea~1, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1),], weights=varNarea)
+anova(LMANarea, LMANareanull) #new raw avg p=0.05068, old p=0.549, cl=0.4077
 #### Rho LMA v Narea
-LMANarea <- lm(Rho_LMA.Narea~Type, all.results.cl)
-LMANareanull <- lm(Rho_LMA.Narea~1, all.results.cl)
-anova(LMANarea, LMANareanull) # p=0.98, cl=0.8787
-LMANarea <- lm(Rho_LMA.Narea~Type, weights = n_LMA.Narea, all.results.cl)
-LMANareanull <- lm(Rho_LMA.Narea~1, weights=n_LMA.Narea, all.results.cl)
-anova(LMANarea, LMANareanull) # p<0.45, cl=0.2666
-LMANarea <- lm(Rho_LMA.Narea~Type, weights=varNarea, all.results.cl)
-LMANareanull <- lm(Rho_LMA.Narea~1, all.results.cl, weights=varNarea)
-anova(LMANarea, LMANareanull) # p=0.609
-LMANarea <- lm(Rho_LMA.Narea~Type, weights=varLMA, all.results.cl)
-LMANareanull <- lm(Rho_LMA.Narea~1, all.results.cl, weights=varLMA)
-anova(LMANarea, LMANareanull) # p<0.20
-
+LMANarea <- lm(Rho_LMA.Narea~Type, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1),])
+LMANareanull <- lm(Rho_LMA.Narea~1, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1),])
+anova(LMANarea, LMANareanull) #new raw avg p=0.5843, old log avgs p=0.98, cl=0.8787
+LMANarea <- lm(Rho_LMA.Narea~Type, weights = n_LMA.Narea, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1),])
+LMANareanull <- lm(Rho_LMA.Narea~1, weights=n_LMA.Narea, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1),])
+anova(LMANarea, LMANareanull) #new raw avg p=0.0036, old log avg p<0.45, cl=0.2666
+LMANarea <- lm(Rho_LMA.Narea~Type, weights=varLMA, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1),])
+LMANareanull <- lm(Rho_LMA.Narea~1, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1),], weights=varLMA)
+anova(LMANarea, LMANareanull) #new p=0.3736, old p<0.20
+LMANarea <- lm(Rho_LMA.Narea~Type, weights=varNarea, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1),])
+LMANareanull <- lm(Rho_LMA.Narea~1, all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1),], weights=varNarea)
+anova(LMANarea, LMANareanull) #new p=0.209, old  p=0.609
 
 
 #### SLOPE LL v Narea
-LLNarea <- lm(Slope_LL.Narea~Type, all.results.cl)
-LLNareanull <- lm(Slope_LL.Narea~1, all.results.cl)
-anova(LLNarea, LLNareanull) # p=0.2545, cl=0.1181
-LLNarea <- lm(Slope_LL.Narea~Type, weights = n_LL.Narea, all.results.cl)
-LLNareanull <- lm(Slope_LL.Narea~1, weights=n_LL.Narea, all.results.cl)
-anova(LLNarea, LLNareanull) # cl p= 1.4 e-6
-LLNarea <- lm(Slope_LL.Narea~Type, weights=varNarea, all.results.cl)
-LLNareanull <- lm(Slope_LL.Narea~1, all.results.cl, weights=varNarea)
-anova(LLNarea, LLNareanull) #, cl=0.00805 
-LLNarea <- lm(Slope_LL.Narea~Type, weights=varLL, all.results.cl)
-LLNareanull <- lm(Slope_LL.Narea~1, all.results.cl, weights=varLL)
-anova(LLNarea, LLNareanull) # p=, cl=0.00364
+  # a little parameter instability, and a bit non-normal in some formulations. But not bad.
+LLNarea <- lm(Slope_LL.Narea~Type, all.results.cl[which(all.results.cl$n_LL.Narea>5),])
+LLNareanull <- lm(Slope_LL.Narea~1, all.results.cl[which(all.results.cl$n_LL.Narea>5),])
+anova(LLNarea, LLNareanull) #new raw avg p=0.01799, old  p=0.2545, cl=0.1181
+LLNarea <- lm(Slope_LL.Narea~Type, weights = n_LL.Narea, all.results.cl[which(all.results.cl$n_LL.Narea>5),])
+LLNareanull <- lm(Slope_LL.Narea~1, weights=n_LL.Narea, all.results.cl[which(all.results.cl$n_LL.Narea>5),])
+anova(LLNarea, LLNareanull) # cl p= 1.4 e-6 new and old
+LLNarea <- lm(Slope_LL.Narea~Type, weights=varLL, all.results.cl[which(all.results.cl$n_LL.Narea>5),])
+LLNareanull <- lm(Slope_LL.Narea~1, all.results.cl[which(all.results.cl$n_LL.Narea>5),], weights=varLL)
+anova(LLNarea, LLNareanull) #new p=0.00074 p=, cl=0.00364
+LLNarea <- lm(Slope_LL.Narea~Type, weights=varNarea, all.results.cl[which(all.results.cl$n_LL.Narea>5),])
+LLNareanull <- lm(Slope_LL.Narea~1, all.results.cl[which(all.results.cl$n_LL.Narea>5),], weights=varNarea)
+anova(LLNarea, LLNareanull) #new p=0.0041,  old, cl=0.00805 
 #### Rho LL v Narea
-LLNarea <- lm(Rho_LL.Narea~Type, all.results.cl)
-LLNareanull <- lm(Rho_LL.Narea~1, all.results.cl)
-anova(LLNarea, LLNareanull) # p=, cl=0.22
-LLNarea <- lm(Rho_LL.Narea~Type, weights = n_LL.Narea, all.results.cl)
-LLNareanull <- lm(Rho_LL.Narea~1, weights=n_LL.Narea, all.results.cl)
-anova(LLNarea, LLNareanull) # pcl = 1.42 e-8
-LLNarea <- lm(Rho_LL.Narea~Type, weights=varNarea, all.results.cl)
-LLNareanull <- lm(Rho_LL.Narea~1, all.results.cl, weights=varNarea)
-anova(LLNarea, LLNareanull) # p=0.07745
-LLNarea <- lm(Rho_LL.Narea~Type, weights=varLL, all.results.cl)
-LLNareanull <- lm(Rho_LL.Narea~1, all.results.cl, weights=varLL)
-anova(LLNarea, LLNareanull) # p<0.03126
+LLNarea <- lm(Rho_LL.Narea~Type, all.results.cl[which(all.results.cl$n_LL.Narea>5),])
+LLNareanull <- lm(Rho_LL.Narea~1, all.results.cl[which(all.results.cl$n_LL.Narea>5),])
+anova(LLNarea, LLNareanull) #new raw avg p=0.004, old log avg p=, cl=0.22
+LLNarea <- lm(Rho_LL.Narea~Type, weights = n_LL.Narea, all.results.cl[which(all.results.cl$n_LL.Narea>5),])
+LLNareanull <- lm(Rho_LL.Narea~1, weights=n_LL.Narea, all.results.cl[which(all.results.cl$n_LL.Narea>5),])
+anova(LLNarea, LLNareanull) # pcl = 1.42 e-8 new and old
+LLNarea <- lm(Rho_LL.Narea~Type, weights=varLL, all.results.cl[which(all.results.cl$n_LL.Narea>5),])
+LLNareanull <- lm(Rho_LL.Narea~1, all.results.cl[which(all.results.cl$n_LL.Narea>5),], weights=varLL)
+anova(LLNarea, LLNareanull) #new= p=0.00062, old p<0.03126
+LLNarea <- lm(Rho_LL.Narea~Type, weights=varNarea, all.results.cl[which(all.results.cl$n_LL.Narea>5),])
+LLNareanull <- lm(Rho_LL.Narea~1, all.results.cl[which(all.results.cl$n_LL.Narea>5),], weights=varNarea)
+anova(LLNarea, LLNareanull) #new p=0.0037, old p=0.07745
+
+
+
 
 
 # w.inGen not different from w/.in spp, but everything else is...
@@ -1470,112 +1351,3 @@ lmanarea <- aov(Slope_LMA.Narea~Type, all.results,weights=varLMA)
 TukeyHSD(lmanarea)
 lmanarea <- aov(Slope_LMA.Narea~Type, all.results,weights=varNarea)
 TukeyHSD(lmanarea)
-# 
-# ### plotting two things at once...
-# ggplot(data=NULL,aes(x=all.results.LMAN$Rho, y=all.results.NmassLL$Rho, col=all.results.NmassLL$Type, size=all.results.NmassLL$n)) + geom_point()
-# 
-# 
-# ggplot(data=NULL,aes(x=all.results.LMAN$Rho, y=all.results.LMALL$Rho, col=all.results.NmassLL$Type, size=all.results.NmassLL$n)) + geom_point() +
-#   geom_abline(slope = 0, intercept=0, col="grey")+ geom_vline(xintercept = 0, col="grey")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-######### LMA v LL, angios vs gymnos #######
-tmp <- all.results %>% filter(Type=="w.inSpp" & n_LMA.LL>4)
-tmp$Taxo.Unit
-lh <- c("g","g","g","g",
-        "g","g","g","g",
-        "g","g","g","g",
-        "g","a","g","a","a","g")
-llspecies <- tmp$Taxo.Unit
-boxplot(Slope_LMA.LL~lh, tmp)
-plot(log.LL~log.LMA, LES, pch=16, col="grey")
-points(log.LL~log.LMA, spp.data[which(spp.data$Species %in% llspecies),], col=Species)
-
-
-
-
-
-#________________________________________________________________________
-#________________________________________________________________________
-###### Old Code: PCA pieces ##########
-
-## PCA on 655 records
-pcLES <- prcomp(LES[-which(is.na(LES$log.LMA) | is.na(LES$log.LL) | is.na(LES$log.Nmass)),c("log.LMA","log.LL","log.Nmass")],center = T, scale. = T)
-# PC1 explains 78% of variance
-pctraits <- prcomp(traits[-which(is.na(traits$log.LMA)|is.na(traits$log.LL)|is.na(traits$log.Nmass)),c("log.LMA","log.LL","log.Nmass") ],center = T, scale. = T)
-# of the full dataset (1010 trait measurements): PC1 explains 70% of the variance
-pcPSME <- prcomp(traits.common.narm[which(traits.common.narm$SP.ID=="PSEMEN" & !is.na(traits.common.narm$log.Nmass)),c("log.LMA","log.LL","log.Nmass") ],center = T, scale. = T)
-# 220 trait measurements: 41%
-pcPINPON <- prcomp(traits.common.narm[which(traits.common.narm$SP.ID=="PINPON" & !is.na(traits.common.narm$log.Nmass) & !is.na(traits.common.narm$log.LL)),c("log.LMA","log.LL","log.Nmass") ],center = T, scale. = T)
-# 180 trait measurements: 33%
-pcTSUHET <- prcomp(traits.common.narm[which(traits.common.narm$SP.ID=="TSUHET" & !is.na(traits.common.narm$log.Nmass) & !is.na(traits.common.narm$log.LL)),c("log.LMA","log.LL","log.Nmass") ],center = T, scale. = T)
-# 60 trait measurements: 52%
-
-
-
-
-
-
-
-
-
-################### LL summaries ########
-tmp <- traits.common5 %>% group_by(SP.ID) %>% summarise(mLL = mean(LEAF_LIFE, na.rm=T), minLL = min(LEAF_LIFE, na.rm=T), maxLL = max(LEAF_LIFE, na.rm=T), sdLL = sd(LEAF_LIFE, na.rm=T), cvLL = sd(LEAF_LIFE, na.rm=T)/mean(LEAF_LIFE, na.rm=T), nLL=length(-which(is.na(LEAF_LIFE))))
-plot(sdLL~mLL, tmp) # sd is def a function of mean
-plot(cvLL~mLL, tmp) # CV is reasonably unrelated to mean
-
-tmp2 <- spp.data %>% group_by(Species) %>% summarise(mLL = mean(10^log.LL, na.rm=T), sdLL = sd(10^log.LL, na.rm=T), cvLL = sd(10^log.LL, na.rm=T)/mean(10^log.LL, na.rm=T), nLL=length(which(10^log.LL > 0))
-                                                     ,mLMA = mean(10^log.LMA, na.rm=T), sdLMA = sd(10^log.LMA, na.rm=T), cvLMA = sd(10^log.LMA, na.rm=T)/mean(10^log.LMA, na.rm=T), nLMA=length(which(10^log.LMA > 0))
-                                                     ,mNmass = mean(10^log.Nmass, na.rm=T), sdNmass = sd(10^log.Nmass, na.rm=T), cvNmass = sd(10^log.Nmass, na.rm=T)/mean(10^log.Nmass, na.rm=T), nNmass=length(which(10^log.Nmass > 0)))
-
-
-
-##### plotting trait CVs as f(trait mean) ######
-    ### Takehome point: LL kinda increases CV with increasing mean, but two major outliers keep it from being significant
-                        # LMA is actualy significant, but significantly negative
-
-quartz(width=7, height=3)
-par(mfrow=c(1,3), mar=c(3.5,3.5,1,1), mgp=c(2.5,1,0), cex=1)
-plot(cvLMA~mLMA, tmp2, ylab="LMA CV", xlab="mean LMA", pch=16)
-abline(lm(cvLMA~mLMA, tmp2))
-mtext(text = "p=0.054", side=3, line=-1.3, adj=.8)
-plot(cvLL~mLL, tmp2[-which(tmp2$nLL<3 | tmp2$cvLL==0),], ylab="Leaf Lifespan CV", xlab="mean Leaf Lifespan (mo)", pch=16)
-#summary(lm(cvLL~mLL, tmp2[-which(tmp2$nLL<3 | tmp2$cvLL==0 | tmp2$cvLL>.8 | tmp2$mLL>200),]))
-mtext(text= "p=0.578", side=3, line=-1.3, adj=.8)
-abline(lm(cvLL~mLL, tmp2[-which(tmp2$nLL<3 | tmp2$cvLL==0 | tmp2$cvLL>.8  | tmp2$mLL>200),]), lty=2)
-#mtext(text= "(p=0.001)", side=3, line=-2.3, adj=.8)
-plot(cvNmass~mNmass, tmp2, pch=16, xlab="mean Nmass", ylab="Nmass CV")
-abline(lm(cvNmass~mNmass, tmp2), lty=2)
-mtext(text= "p=0.259", side=3, line=-1.3, adj=.8)

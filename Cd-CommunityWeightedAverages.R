@@ -220,73 +220,74 @@ biomass$log.cw_LLp <- log(biomass$cw_LLp, base=10)
 biomass$log.cw_Nmassp <- log(biomass$cw_Nmassp, base=10)
 biomass$log.cw_Nareap <- log(biomass$cw_Nareap, base=10)
 
-
-#______________________________________________________
-######### Calculating with mean log(traits) rather than mean traits that are then logged ##########
-
-######### log.LMA 
-# can't just calculate this from SLA, because I'm using LMA_PSA rather than HSA
-biomass$wlog.LMAp1 <- spp.plot.traits$mlog.LMA[match(as.character(biomass$SP1.PLOT), as.character(spp.plot.traits$SP.PLOT))] * biomass$SPP_O1_BASAL_AREA_FRACTION/100
-biomass$wlog.LMAp2 <- spp.plot.traits$mlog.LMA[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)] * biomass$SPP_O2_BASAL_AREA_FRACTION/100
-biomass$wlog.LMAp3 <- spp.plot.traits$mlog.LMA[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)] * biomass$SPP_O3_BASAL_AREA_FRACTION/100
-biomass$wlog.LMAp4 <- spp.plot.traits$mlog.LMA[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)] * biomass$SPP_O4_BASAL_AREA_FRACTION/100
-
-biomass$cw_log.LMAp <- apply(biomass[,c("wlog.LMAp1", "wlog.LMAp2","wlog.LMAp3","wlog.LMAp4")],MARGIN=1,FUN=sum, na.rm=T)
-# now need to remove values that got smoothed over due to na.rm=T in the apply function
-biomass$cw_log.LMAp[which(is.na(biomass$wlog.LMAp1))] <- NA # 86 plots lacking log.LMA data of SPP01
-biomass$cw_log.LMAp[which(is.na(biomass$wlog.LMAp2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
-#18 sites lacking log.LMA data for SPP02 where SPP02 makes up >30 % of BA, but only 5 have SPP01
-biomass$cw_log.LMAp[which(biomass$cw_log.LMAp==0)] <- NA
-# 91 plots missing substantial LMA data
-# length(which(is.na(biomass$cw_LMAp)))
-
-
-###### log.LL
-biomass$wlog.LLp1 <- spp.plot.traits$mlog.LL[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O1_BASAL_AREA_FRACTION/100
-biomass$wlog.LLp2 <- spp.plot.traits$mlog.LL[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O2_BASAL_AREA_FRACTION/100
-biomass$wlog.LLp3 <- spp.plot.traits$mlog.LL[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O3_BASAL_AREA_FRACTION/100
-biomass$wlog.LLp4 <- spp.plot.traits$mlog.LL[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O4_BASAL_AREA_FRACTION/100
-
-biomass$cw_log.LLp <- apply(biomass[,c("wlog.LLp1", "wlog.LLp2","wlog.LLp3","wlog.LLp4")],MARGIN=1,FUN=sum, na.rm=T)
-# now need to remove values that got smoothed over due to na.rm=T in the apply function
-biomass$cw_log.LLp[which(is.na(biomass$wlog.LLp1))] <- NA # 94 sites lacking Leaflog.LL of SPP01
-biomass$cw_log.LLp[which(is.na(biomass$wlog.LLp2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
-# 22 sites lack SPP02 leaf life, 9 of them unique
-length(which(is.na(biomass$cw_log.LLp))) # 103 plots sans significant log.LL
-
-###### log.Nmass
-biomass$wlog.Nmassp1 <- spp.plot.traits$mlog.Nmass[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O1_BASAL_AREA_FRACTION/100
-biomass$wlog.Nmassp2 <- spp.plot.traits$mlog.Nmass[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O2_BASAL_AREA_FRACTION/100
-biomass$wlog.Nmassp3 <- spp.plot.traits$mlog.Nmass[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O3_BASAL_AREA_FRACTION/100
-biomass$wlog.Nmassp4 <- spp.plot.traits$mlog.Nmass[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O4_BASAL_AREA_FRACTION/100
-
-biomass$cw_log.Nmassp <- apply(biomass[,c("wlog.Nmassp1", "wlog.Nmassp2","wlog.Nmassp3","wlog.Nmassp4")],MARGIN=1,FUN=sum, na.rm=T)
-# now need to remove values that got smoothed over due to na.rm=T in the apply function
-biomass$cw_log.Nmassp[which(is.na(biomass$wlog.Nmassp1))] <- NA # 98 sites lacking LeafNITROGEN of SPP01
-biomass$cw_log.Nmassp[which(is.na(biomass$wlog.Nmassp2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
-biomass$cw_log.Nmassp[which(biomass$cw_log.Nmassp==0)] <- NA
-# 26 sites lack SPP02 leaf NITROGEN, 3 of them unique
-# length(which(is.na(biomass$cw_log.Nmassp))) # 102 sites sans log.Nmass
-
-##### log.Narea
-biomass$wlog.Nareap1 <- spp.plot.traits$mlog.Narea[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O1_BASAL_AREA_FRACTION/100
-biomass$wlog.Nareap2 <- spp.plot.traits$mlog.Narea[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O2_BASAL_AREA_FRACTION/100
-biomass$wlog.Nareap3 <- spp.plot.traits$mlog.Narea[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O3_BASAL_AREA_FRACTION/100
-biomass$wlog.Nareap4 <- spp.plot.traits$mlog.Narea[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O4_BASAL_AREA_FRACTION/100
-#
-biomass$cw_log.Nareap <- apply(biomass[,c("wlog.Nareap1", "wlog.Nareap2","wlog.Nareap3","wlog.Nareap4")],MARGIN=1,FUN=sum, na.rm=T)
-# now need to remove values that got smoothed over due to na.rm=T in the apply function
-biomass$cw_log.Nareap[which(is.na(biomass$wlog.Nareap1))] <- NA # 98 sites lacking Leaflog.Narea of SPP01
-biomass$cw_log.Nareap[which(is.na(biomass$wlog.Nareap2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
-biomass$cw_log.Nareap[which(biomass$cw_log.Nareap==0)] <- NA
-# 26 sites lack SPP02 leaf log.Narea, 3 of them unique
-
-# lost roughly 100 sites per trait, leaving ~160 sites. not bad, but infilling might be better?
-
-
 ###### add the climPCs to biomass########
 biomass$climPC1 <-spp.plot.traits$climPC1[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]
 biomass$climPC2 <-spp.plot.traits$climPC2[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]
+
+
+# #______________________________________________________
+# ######### Calculating with mean log(traits) rather than mean traits that are then logged ##########
+#   #---> I realized this is a stupid way to calculate this. I definetly want to log AFTER I cw things
+# ######### log.LMA 
+# # can't just calculate this from SLA, because I'm using LMA_PSA rather than HSA
+# biomass$wlog.LMAp1 <- spp.plot.traits$mlog.LMA[match(as.character(biomass$SP1.PLOT), as.character(spp.plot.traits$SP.PLOT))] * biomass$SPP_O1_BASAL_AREA_FRACTION/100
+# biomass$wlog.LMAp2 <- spp.plot.traits$mlog.LMA[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)] * biomass$SPP_O2_BASAL_AREA_FRACTION/100
+# biomass$wlog.LMAp3 <- spp.plot.traits$mlog.LMA[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)] * biomass$SPP_O3_BASAL_AREA_FRACTION/100
+# biomass$wlog.LMAp4 <- spp.plot.traits$mlog.LMA[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)] * biomass$SPP_O4_BASAL_AREA_FRACTION/100
+# 
+# biomass$cw_log.LMAp <- apply(biomass[,c("wlog.LMAp1", "wlog.LMAp2","wlog.LMAp3","wlog.LMAp4")],MARGIN=1,FUN=sum, na.rm=T)
+# # now need to remove values that got smoothed over due to na.rm=T in the apply function
+# biomass$cw_log.LMAp[which(is.na(biomass$wlog.LMAp1))] <- NA # 86 plots lacking log.LMA data of SPP01
+# biomass$cw_log.LMAp[which(is.na(biomass$wlog.LMAp2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
+# #18 sites lacking log.LMA data for SPP02 where SPP02 makes up >30 % of BA, but only 5 have SPP01
+# biomass$cw_log.LMAp[which(biomass$cw_log.LMAp==0)] <- NA
+# # 91 plots missing substantial LMA data
+# # length(which(is.na(biomass$cw_LMAp)))
+# 
+# 
+# ###### log.LL
+# biomass$wlog.LLp1 <- spp.plot.traits$mlog.LL[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O1_BASAL_AREA_FRACTION/100
+# biomass$wlog.LLp2 <- spp.plot.traits$mlog.LL[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O2_BASAL_AREA_FRACTION/100
+# biomass$wlog.LLp3 <- spp.plot.traits$mlog.LL[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O3_BASAL_AREA_FRACTION/100
+# biomass$wlog.LLp4 <- spp.plot.traits$mlog.LL[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O4_BASAL_AREA_FRACTION/100
+# 
+# biomass$cw_log.LLp <- apply(biomass[,c("wlog.LLp1", "wlog.LLp2","wlog.LLp3","wlog.LLp4")],MARGIN=1,FUN=sum, na.rm=T)
+# # now need to remove values that got smoothed over due to na.rm=T in the apply function
+# biomass$cw_log.LLp[which(is.na(biomass$wlog.LLp1))] <- NA # 94 sites lacking Leaflog.LL of SPP01
+# biomass$cw_log.LLp[which(is.na(biomass$wlog.LLp2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
+# # 22 sites lack SPP02 leaf life, 9 of them unique
+# length(which(is.na(biomass$cw_log.LLp))) # 103 plots sans significant log.LL
+# 
+# ###### log.Nmass
+# biomass$wlog.Nmassp1 <- spp.plot.traits$mlog.Nmass[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O1_BASAL_AREA_FRACTION/100
+# biomass$wlog.Nmassp2 <- spp.plot.traits$mlog.Nmass[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O2_BASAL_AREA_FRACTION/100
+# biomass$wlog.Nmassp3 <- spp.plot.traits$mlog.Nmass[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O3_BASAL_AREA_FRACTION/100
+# biomass$wlog.Nmassp4 <- spp.plot.traits$mlog.Nmass[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O4_BASAL_AREA_FRACTION/100
+# 
+# biomass$cw_log.Nmassp <- apply(biomass[,c("wlog.Nmassp1", "wlog.Nmassp2","wlog.Nmassp3","wlog.Nmassp4")],MARGIN=1,FUN=sum, na.rm=T)
+# # now need to remove values that got smoothed over due to na.rm=T in the apply function
+# biomass$cw_log.Nmassp[which(is.na(biomass$wlog.Nmassp1))] <- NA # 98 sites lacking LeafNITROGEN of SPP01
+# biomass$cw_log.Nmassp[which(is.na(biomass$wlog.Nmassp2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
+# biomass$cw_log.Nmassp[which(biomass$cw_log.Nmassp==0)] <- NA
+# # 26 sites lack SPP02 leaf NITROGEN, 3 of them unique
+# # length(which(is.na(biomass$cw_log.Nmassp))) # 102 sites sans log.Nmass
+# 
+# ##### log.Narea
+# biomass$wlog.Nareap1 <- spp.plot.traits$mlog.Narea[match(biomass$SP1.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O1_BASAL_AREA_FRACTION/100
+# biomass$wlog.Nareap2 <- spp.plot.traits$mlog.Narea[match(biomass$SP2.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O2_BASAL_AREA_FRACTION/100
+# biomass$wlog.Nareap3 <- spp.plot.traits$mlog.Narea[match(biomass$SP3.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O3_BASAL_AREA_FRACTION/100
+# biomass$wlog.Nareap4 <- spp.plot.traits$mlog.Narea[match(biomass$SP4.PLOT, spp.plot.traits$SP.PLOT)]* biomass$SPP_O4_BASAL_AREA_FRACTION/100
+# #
+# biomass$cw_log.Nareap <- apply(biomass[,c("wlog.Nareap1", "wlog.Nareap2","wlog.Nareap3","wlog.Nareap4")],MARGIN=1,FUN=sum, na.rm=T)
+# # now need to remove values that got smoothed over due to na.rm=T in the apply function
+# biomass$cw_log.Nareap[which(is.na(biomass$wlog.Nareap1))] <- NA # 98 sites lacking Leaflog.Narea of SPP01
+# biomass$cw_log.Nareap[which(is.na(biomass$wlog.Nareap2) & biomass$SPP_O2_BASAL_AREA_FRACTION>30)] <- NA
+# biomass$cw_log.Nareap[which(biomass$cw_log.Nareap==0)] <- NA
+# # 26 sites lack SPP02 leaf log.Narea, 3 of them unique
+# 
+# # lost roughly 100 sites per trait, leaving ~160 sites. not bad, but infilling might be better?
+
+
 
 
 ### Plot what happens if I log before or after averaging ##
@@ -300,6 +301,36 @@ plot(log.cw_Nmassp~cw_log.Nmassp, biomass)
 
 
 
+
+
+
+
+
+
+###### looking for trade-offs at the CW mean level ####
+myspecies <- c("ABICON","ABIGRA","PINPON","PSEMEN","PINJEF")
+plot(log.cw_LLp~log.cw_LMAp, biomass[which(!is.na(biomass$log.cw_LLp)),], col=factor(SPP_O1_ABBREV), pch=16)
+for(i in myspecies){
+  abline(lm(log.cw_LLp~log.cw_LMAp, biomass[which(!is.na(biomass$log.cw_LLp) & biomass$SPP_O1_ABBREV==i),]))
+  
+}
+#### woof. doesn't work at all for CW LL vs LMA
+#### works super slick for Narea and LMA, which says N is mass-distributed, I think
+
+plot(log.cw_Nmassp~log.cw_LMAp, biomass[which(!is.na(biomass$log.cw_LLp)),], col=factor(SPP_O1_ABBREV), pch=16)
+for(i in myspecies){
+  abline(lm(log.cw_Nmassp~log.cw_LMAp, biomass[which(!is.na(biomass$log.cw_LLp) & biomass$SPP_O1_ABBREV==i),]))
+  
+}
+# doesn't work at all for Nmass
+
+plot(log.cw_Nareap~log.cw_LLp, biomass[which(!is.na(biomass$log.cw_LLp)),], col=factor(SPP_O1_ABBREV), pch=16)
+for(i in myspecies){
+  abline(lm(log.cw_Nareap~log.cw_LLp, biomass[which(!is.na(biomass$log.cw_LLp) & biomass$SPP_O1_ABBREV==i),]))
+  
+}
+
+# nada for Narea vs LL
 
 
 
