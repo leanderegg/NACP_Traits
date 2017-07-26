@@ -29,8 +29,8 @@ colnames(allspp) <- gsub("slog", "log", colnames(allspp))
 
 
 #### Genus mean dataframe ####
-allgen <- allspp %>% group_by(Genus)  %>% summarise(Fam = sort(unique(Family))[1], lglog.LL = mean(log.LL, na.rm=T),lglog.LMA = mean(log.LMA, na.rm=T),lglog.Nmass = mean(log.Nmass, na.rm=T), lglog.Narea = mean(log.Narea, na.rm=T)
-                                                    ,glog.LL = log(mean(10^rlog.LL, na.rm=T),base=10), glog.LMA = log(mean(10^rlog.LMA, na.rm=T),base=10), glog.Nmass = log(mean(10^rlog.Nmass, na.rm=T),base=10), glog.Narea = log(mean(10^rlog.Narea, na.rm=T),base=10), nspp = n() 
+allgen <- allspp %>% group_by(Genus)  %>% summarise(Fam = sort(unique(Family))[1], lglog.LL = mean(llog.LL, na.rm=T),lglog.LMA = mean(llog.LMA, na.rm=T),lglog.Nmass = mean(llog.Nmass, na.rm=T), lglog.Narea = mean(llog.Narea, na.rm=T)
+                                                    ,glog.LL = log(mean(10^log.LL, na.rm=T),base=10), glog.LMA = log(mean(10^log.LMA, na.rm=T),base=10), glog.Nmass = log(mean(10^log.Nmass, na.rm=T),base=10), glog.Narea = log(mean(10^log.Narea, na.rm=T),base=10), nspp = n() 
                                                     ,MAT = mean(MAT, na.rm=T), MAP=mean(MAP, na.rm=T), VPD=mean(VPD, na.rm=T) )
 # taking mean of raw values or logged values doesn't matter all that much yet
 colnames(allgen) <- gsub("glog", "log", colnames(allgen))
@@ -42,8 +42,8 @@ colnames(allgen)[2] <- "Family"
 
 
 #### Family Mean dataframe ####
-allfam <- allgen %>% group_by(Family) %>% summarise(lflog.LL = mean(log.LL, na.rm=T), lflog.LMA = mean(log.LMA, na.rm=T), lflog.Nmass = mean(log.Nmass, na.rm=T),lflog.Narea = mean(log.Narea, na.rm=T)
-                                                    ,flog.LL = log(mean(10^rlog.LL, na.rm=T),base=10), flog.LMA = log(mean(10^rlog.LMA, na.rm=T),base=10), flog.Nmass = log(mean(10^rlog.Nmass, na.rm=T),base=10), flog.Narea = log(mean(10^rlog.Narea, na.rm=T), base=10)
+allfam <- allgen %>% group_by(Family) %>% summarise(lflog.LL = mean(llog.LL, na.rm=T), lflog.LMA = mean(llog.LMA, na.rm=T), lflog.Nmass = mean(llog.Nmass, na.rm=T),lflog.Narea = mean(llog.Narea, na.rm=T)
+                                                    ,flog.LL = log(mean(10^log.LL, na.rm=T),base=10), flog.LMA = log(mean(10^log.LMA, na.rm=T),base=10), flog.Nmass = log(mean(10^log.Nmass, na.rm=T),base=10), flog.Narea = log(mean(10^log.Narea, na.rm=T), base=10)
                                                     , tnspp = sum(nspp), ngen=n() )
 colnames(allfam) <- gsub("flog", "log", colnames(allfam))
 # still doesn't matter too too much. just moves some of the points towards larger values in rlog things
@@ -1351,3 +1351,54 @@ lmanarea <- aov(Slope_LMA.Narea~Type, all.results,weights=varLMA)
 TukeyHSD(lmanarea)
 lmanarea <- aov(Slope_LMA.Narea~Type, all.results,weights=varNarea)
 TukeyHSD(lmanarea)
+
+
+
+
+
+
+
+
+
+
+#------------------------------------------------------------------------
+##########  Re-analysis only with PNW stands with LAI <4 to seperate the sun/shade issue #####
+#------------------------------------------------------------------------
+
+traits.common.sun <- traits.common5 %>% filter(LAI_O < 4)
+
+
+
+
+
+#traits.common.sun <- traits.common.s[which(traits.common$SP.
+
+
+
+
+####### ***LMA and LL*** #####################
+
+############ .Species level analysis #####################
+
+
+spp.results <- data.frame(matrix(NA, nrow=length(unique(traits.common.sun$SP.ID)), ncol=15))
+colnames(spp.results) <- c("Species", "Int","Slope","Rho","r.sq","n","varLMA","varLL","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
+for(i in 1:length(unique(traits.common.sun$SP.ID))){
+  species <- levels(traits.common.sun$SP.ID)[i]
+  print(species)
+  dataz <- traits.common[which(traits.common$SP.ID==species),]
+  res <- fit.MAR(xvar='log.LMA',yvar="log.LL",data=dataz)
+  spp.results[i,1] <- species
+  spp.results[i,2:8] <- res
+  if (!is.na(res[1]) &res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.LL", observed = dataz, nulldata = allspp, nits = 1000)  
+    spp.results[i, 9:14] <- nullbounds
+    spp.results[i,15] <- test.sig(x=spp.results$Rho[i], test=nullbounds)
+  }
+}
+
+
+
+                                           
+                                           
+                                           

@@ -545,10 +545,24 @@ In fact, I think I should, so I can just kill the old columns and literally reru
 Because I've got a handful of plots that are missing >15% of their basal area. Which means I massively underpridict their traits...
 So I need to update the infilling and rerun the stats.
 
+## Takehomes: It was actually pretty important to infill, particularly for Nmass.
+- the spp means don't always predict plots very well. They're decent for LMA, but SHITTY for LL, Nmass and Narea...
 
 
 
+## Note:
+Leaf biomass fraction strongly predicts RGR. I think this is probably an age thing?
+Stand 43, 55 (PSEMEN) are both extremely high RGR for very low LeafFrac. They're also VERY low biomass stands, which is probably why the fall off both the log-log negative scaling between biomass and LeafFrac and the raw LeafFrac ~RGR relationship?
+ - These are young, short stands (15 & 18 years old), maybe this is it?
 
+
+*** Summary of plots and modeling RGR ~ ASA and LeafFrac
+-within spp, log(LeafFrac) decreases with log(ASA) very strongly (at least in PSEMEN and PINPON)
+  However, not so much so in the whole Biomass dataset, bewcause older, diverse stands start breaking this
+-within spp, LeafFrac never does quite as well as ASA, but it does better than LAI, and Leaf Area calculated as NPP * LeafFrac * mSLA does a little better than LAI but worse than LeafFrac alone.
+- across whole biomass dataset, log(LeafFrac) actually does better than ASA if you remove pesky stand 43 and 55!
+
+* my interpretation: LeafFrac is probably the driving mechanism. But within-species ASA is easier to measure? However because LeafFrac and ASA have different relationships across species, once you start looking across progressively more species, LeafFrac starts standing out as the exemplar.
 
 
 

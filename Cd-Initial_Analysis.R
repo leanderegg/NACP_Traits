@@ -574,6 +574,9 @@ biomass$BIOstGROWTH[which(biomass$AG_PROD_TREE_TOTAL_AS_CARBON>-5)] <- resid(gro
 biomass$BIOstGROWTHgam[which(biomass$AG_PROD_TREE_TOTAL_AS_CARBON>-5)] <- resid(growthmod2)
 biomass$logBIOstGROWTHgam[which(biomass$AG_PROD_TREE_TOTAL_AS_CARBON>-5)] <- resid(growthmod3)
 
+# add leaf mass fraction
+biomass$LeafFrac <- biomass$AG_BIOMASS_TREE_FOLIAGE_AS_CARBON/biomass$AG_BIOMASS_TREE_TOTAL_AS_CARBON
+biomass$LeafAlloc <- biomass$AG_PROD_TREE_FOLIAGE_AS_CARBON/biomass$AG_PROD_TREE_TOTAL_AS_CARBON
 
 #biomass <- biomass.raw[-1,] # drop second row of csv with measurement units
 #biomass$PROJECT <- factor(biomass$PROJECT) # reformat columns after units row dropped
@@ -616,6 +619,7 @@ traits$AG_WBIO <- biomass$AG_BIOMASS_TREE_WOOD_AS_CARBON[match(traits$PLOT_ID, b
 traits$AG_WGROWTH <- biomass$AG_PROD_TREE_WOOD_AS_CARBON[match(traits$PLOT_ID, biomass$PLOT_ID)]
 traits$AG_FBIO <- biomass$AG_BIOMASS_TREE_FOLIAGE_AS_CARBON[match(traits$PLOT_ID, biomass$PLOT_ID)]
 traits$AG_FGROWTH <- biomass$AG_PROD_TREE_FOLIAGE_AS_CARBON[match(traits$PLOT_ID, biomass$PLOT_ID)]
+traits$LeafFrac <- biomass$AG_BIOMASS_TREE_FOLIAGE_AS_CARBON[match(traits$PLOT_ID, biomass$PLOT_ID)]/biomass$AG_BIOMASS_TREE_TOTAL_AS_CARBON[match(traits$PLOT_ID, biomass$PLOT_ID)]
 
 traits$BIOST_TGROWTH <- biomass$BIOstGROWTH[match(traits$PLOT_ID, biomass$PLOT_ID)]
 traits$BIOST_TGROWTHgam <- biomass$BIOstGROWTHgam[match(traits$PLOT_ID, biomass$PLOT_ID)]
@@ -680,7 +684,7 @@ traits$stGrowthdom90[which(as.character(traits$FOREST_TYPE) == as.character(trai
 traits$FullSpecies <- paste(traits$GENUS, traits$SPECIES, sep=" ")
 
 # make a PCA of climate variables and add them to the df
-climpca.traits <- prcomp(traits[,c(grep("gy", colnames(traits.common5)), which(colnames(traits.common5) %in% c("soilmoist.lvl1.mm","soilmoist.all.mm")))],scale=T)
+climpca.traits <- prcomp(traits[,c(grep("gy", colnames(traits)), which(colnames(traits) %in% c("soilmoist.lvl1.mm","soilmoist.all.mm")))],scale=T)
 traits$climPC1 <- climpca.traits$x[,1]
 traits$climPC2 <- climpca.traits$x[,2]
 traits$climPC3 <- climpca.traits$x[,3]
@@ -1276,9 +1280,10 @@ variance.decomp <- function(dataz, lab){
   
   quartz(width=5, height=4, "logged")
   cols <- brewer.pal(11, "PRGn")[c(1,3,9,11)]
-  barplot(as.matrix(traitvars_scaled1),beside=F,legend.text = F,xpd = T, names.arg = c("log\n(LMA)", "log\n(LL)","log\n(Nm)","log\n(Na)", "%C","C/N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab=lab)
+  cols <- rev(c(brewer.pal(11,"RdYlGn")[1],mypal[colchoices[c(1,2,3)]]))
+  barplot(as.matrix(traitvars_scaled1),beside=F,legend.text = F,xpd = T, names.arg = c("log\n(LMA)", "log\n(LL)","log\n(Nm)","log\n(Na)", "%C","C/N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"99"), ylab="Proportion of total Variance", xlab=lab)
   # almost works: expression(paste("log\n","(",N[mass],")", sep="")) # except it offsets the upper and lower lines
-  legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,2,1)], ncol=2, bty="n",  cex=1.2)
+  legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"99")[c(4,3,2,1)], ncol=2, bty="n",  cex=1.2)
   
   
   #### raw values
@@ -1327,6 +1332,13 @@ domconvars <- variance.decomp(dataz=traits.domcon, lab="traits.domcon")
 
 traits.domcon1 <- traits.dominants[-which(traits.dominants$SP.ID %in% c("QUECHR", "LAROCC")),]
 domconvars1 <- variance.decomp(dataz=traits.domcon1, lab="traits.domcon1")
+
+
+domconvars1.comb <- rbind(domconvars1$logged[1:2,], colSums(domconvars1$logged[3:4,]))
+rownames(domconvars1.comb)[3] <- "WtinSpecies"
+
+
+
 
 ########## showing how much of trait space these conifers still cover ##########
 quartz(width=4, height=4)
@@ -1674,18 +1686,49 @@ for(i in 1:ncol(rtraitvars)){
 rtraitvars_scaled2 <- rtraitvars_scaled[c(3,2,1,4),]
 traitvars_scaled2 <- traitvars_scaled[c(3,2,1,4),]
 
-quartz(width=5, height=4)
-cols <- brewer.pal(11, "RdBu")[c(11,9,1, 6)]
-barplot(as.matrix(traitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("logLMA", "logLL","logNmass","logNarea"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance\n(log traits)", xlab="", mgp=c(2,1,0))
-legend(xpd=T, x = 0, y=1.3, legend=rownames(traitvars_scaled2), fill=paste0(cols,"CC"), ncol=2, bty="n",  cex=1.2)
+#quartz(width=3.75, height=4)
+quartz(width=6.81, height=3.5)
+par(mgp=c(3,.7,0), cex.lab=1.3, cex.axis=1.1, mfrow=c(1,3), mar=c(5,2,5,2), oma=c(0,3,0,0))
+cols <- rev(c(mypal[colchoices[c(1,2,3)]],"#CCCCCC"))#brewer.pal(11, "RdBu")[c(11,9,1, 6)]
+  # With old colors, alpha=CC, with new colors, alpha=99
+bp <-barplot(as.matrix(traitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("","","",""),las=2,args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"99")
+             , ylab= "Proportion of total Variance" #ylab="Proportion of total Variance\n(log traits)"
+             , xlab="", mgp=c(2.5,.8,0))
+#legend(xpd=T, x = 0, y=1.2, legend=rev(c("btw Fams","w/in Fam","w/in Gen","w/in Spp")), fill=rev(paste0(cols,"99")), ncol=2, bty="n",  cex=1.2)
+text(x = bp, y= par("usr")[3]-.05,labels =  c(expression(paste(log[10](LMA))), expression(paste(log[10](LL))),expression(paste(log[10](N[mass]))),expression(paste(log[10](N[area])))), srt=40, adj=1,xpd=NA, cex=1.4, font=1)
 mtext("a)", side=3, adj=-.1, line=1.3)
+mtext("Proportion of Total Variance", side=2, line=2.8)
+mtext("Global (logged)", side=3, line=0.3)
+#quartz(width=5, height=4)
+#cols <- brewer.pal(11, "RdBu")[c(11,9,1, 6)]
+cols <- rev(c(mypal[colchoices[c(1,2,3)]],"#CCCCCC"))#brewer.pal(11, "RdBu")[c(11,9,1, 6)]
+barplot(as.matrix(rtraitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("", "","",""),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"99"),mgp=c(2,1,0), ylab="")#Proportion of total Variance\n(raw traits)", mgp=c(2,1,0))
+text(x = bp, y= par("usr")[3]-.05,labels =  c("LMA", "LL",expression(paste(N[mass])),expression(paste(N[area]))), srt=40, adj=1,xpd=NA, cex=1.4, font=1)
+mtext("Global (raw)", side=3, line=0.3)
 
-quartz(width=5, height=4)
-cols <- brewer.pal(11, "RdBu")[c(11,9,1, 6)]
-barplot(as.matrix(rtraitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("LMA", "Leaf\nLife","Nmass","Narea"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance\n(raw traits)", mgp=c(2,1,0))
+legend(xpd=T, x = 0, y=1.32, legend=rev(c("btw Fams","w/in Fam","w/in Gen","w/in Spp")), fill=rev(paste0(cols,"99")), ncol=2, bty="n",  cex=1.2)
 # mtext(text="28 spp w/ replication, 1000+ spp,\n500+ genera, 150+ families",side = 1,line = 3.3)
 # legend(xpd=T, x = 0, y=1.3, legend=rownames(rtraitvars_scaled2), fill=paste0(cols,"CC"), ncol=2, bty="n",  cex=1.2)
 mtext("b)", side=3, adj=-.1, line=1.3)
+
+barplot(as.matrix(domconvars1.comb[,1:4]),beside=F,legend.text = F,xpd = T, names.arg = c("", "","",""),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols[-1],"99"), ylab="", mgp=c(2,1,0))
+text(x = bp, y= par("usr")[3]-.05,labels =  c(expression(paste(log[10](LMA))), expression(paste(log[10](LL))),expression(paste(log[10](N[mass]))),expression(paste(log[10](N[area])))), srt=40, adj=1,xpd=NA, cex=1.4, font=1)
+mtext("c)", side=3, adj=-.1, line=1.3)
+mtext("Evgrn Needle PFT", side=3, line=0.3)
+
+
+###### New raw Var Decomp for Presentations
+quartz(width=3.75, height=4)
+par(mgp=c(3,.7,0), cex.lab=1.3, cex.axis=1.1)
+cols <- rev(c(mypal[colchoices[c(1,2,3)]],"#CCCCCC"))#brewer.pal(11, "RdBu")[c(11,9,1, 6)]
+# With old colors, alpha=CC, with new colors, alpha=99
+bp <-barplot(as.matrix(rtraitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("","","",""),las=2,args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"99")
+             , ylab= "Proportion of total Variance" #ylab="Proportion of total Variance\n(log traits)"
+             , xlab="", mgp=c(2.5,.8,0))
+#legend(xpd=T, x = 0, y=1.3, legend=c("btw Fams","w/in Fam","w/in Gen","w/in Spp"), fill=paste0(cols,"99"), ncol=2, bty="n",  cex=1.2)
+text(x = bp, y= par("usr")[3]-.05,labels =  c("LMA", "LL","Nmass","Narea"), srt=40, adj=1,xpd=NA, cex=1.4, font=1)
+#mtext("a)", side=3, adj=-.1, line=1.3)
+
 
 #### Check that these normal distributions are a decent way to do this #######
 qqp(ranef(logLMAvar)$Family[,1]) # 179 families

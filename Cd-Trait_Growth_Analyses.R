@@ -497,7 +497,8 @@ spp.plot.traits <- traits.common5 %>% group_by(SP.ID, PLOT_ID) %>% summarise(nsa
                                                                             , mlog.LMA = mean(log.LMA, na.rm=T), mlog.LL = mean(log.LL, na.rm=T), mlog.Narea=mean(log.Narea, na.rm=T), mlog.Nmass=mean(log.Nmass, na.rm=T)
                                                                             , RGR = unique(RGRdom), stGrowth = mean(stGrowthdom, na.rm=T)
                                                                             , RGR90 = unique(RGRdom90), stGrowth90 = mean(stGrowthdom90, na.rm=T)
-                                                                            , climPC1 = unique(climPC1), climPC2 = unique(climPC2), climPC3=unique(climPC3), soil_N = unique(soil_N), soil_pH = unique(soil_pH),ASA=unique(ASA) )
+                                                                            , climPC1 = unique(climPC1), climPC2 = unique(climPC2), climPC3=unique(climPC3), soil_N = unique(soil_N), soil_pH = unique(soil_pH),ASA=unique(ASA)
+                                                                            , NPP = unique(AG_TGROWTH), Biomass = unique(AG_TBIO), LeafFrac = unique(LeafFrac), LAI = unique(LAI_O), Height = unique(HEIGHTC_m))
 # Note: I used LMA_PSA in other trait analysis in TaxonomicAnalysis. So I've switched to it here
 # Second Note: from here on out RGR is only of dominant spp because I used RGRdom, which was only calculated for things
   # trait measurements of the FOREST_TYPE species that also made up >50% of the stand Basal Area.
@@ -508,10 +509,10 @@ spp.plot.traits <- traits.common5 %>% group_by(SP.ID, PLOT_ID) %>% summarise(nsa
 ##### 50% dominance threshold
 # let's just pull out the common dominant species in an easy to name df
 goodspp <- spp.plot.traits %>% filter(RGR>0) %>% group_by(SP.ID) %>% summarise(nplots= length(unique(PLOT_ID)))
-  # remove species with fewer than 3 plots
+# remove species with fewer than 3 plots
 plotavs <- spp.plot.traits%>% subset(SP.ID %in% goodspp$SP.ID[which(goodspp$nplots>2)] & RGR>0)
 plotavs$SP.ID <- factor(plotavs$SP.ID)
-  # final sample size.
+# final sample size.
 # ABICON ABIGRA ABIPRO JUNOCC PINCON PINJEF PINPON PSEMEN TSUHET 
 # 16     12      3      6      6      7     36     60      5 
 
@@ -522,8 +523,8 @@ levels(plotavs$SP.ID) <- list(PSEMEN="PSEMEN", PINPON="PINPON",ABICON="ABICON",A
 #### 90% dominance threshold
 # let's just pull out the common dominant species in an easy to name df
 goodspp90 <- spp.plot.traits %>% filter(RGR90>0) %>% group_by(SP.ID) %>% summarise(nplots= length(unique(PLOT_ID)))
-# remove species with fewer than 3 plots
-plotavs90 <- spp.plot.traits %>% subset(SP.ID %in% goodspp90$SP.ID[which(goodspp90$nplots>2)] & RGR90>0)
+# remove species with fewer than 3 plots, as of 06.22.17 bumped up to 5 plots
+plotavs90 <- spp.plot.traits %>% subset(SP.ID %in% goodspp90$SP.ID[which(goodspp90$nplots>5)] & RGR90>0)
 plotavs90$SP.ID <- factor(plotavs90$SP.ID)
 # final sample size.
   # if dominance >80% stand BA
@@ -538,7 +539,7 @@ plotavs90$SP.ID <- factor(plotavs90$SP.ID)
   #--> Don't actually lose that much from 85% to 90%, and 90% sounds like a pretty strict cuttoff
 
 # just to make it look better, I'm going to move the common species to the front of the queue
-levels(plotavs90$SP.ID) <- list(PSEMEN="PSEMEN", PINPON="PINPON",ABICON="ABICON", JUNOCC="JUNOCC",PINCON="PINCON",PINJEF="PINJEF", ABIPRO='ABIPRO')
+levels(plotavs90$SP.ID) <- list(PSEMEN="PSEMEN", PINPON="PINPON",ABICON="ABICON", JUNOCC="JUNOCC",PINCON="PINCON")#,PINJEF="PINJEF", ABIPRO='ABIPRO')
 
 
 #### Analyses with 50% dominance ########################################
@@ -766,74 +767,84 @@ mtext("log(Nmass)", side=1, line=2.5, cex=1.1)
 
 ### significant relationship between mlog(RGR) and mlog LL
 # haven't rerun logs since updated plotavs909
-modLLvRGR <- lmer(RGR~mlog.LL + (mlog.LL|SP.ID), plotavs90)
-modLLvRGRnull <- lmer(RGR~1 + (mlog.LL|SP.ID), plotavs90)
-anova(modLLvRGRnull, modLLvRGR) #p= 0.03119 / log = 0.002148   
-r.squaredGLMM(modLLvRGR) # marginal R2= 0.266, conditional = 0.528
+options(na.action= na.omit)
+modLLvRGR <- lmer(log(RGR)~mlog.LL + (mlog.LL|SP.ID), plotavs90)
+modLLvRGRnull <- lmer(log(RGR)~1 + (mlog.LL|SP.ID), plotavs90)
+anova(modLLvRGRnull, modLLvRGR) #p= 0.09138 / log = 0.0124   
+r.squaredGLMM(modLLvRGR) # marginal R2= 0.298, conditional = 0.390 with logged RGR
 # using an exponential link but a gaussian error distribution
 # modLLvRGR <- glmer(RGR~scale(mlog.LL) + (scale(mlog.LL)|SP.ID), plotavs90,family=(gaussian(link='log')))
 # modLLvRGRnull <- glmer(RGR~1 + (mlog.LL|SP.ID), plotavs90,family=(gaussian(link='log')))
 # anova(modLLvRGRnull, modLLvRGR) # 0.081     
 
 
-modLMAvRGR <- lmer(RGR~mlog.LMA + (mlog.LMA|SP.ID), plotavs90, REML=F)
-modLMAvRGRnull <- lmer(RGR~1 + (mlog.LMA|SP.ID), plotavs90, REML=F)
-anova(modLMAvRGRnull, modLMAvRGR) #p=0.839/ log = 0.5131    
+modLMAvRGR <- lmer(log(RGR)~mlog.LMA + (mlog.LMA|SP.ID), plotavs90, REML=F)
+modLMAvRGRnull <- lmer(log(RGR)~1 + (mlog.LMA|SP.ID), plotavs90, REML=F)
+anova(modLMAvRGRnull, modLMAvRGR) #p=0.2616/ log = 0.098    
+r.squaredGLMM(modLMAvRGR) #m 0.1095632 c 0.1375287 
 
-modNareavRGR <- lmer((RGR)~mlog.Narea + (mlog.Narea|SP.ID), plotavs90, REML=F)
-modNareavRGRnull <-lmer((RGR)~1 + (scale(mlog.Narea)|SP.ID), plotavs90, REML=F)
-anova(modNareavRGRnull, modNareavRGR) #p=0.2718   / log=0.3111   
+modNareavRGR <- lmer(log(RGR)~mlog.Narea + (mlog.Narea|SP.ID), plotavs90, REML=F)
+modNareavRGRnull <-lmer(log(RGR)~1 + (scale(mlog.Narea)|SP.ID), plotavs90, REML=F)
+anova(modNareavRGRnull, modNareavRGR) #p=0.6595   / log = 0.6838   
 
-modNmassvRGR <- lmer((RGR)~mlog.Nmass + (mlog.Nmass|SP.ID), plotavs90, REML=F)
-modNmassvRGRnull <-lmer((RGR)~1 + (scale(mlog.Nmass)|SP.ID), plotavs90, REML=F)
-anova(modNmassvRGRnull, modNmassvRGR) #p=0.08658   / log=0.06566  
-r.squaredGLMM(modNmassvRGR) # marginal R2=0.031, conditional = 0.457
+modNmassvRGR <- lmer(log(RGR)~mlog.Nmass + (mlog.Nmass|SP.ID), plotavs90, REML=F)
+modNmassvRGRnull <-lmer(log(RGR)~1 + (scale(mlog.Nmass)|SP.ID), plotavs90, REML=F)
+anova(modNmassvRGRnull, modNmassvRGR) #p=0.1278   / log=0.0351  
+r.squaredGLMM(modNmassvRGR) # marginal R2=0.09963567, conditional = 0.21170685
 
 
 ## with different biomass...
-modLLvGrowth <- lmer(stGrowth~mlog.LL + (mlog.LL|SP.ID), plotavs90, REML=F)
-modLLvGrowthnull <- lmer(stGrowth~1 + (mlog.LL|SP.ID), plotavs90, REML=F)
+modLLvGrowth <- lmer(stGrowth~mlog.LL + (mlog.LL|SP.ID), plotavs90[-which(plotavs90$SP.ID %in% c("PINJEF","ABIPRO")),], REML=F)
+modLLvGrowthnull <- lmer(stGrowth~1 + (mlog.LL|SP.ID), plotavs90[-which(plotavs90$SP.ID %in% c("PINJEF","ABIPRO")),], REML=F)
 anova(modLLvGrowthnull, modLLvGrowth) # p=0.17     
 
-modLMAvGrowth <- lmer(stGrowth~mlog.LMA + (mlog.LMA|SP.ID), plotavs90, REML=F)
-modLMAvGrowthnull <- lmer(stGrowth~1 + (mlog.LMA|SP.ID), plotavs90, REML=F)
+modLMAvGrowth <- lmer(stGrowth~mlog.LMA + (mlog.LMA|SP.ID), plotavs90[-which(plotavs90$SP.ID %in% c("PINJEF","ABIPRO")),], REML=F)
+modLMAvGrowthnull <- lmer(stGrowth~1 + (mlog.LMA|SP.ID), plotavs90[-which(plotavs90$SP.ID %in% c("PINJEF","ABIPRO")),], REML=F)
 anova(modLMAvGrowthnull, modLMAvGrowth) #p=0.217  
 
-modNareavGrowth <- lmer(stGrowth~mlog.Narea + (mlog.Narea|SP.ID), plotavs90, REML=F)
-modNareavGrowthnull <-lmer(stGrowth~1 + (mlog.Narea|SP.ID), plotavs90, REML=F)
+modNareavGrowth <- lmer(stGrowth~mlog.Narea + (mlog.Narea|SP.ID), plotavs90[-which(plotavs90$SP.ID %in% c("PINJEF","ABIPRO")),], REML=F)
+modNareavGrowthnull <-lmer(stGrowth~1 + (mlog.Narea|SP.ID), plotavs90[-which(plotavs90$SP.ID %in% c("PINJEF","ABIPRO")),], REML=F)
 anova(modNareavGrowthnull, modNareavGrowth) #p=0.718
 
-modNmassvGrowth <- lmer(stGrowth~mlog.Nmass + (mlog.Nmass|SP.ID), plotavs90, REML=F)
-modNmassvGrowthnull <-lmer(stGrowth~1 + (mlog.Nmass|SP.ID), plotavs90, REML=F)
+modNmassvGrowth <- lmer(stGrowth~mlog.Nmass + (mlog.Nmass|SP.ID), plotavs90[-which(plotavs90$SP.ID %in% c("PINJEF","ABIPRO")),], REML=F)
+modNmassvGrowthnull <-lmer(stGrowth~1 + (mlog.Nmass|SP.ID), plotavs90[-which(plotavs90$SP.ID %in% c("PINJEF","ABIPRO")),], REML=F)
 anova(modNmassvGrowthnull, modNmassvGrowth) #p=0.20 
 
 
 ### Test whether traits or env better predict RGR ###
   # make a dataset without any NAs for model selection
-tmplotavs90 <- plotavs90[with(plotavs90, which(!is.na(mlog.Nmass) & !is.na(mlog.Narea) & !is.na(mlog.LL) & !is.na(mlog.LMA) & !is.na(soil_N) & !is.na(ASA))),]
-traitsmod <- lmer(RGR ~ mlog.Nmass + mlog.LL + mlog.LMA + mlog.Narea + (1|SP.ID), tmplotavs90)
-r.squaredGLMM(traitsmod) # R2m = .4476, R2c = 0.5619
+tmplotavs90 <- plotavs90 %>% filter(complete.cases(mlog.Nmass, mlog.Narea, mlog.LL, mlog.LMA, soil_N, ASA))#[with(plotavs90, which(!is.na(mlog.Nmass) & !is.na(mlog.Narea) & !is.na(mlog.LL) & !is.na(mlog.LMA) & !is.na(soil_N) & !is.na(ASA) & which(plotavs90$SP.ID %in% c("PINJEF","ABIPRO")),])),]
+traitsmod <- lmer(RGR ~  mlog.LL + mlog.LMA + mlog.Nmass + (1|SP.ID), tmplotavs90) # note: mlog.Narea is a linear combo of LMA and Nmass, so it actually gets dropped no matter what
+r.squaredGLMM(traitsmod) # R2m = .404, R2c = 0.484
 enviromod <- lmer(RGR ~ climPC1 + climPC2 + soil_N + log(ASA) + (1|SP.ID), tmplotavs90)
-r.squaredGLMM(enviromod) #R2m =0.7425527, R2c= 0.7425527
+r.squaredGLMM(enviromod) #R2m =0.737, R2c= 0.743
 
 # things are even worse with stGrowth
 traitsmod <- lmer(stGrowth ~ mlog.Nmass + mlog.LL + mlog.LMA + mlog.Narea + (1|SP.ID), tmplotavs90)
-# R2m = 0.197
+# R2m = 0.169
 enviromod <- lmer(stGrowth ~ climPC1 + climPC2 + soil_N + log(ASA) + (1|SP.ID), tmplotavs90)
-# R2m = 0.426
+# R2m = 0.538
 
 traitsmod <- lmer(log(RGR) ~ mlog.Nmass + mlog.LL + mlog.LMA + mlog.Narea + (1|SP.ID), tmplotavs90)
 enviromod <- lmer(log(RGR) ~ climPC1 + climPC2 + soil_N + log(ASA) + (1|SP.ID), tmplotavs90)
-r.squaredGLMM(traitsmod) # raw R2m = .4476, loged r2m=0.47667
-r.squaredGLMM(enviromod) # raw R2m = 0.7425527, logged R2m =0.7814328
+r.squaredGLMM(traitsmod) # raw R2m = .404, loged r2m=0.422
+r.squaredGLMM(enviromod) # raw R2m = 0.7425527, logged R2m =0.782
   
+
+
+
+r.squaredGLMM(lmer(log(RGR)~log(ASA) + log(LeafFrac) + (1|SP.ID), tmplotavs90[-which(tmplotavs90$PLOT_ID %in% c(43,55)),]))
+r.squaredGLMM(lmer(log(RGR)~log(LeafFrac) + (1|SP.ID), tmplotavs90[-which(tmplotavs90$PLOT_ID %in% c(43,55)),]))
+r.squaredGLMM(lmer(log(RGR)~LAI + (1|SP.ID), tmplotavs90))
+r.squaredGLMM(lmer(log(RGR)~I(NPP * LeafFrac/mLMA) + (1|SP.ID), tmplotavs90))
+r.squaredGLMM(lmer(log(RGR)~log(ASA) + log(Height) + (1|SP.ID), tmplotavs90))
 
 
 ####### Figure 6: reploted with traits.mono and biost_growth instead of RGR.
 # for 6 panel figure without Nmass, but with rGR top row and biostGRWOTH bottom
-quartz(width=7.1, height=6) # Eco Let width is 173mm, 110mm or 82mm
+quartz(width=6.8, height=6) # Eco Let width is 173mm, 110mm or 82mm
 #pdf(file = "Traits-v-Growth_v2.pdf",width = 7.1, height=6)
-par(mar=c(2.5,2,1.2,1), oma=c(2,2,0,0),mfrow=c(2,4), cex=1.1,mgp=c(2.5,1,0))
+par(mar=c(0,0,0,0), oma=c(4.5,4,1.2,1),mfrow=c(2,4), cex=1.1,mgp=c(2.5,1,0))
 
 # for 4 panel figure with only RGR, but Nmass added
 quartz(width=4.3, height=5)
@@ -847,17 +858,17 @@ f1LL <- fitted(modLLvRGR)
 I <- order(plotavs90$mlog.LL[-which(is.na(plotavs90$RGR) | is.na(plotavs90$mlog.LL))])
 LLs <- sort(plotavs90$mlog.LL[-which(is.na(plotavs90$RGR) | is.na(plotavs90$mlog.LL))])
 spid <- plotavs90$SP.ID[-which(is.na(plotavs90$RGR) | is.na(plotavs90$mlog.LL))][I]
-plot(RGR~mlog.LL, plotavs90, col=SP.ID, pch=16, cex=.6, xlab="log(Leaf Lifespan)")
+plot(log(RGR)~mlog.LL, plotavs90, col=SP.ID, pch=16, cex=.6,xaxt="n", xlab="") #xlab="log(Leaf Lifespan)")
 mtext("Relative Growth Rate", side=2, line=2, cex=1.1)
-mtext("log(Leaf Life)", side=1, line=1.5, cex=1.1)
+#mtext("log(Leaf Life)", side=1, line=1.5, cex=1.1)
 
 for(i in levels(spid)){
   lines(LLs[which(spid==i)], f1LL[I][which(spid==i)],  col=spid[which(spid==i)], lwd=2)
 }
 lines(LLs, f0LL[I], lwd=4, lty=1)
-mtext(text = paste0("p=",round(anova(modLLvRGR, modLLvRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .8, line=-1, font=1 )
+mtext(text = paste0("p=",round(anova(modLLvRGR, modLLvRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .9, line=-1, font=1 )
 r2tmp <- round(r.squaredGLMM(modLLvRGR)[1], 2)
-mtext(text = bquote(~R[m]^2==.(r2tmp)), side=3, adj = .8, line=-2.2 )
+mtext(text = bquote(~R[m]^2==.(r2tmp)), side=3, adj = .9, line=-2.2 )
 mtext("a)", side=3, adj=0)
 
 ### plotting LMA v RGR
@@ -867,33 +878,15 @@ f1lma <- fitted(modLMAvRGR)
 I <- order(plotavs90$mlog.LMA)
 LMAs <- sort(plotavs90$mlog.LMA)
 spid <- plotavs90$SP.ID[I]
-plot(RGR~mlog.LMA, plotavs90, col=SP.ID, pch=16, cex=.6, xlab="log(LMA)")#, xlim=c(2,2.6))#log(LMA)")
-mtext("log(LMA)", side=1, line=1.5, cex=1.1)
+plot(log(RGR)~mlog.LMA, plotavs90, col=SP.ID, pch=16, cex=5*LeafFrac,xaxt="n", yaxt='n') #xlab="log(LMA)")#, xlim=c(2,2.6))#log(LMA)")
+#mtext("log(LMA)", side=1, line=1.5, cex=1.1)
 
 for(i in levels(spid)){
   lines(LMAs[which(spid==i)], f1lma[I][which(spid==i)],  col=spid[which(spid==i)], lwd=2)
 }
-lines(c(min(LMAs), max(LMAs)), c(min(f0lma), max(f0lma)), lwd=4, lty=3)
+lines(c(min(LMAs), max(LMAs)), c(max(f0lma), min(f0lma)), lwd=4, lty=3)
 mtext(text = paste0("p=",round(anova(modLMAvRGR, modLMAvRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .05, line=-1 )
 mtext("b)", side=3, adj=0)
-
-### plotting Narea v RGR
-f0Narea <- predict(modNareavRGR, re.form=NA)
-f1Narea <- fitted(modNareavRGR)
-# sort lma values so lines draw right
-I <- order(plotavs90$mlog.Narea[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))])
-Nareas <- sort(plotavs90$mlog.Narea[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))])
-spid <- plotavs90$SP.ID[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))][I]
-plot(RGR~mlog.Narea, plotavs90, col=SP.ID, pch=16, cex=.6, xlab="")#log(Narea)")
-mtext("Relative Growth Rate", side=2, line=2, cex=1.1)
-mtext("log(Narea)", side=1, line=1.5, cex=1.1)
-
-for(i in levels(spid)){
-  lines(Nareas[which(spid==i)], f1Narea[I][which(spid==i)],  col=spid[which(spid==i)], lwd=2)
-}
-lines(Nareas, f0Narea[I], lwd=4, lty=3)
-mtext(text = paste0("p=",round(anova(modNareavRGR, modNareavRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .05, line=-1 )
-mtext("c)", side=3, adj=0)
 
 ### plotting Nmass v RGR
 f0Nmass <- predict(modNmassvRGR, re.form=NA)
@@ -902,8 +895,8 @@ f1Nmass <- fitted(modNmassvRGR)
 I <- order(plotavs90$mlog.Nmass[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Nmass))])
 Nmasss <- sort(plotavs90$mlog.Nmass[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Nmass))])
 spid <- plotavs90$SP.ID[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Nmass))][I]
-plot(RGR~mlog.Nmass, plotavs90, col=SP.ID, pch=16, cex=.6, xlab="", ylim=c(0,.37), xlim=c(-.22,.25))#log(Nmass)")
-mtext("log(Nmass)", side=1, line=1.5, cex=1.1)
+plot(log(RGR)~mlog.Nmass, plotavs90, col=SP.ID, pch=16, cex=.6, xlab="", xlim=c(-.22,.25), xaxt="n", yaxt="n")#log(Nmass)")
+#mtext("log(Nmass)", side=1, line=1.5, cex=1.1)
 
 for(i in levels(spid)){
   lines(Nmasss[which(spid==i)], f1Nmass[I][which(spid==i)],  col=spid[which(spid==i)], lwd=2)
@@ -912,8 +905,211 @@ lines(Nmasss, f0Nmass[I], lwd=4, lty=1)
 mtext(text = paste0("p=",round(anova(modNmassvRGR, modNmassvRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .01, line=-1 )
 r2tmp <- round(r.squaredGLMM(modNmassvRGR)[1], 2)
 mtext(text = bquote(~R[m]^2==.(r2tmp)), side=3, adj = .01, line=-2.2 )
-mtext("d)", side=3, adj=0)
+mtext("c)", side=3, adj=0)
 # 
+
+### plotting Narea v RGR
+f0Narea <- predict(modNareavRGR, re.form=NA)
+f1Narea <- fitted(modNareavRGR)
+# sort lma values so lines draw right
+I <- order(plotavs90$mlog.Narea[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))])
+Nareas <- sort(plotavs90$mlog.Narea[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))])
+spid <- plotavs90$SP.ID[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))][I]
+plot(log(RGR)~mlog.Narea, plotavs90, col=SP.ID, pch=16, cex=.6, xlab="", xaxt="n", yaxt="n")#log(Narea)")
+#mtext("Relative Growth Rate", side=2, line=2, cex=1.1)
+#mtext("log(Narea)", side=1, line=1.5, cex=1.1)
+
+for(i in levels(spid)){
+  lines(Nareas[which(spid==i)], f1Narea[I][which(spid==i)],  col=spid[which(spid==i)], lwd=2)
+}
+lines(Nareas, f0Narea[I], lwd=4, lty=3)
+mtext(text = paste0("p=",round(anova(modNareavRGR, modNareavRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .05, line=-1 )
+mtext("d)", side=3, adj=0)
+
+
+
+
+#______________________________________
+###### 4 panel 2x2 for NPS poster #######
+#______________________________________
+quartz(width=4.3, height=5)
+#pdf(file="Traits-v-Growth-90Dom_v1_RGRonly.pdf", width=4.3, height=5)
+par(mar=c(2.5,0,1.2,0), oma=c(2,4,1,1),mfrow=c(2,2), cex=1,mgp=c(2.5,.5,0))
+
+mypal <- brewer.pal(n=9, "Set1")
+palette(mypal)
+
+ylims <- c(-5.5,0)
+cex.text <- .8
+cex.pts <- .9
+#### top three panels: RGR
+f0LL <- predict(modLLvRGR, re.form=NA)
+f1LL <- fitted(modLLvRGR)
+# sort lma values so lines draw right
+I <- order(plotavs90$mlog.LL[-which(is.na(plotavs90$RGR) | is.na(plotavs90$mlog.LL))])
+LLs <- sort(plotavs90$mlog.LL[-which(is.na(plotavs90$RGR) | is.na(plotavs90$mlog.LL))])
+spid <- plotavs90$SP.ID[-which(is.na(plotavs90$RGR) | is.na(plotavs90$mlog.LL))][I]
+plot(log(RGR)~mlog.LL, plotavs90, col=SP.ID, pch=16, cex=cex.pts, xlab="", ylim=ylims) #xlab="log(Leaf Lifespan)")
+#mtext("log(Relative Growth Rate)", side=2, line=2, cex=1.1)
+mtext("log(Leaf Life)", side=1, line=1.5, cex=1.1)
+#lines(LLs, f0LL[I], lwd=4, lty=1)
+for(i in levels(spid)){
+  lines(LLs[which(spid==i)], f1LL[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3)
+}
+mtext(text = paste0("p=",round(anova(modLLvRGR, modLLvRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .9, line=-1, font=1, cex=cex.text )
+r2tmp <- round(r.squaredGLMM(modLLvRGR)[1], 2)
+mtext(text = bquote(~R[m]^2==.(r2tmp)), side=3, adj = .9, line=-2.2 ,cex=cex.text)
+mtext("a)", side=3, adj=0)
+
+### plotting LMA v RGR
+f0lma <- predict(modLMAvRGR, re.form=NA)
+f1lma <- fitted(modLMAvRGR)
+# sort lma values so lines draw right # no NA values in LMA
+I <- order(plotavs90$mlog.LMA)
+LMAs <- sort(plotavs90$mlog.LMA)
+spid <- plotavs90$SP.ID[I]
+plot(log(RGR)~mlog.LMA, plotavs90, col=SP.ID, pch=16, cex=cex.pts, yaxt='n',ylim=ylims) #xlab="log(LMA)")#, xlim=c(2,2.6))#log(LMA)")
+mtext("log(LMA)", side=1, line=1.5, cex=1.1)
+#lines(c(min(LMAs), max(LMAs)), c(max(f0lma), min(f0lma)), lwd=4, lty=3)
+for(i in levels(spid)){
+  lines(LMAs[which(spid==i)], f1lma[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3, lty=2)
+}
+mtext(text = paste0("p=",round(anova(modLMAvRGR, modLMAvRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .05, line=-1 ,cex=cex.text)
+mtext("b)", side=3, adj=0)
+
+### plotting Nmass v RGR
+f0Nmass <- predict(modNmassvRGR, re.form=NA)
+f1Nmass <- fitted(modNmassvRGR)
+# sort lma values so lines draw right
+I <- order(plotavs90$mlog.Nmass[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Nmass))])
+Nmasss <- sort(plotavs90$mlog.Nmass[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Nmass))])
+spid <- plotavs90$SP.ID[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Nmass))][I]
+plot(log(RGR)~mlog.Nmass, plotavs90, col=SP.ID, pch=16, cex=cex.pts, xlab="", xlim=c(-.22,.25),ylim=ylims)#log(Nmass)")
+mtext("log(Nmass)", side=1, line=1.5, cex=1.1)
+#lines(Nmasss, f0Nmass[I], lwd=4, lty=1)
+mtext("log(Relative Growth Rate)", side=2, line=2, cex=1.1, at=1)
+
+for(i in levels(spid)){
+  lines(Nmasss[which(spid==i)], f1Nmass[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3)
+}
+mtext(text = paste0("p=",round(anova(modNmassvRGR, modNmassvRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .01, line=-1 ,cex=cex.text)
+r2tmp <- round(r.squaredGLMM(modNmassvRGR)[1], 2)
+mtext(text = bquote(~R[m]^2==.(r2tmp)), side=3, adj = .01, line=-2.2 ,cex=cex.text)
+mtext("c)", side=3, adj=0)
+# 
+
+### plotting Narea v RGR
+f0Narea <- predict(modNareavRGR, re.form=NA)
+f1Narea <- fitted(modNareavRGR)
+# sort lma values so lines draw right
+I <- order(plotavs90$mlog.Narea[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))])
+Nareas <- sort(plotavs90$mlog.Narea[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))])
+spid <- plotavs90$SP.ID[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))][I]
+plot(log(RGR)~mlog.Narea, plotavs90, col=SP.ID, pch=16, cex=cex.pts, xlab="", yaxt="n",ylim=ylims)#log(Narea)")
+#mtext("Relative Growth Rate", side=2, line=2, cex=1.1)
+mtext("log(Narea)", side=1, line=1.5, cex=1.1)
+#lines(Nareas, f0Narea[I], lwd=4, lty=3)
+for(i in levels(spid)){
+  lines(Nareas[which(spid==i)], f1Narea[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3, lty=2)
+}
+
+mtext(text = paste0("p=",round(anova(modNareavRGR, modNareavRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .05, line=-1 ,cex=cex.text)
+mtext("d)", side=3, adj=0)
+#mtext("w/in spp", side=4, line=0)
+
+
+
+
+
+
+#______________________________________
+###### 4 panel 1x4 for NPS poster #######
+#______________________________________
+quartz(width=6.8, height=2.75)
+#pdf(file="Traits-v-Growth-90Dom_v1_RGRonly.pdf", width=4.3, height=5)
+par(mar=c(2.5,0,1.2,0), oma=c(2,4,1,1),mfrow=c(1,4), cex=1,mgp=c(2.5,.5,0))
+
+mypal <- brewer.pal(n=9, "Set1")
+palette(mypal)
+
+ylims <- c(-5.5,0)
+cex.text <- .8
+cex.pts <- .9
+#### top three panels: RGR
+f0LL <- predict(modLLvRGR, re.form=NA)
+f1LL <- fitted(modLLvRGR)
+# sort lma values so lines draw right
+I <- order(plotavs90$mlog.LL[-which(is.na(plotavs90$RGR) | is.na(plotavs90$mlog.LL))])
+LLs <- sort(plotavs90$mlog.LL[-which(is.na(plotavs90$RGR) | is.na(plotavs90$mlog.LL))])
+spid <- plotavs90$SP.ID[-which(is.na(plotavs90$RGR) | is.na(plotavs90$mlog.LL))][I]
+plot(log(RGR)~mlog.LL, plotavs90, col=SP.ID, pch=16, cex=cex.pts, xlab="", ylim=ylims) #xlab="log(Leaf Lifespan)")
+mtext("log(Relative Growth Rate)", side=2, line=2, cex=1.1)
+mtext("log(Leaf Life)", side=1, line=1.5, cex=1.1)
+#lines(LLs, f0LL[I], lwd=4, lty=1)
+for(i in levels(spid)){
+  lines(LLs[which(spid==i)], f1LL[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3)
+}
+mtext(text = paste0("p=",round(anova(modLLvRGR, modLLvRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .9, line=-1, font=1, cex=cex.text )
+r2tmp <- round(r.squaredGLMM(modLLvRGR)[1], 2)
+mtext(text = bquote(~R[m]^2==.(r2tmp)), side=3, adj = .9, line=-2.2 ,cex=cex.text)
+mtext("a)", side=3, adj=0)
+
+### plotting LMA v RGR
+f0lma <- predict(modLMAvRGR, re.form=NA)
+f1lma <- fitted(modLMAvRGR)
+# sort lma values so lines draw right # no NA values in LMA
+I <- order(plotavs90$mlog.LMA)
+LMAs <- sort(plotavs90$mlog.LMA)
+spid <- plotavs90$SP.ID[I]
+plot(log(RGR)~mlog.LMA, plotavs90, col=SP.ID, pch=16, cex=cex.pts, yaxt='n',ylim=ylims) #xlab="log(LMA)")#, xlim=c(2,2.6))#log(LMA)")
+mtext("log(LMA)", side=1, line=1.5, cex=1.1)
+#lines(c(min(LMAs), max(LMAs)), c(max(f0lma), min(f0lma)), lwd=4, lty=3)
+for(i in levels(spid)){
+  lines(LMAs[which(spid==i)], f1lma[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3, lty=2)
+}
+mtext(text = paste0("p=",round(anova(modLMAvRGR, modLMAvRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .05, line=-1 ,cex=cex.text)
+mtext("b)", side=3, adj=0)
+
+### plotting Nmass v RGR
+f0Nmass <- predict(modNmassvRGR, re.form=NA)
+f1Nmass <- fitted(modNmassvRGR)
+# sort lma values so lines draw right
+I <- order(plotavs90$mlog.Nmass[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Nmass))])
+Nmasss <- sort(plotavs90$mlog.Nmass[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Nmass))])
+spid <- plotavs90$SP.ID[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Nmass))][I]
+plot(log(RGR)~mlog.Nmass, plotavs90, col=SP.ID, pch=16, cex=cex.pts, xlab="", yaxt='n', xlim=c(-.22,.25),ylim=ylims)#log(Nmass)")
+mtext("log(Nmass)", side=1, line=1.5, cex=1.1)
+#lines(Nmasss, f0Nmass[I], lwd=4, lty=1)
+# mtext("log(Relative Growth Rate)", side=2, line=2, cex=1.1, at=1)
+
+for(i in levels(spid)){
+  lines(Nmasss[which(spid==i)], f1Nmass[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3)
+}
+mtext(text = paste0("p=",round(anova(modNmassvRGR, modNmassvRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .01, line=-1 ,cex=cex.text)
+r2tmp <- round(r.squaredGLMM(modNmassvRGR)[1], 2)
+mtext(text = bquote(~R[m]^2==.(r2tmp)), side=3, adj = .01, line=-2.2 ,cex=cex.text)
+mtext("c)", side=3, adj=0)
+# 
+
+### plotting Narea v RGR
+f0Narea <- predict(modNareavRGR, re.form=NA)
+f1Narea <- fitted(modNareavRGR)
+# sort lma values so lines draw right
+I <- order(plotavs90$mlog.Narea[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))])
+Nareas <- sort(plotavs90$mlog.Narea[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))])
+spid <- plotavs90$SP.ID[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))][I]
+plot(log(RGR)~mlog.Narea, plotavs90, col=SP.ID, pch=16, cex=cex.pts, xlab="", yaxt="n",ylim=ylims)#log(Narea)")
+#mtext("Relative Growth Rate", side=2, line=2, cex=1.1)
+mtext("log(Narea)", side=1, line=1.5, cex=1.1)
+#lines(Nareas, f0Narea[I], lwd=4, lty=3)
+for(i in levels(spid)){
+  lines(Nareas[which(spid==i)], f1Narea[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3, lty=2)
+}
+
+mtext(text = paste0("p=",round(anova(modNareavRGR, modNareavRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .05, line=-1 ,cex=cex.text)
+mtext("d)", side=3, adj=0)
+#mtext("w/in spp", side=4, line=0)
+
 
 
 
@@ -997,7 +1193,46 @@ mtext("log(Nmass)", side=1, line=1.5, cex=1.1)
 
 
 
+############### Something Allometric #############
+
+# strong positive relationship between RGR and Leaf Fraction
+plot(log(RGR)~log(LeafFrac), biomass, col=SPP_O1_ABBREV, pch=16,cex=(ASA+200)/200)
+plot(log(RGR)~log(ASA), biomass, col=SPP_O1_ABBREV, pch=16,cex=(ASA+200)/200)
+
+plot(log(RGR)~log(I(LeafFrac*mSLA)), plotavs90, col=SP.ID, pch=16, cex=mSLA/50)
+  # if you multiply LeafFrac*mSLA, things kinda linearize and seperate, but look pretty similar to just LeafFrac?
+plot((RGR)~(LAI), plotavs90, col=SP.ID, pch=16, cex=mSLA/50)
+  # NO relationship between RGR and LAI (or Logged values)!!!
+plot(log(LeafFrac)~log(ASA), plotavs90,col=SP.ID, pch=16, cex=mSLA/50)
+legend("bottomleft", legend=levels(plotavs90$SP.ID), col=mypal[1:5], pch=16)
+# Strong negative relationship between log(LeafFrac) and log(ASA), UP UNTIL ABOUT ASA=90 YRS
+  # then things get messy in older stands and PINCON, ABICON. (PSEMEN and PINPON are pretty dam good)
+  # also, stands 43, 55 are bad again.
+plot(LAI~LeafFrac, plotavs90,col=SP.ID, pch=16, cex=mSLA/50)
+# not much pattern (or a hump shaped pattern) between LAI and LeafFrac
+
+plot(LAI~ASA, plotavs90,col=SP.ID, pch=16, cex=mSLA/50)
+# No relationship between LAI and ASA
+
+plot(NPP~LeafFrac, plotavs90, col=SP.ID, pch=16, cex=(ASA+200)/200)
+plot(NPP~ASA, plotavs90, col=SP.ID, pch=16, cex=(ASA+200)/200)
+plot(NPP~LAI, plotavs90, col=SP.ID, pch=16, cex=(ASA+200)/200)
+
+plot((AG_PROD_TREE_TOTAL_AS_CARBON)~LeafFrac , biomass, col=SPP_O1_ABBREV, pch=16,cex=(ASA+200)/200)
+plot((AG_PROD_TREE_TOTAL_AS_CARBON)~ASA , biomass, col=SPP_O1_ABBREV, pch=16,cex=(ASA+200)/200)
+plot((AG_PROD_TREE_TOTAL_AS_CARBON)~LeafAlloc , biomass, col=SPP_O1_ABBREV, pch=16,cex=(ASA+200)/200)
+plot((AG_PROD_TREE_TOTAL_AS_CARBON)~LAI_O , biomass, col=SPP_O1_ABBREV, pch=16,cex=(ASA+200)/200)
 
 
+## Note, the CV of SLA is .22 and LeafFrac is .96. so It looks like, within-species, LeafFrac is just WAY more variable.
 
+plot(log(LeafFrac)~log(ASA), plotavs90, col=SP.ID, pch=16)
+  #strong negative relationship between log(ASA) and log(LeafFrac), leaf frac decreases in older stands, 
+  # though spp other than PSEMEN and PINPON don't really show this as much
 
+plot(log(LeafFrac)~log(ASA), biomass, col=SPP_O1_ABBREV, pch=16)
+  # This relationship breaks down as you get more old, mixed species stands
+
+plot(log(RGR)~log(ASA), biomass, col=SPP_O1_ABBREV, pch=16)
+plot(log(RGR)~log(LeafFrac), biomass, col=SPP_O1_ABBREV, pch=16)
+  

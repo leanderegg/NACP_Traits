@@ -43,16 +43,6 @@ plot.MAR <- function(xvar, yvar, data, method="SMA", linecol, lwd=1) {
 # 6 panel figure with
 # a-d: boxplots of MA slope and Rho for NmassvLMA and NmassvLL
 # e&f: funnel plots 
-meancis <- all.results.cl %>% group_by(Type) %>% summarise(m2.5_LMA.LL = mean(lci_2.5_LMA.LL, na.rm=T), m5_LMA.LL = mean(lci_5_LMA.LL, na.rm=T), m10_LMA.LL = mean(lci_10_LMA.LL, na.rm=T),
-                                                           m97.5_LMA.LL = mean(uci_2.5_LMA.LL, na.rm=T), m95_LMA.LL = mean(uci_5_LMA.LL, na.rm=T), m90_LMA.LL = mean(uci_10_LMA.LL, na.rm=T),
-                                                           m2.5_LMA.N = mean(lci_2.5_LMA.N, na.rm=T), m5_LMA.N = mean(lci_5_LMA.N, na.rm=T), m10_LMA.N = mean(lci_10_LMA.N, na.rm=T),
-                                                           m97.5_LMA.N = mean(uci_2.5_LMA.N, na.rm=T), m95_LMA.N = mean(uci_5_LMA.N, na.rm=T), m90_LMA.N = mean(uci_10_LMA.N, na.rm=T),
-                                                           m2.5_LL.N = mean(lci_2.5_LL.N, na.rm=T), m5_LL.N = mean(lci_5_LL.N, na.rm=T), m10_LL.N = mean(lci_10_LL.N, na.rm=T),
-                                                           m97.5_LL.N = mean(uci_2.5_LL.N, na.rm=T), m95_LL.N = mean(uci_5_LL.N, na.rm=T), m90_LL.N = mean(uci_10_LL.N, na.rm=T),
-                                                           m2.5_LMA.Narea = mean(lci_2.5_LMA.Narea, na.rm=T), m5_LMA.Narea = mean(lci_5_LMA.Narea, na.rm=T), m10_LMA.Narea = mean(lci_10_LMA.Narea, na.rm=T),
-                                                           m97.5_LMA.Narea = mean(uci_2.5_LMA.Narea, na.rm=T), m95_LMA.Narea = mean(uci_5_LMA.Narea, na.rm=T), m90_LMA.Narea = mean(uci_10_LMA.Narea, na.rm=T),
-                                                           m2.5_LL.Narea = mean(lci_2.5_LL.Narea, na.rm=T), m5_LL.Narea = mean(lci_5_LL.Narea, na.rm=T), m10_LL.Narea = mean(lci_10_LL.Narea, na.rm=T),
-                                                           m97.5_LL.Narea = mean(uci_2.5_LL.Narea, na.rm=T), m95_LL.Narea = mean(uci_5_LL.Narea, na.rm=T), m90_LL.Narea = mean(uci_10_LL.Narea, na.rm=T))
 # I think the easiest thing will be to make two quartez: top with boxplots and bottom with funnel
 
 # 
@@ -164,26 +154,7 @@ meancis <- all.results.cl %>% group_by(Type) %>% summarise(m2.5_LMA.LL = mean(lc
 # 
 # 
 # 
-# ##### Lower Panel: funnel plots ............................................................
-# 
-# quartz(width=5.5,height=3)
-# par(mar=c(4,4,0,1), mfrow=c(1,2), mgp=c(2.5,1,0), oma=c(0,0,2,0))
-# palette(mypal[colchoices])
-# plot(Rho_LMA.N~varNmass, all.results.cl, pch=16, col=Type, xlab="Var. in %N", ylab="Rho   (LMA v Nmass)")
-# #mtext( text="Nmass v LMA", side=3, line=0, font=2)
-# abline(h=0, col="grey", lty=2)
-# abline(h=all.results.cl$Rho_LMA.N[which(all.results.cl$Taxo.Unit=="global")])
-# mtext(text = "c)", side = 3, adj=0, line=.2)
-# points(Rho_LMA.N~varNmass, all.results.cl[c(nrow(all.results.cl)-1,nrow(all.results.cl)),], pch=c(24,25), cex=1.4, bg=mypal[colchoices[c(length(colchoices)-1,length(colchoices))]])
-# 
-# plot(Rho_LL.N~varNmass, all.results.cl, pch=16, col=Type, xlab="Var. in %N", ylab="Rho   (LL v Nmass)")
-# abline(h=0, col="grey", lty=2)
-# abline(h=all.results.cl$Rho_LL.N[which(all.results.cl$Taxo.Unit=="global")])
-# legend('topright', legend = levels(all.results.cl$Type), pch=c(16,16,16,24,25), col=c(mypal[colchoices[1:3]], "black","black"), pt.bg= mypal[colchoices], bty ="n", cex=.7)
-# mtext(text = "d)", side = 3, adj=0, line=.2)
-# points(Rho_LL.N~varNmass, all.results.cl[c(nrow(all.results.cl)-1,nrow(all.results.cl)),], pch=c(24,25), cex=1.4, bg=mypal[colchoices[c(length(colchoices)-1,length(colchoices))]])
-# 
-# 
+
 
 
 
@@ -246,8 +217,8 @@ text(y=par()$usr[4]-.2,x=c(4,5), labels=paste0("(",all.results.cl$n_LMA.N[c((nro
 
 
 # scatterplot w/ lines
-par(mar=c(4,4,1.5,1.5))
-plot(log.Nmass~log.LMA, LES, col="grey", pch=16, ylab=expression(paste(log[10],"LMA")), xlab=expression(paste(log[10],N[mass], sep=" ")))
+par(mar=c(4,4,1.5,1.5), cex.lab=1.2, mgp=c(2.5,.7,0))
+plot(log.Nmass~log.LMA, LES, col="grey", pch=16, xlab=expression(paste(log[10],"(LMA)")), ylab=expression(paste(log[10],(N[mass]), sep=" ")))
 tax <- "w.inGen"
 for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.N>5)])){
   plot.MAR(xvar = "log.LMA", yvar = "log.Nmass",data= gen.data[which(gen.data$Genus==i),], linecol = mypal[colchoices[2]])
@@ -317,8 +288,8 @@ points(y=m$estimate,x=4, pch=16, cex=1.3, col="black")
 arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
 
 # scatterplot w/ lines
-par(mar=c(4,4,1.5,1.5))
-plot(log.Nmass~log.LL, LES, col="grey", pch=16, ylab="log(LL)", xlab="log(Nmass)")
+par(mar=c(4,4,1.5,1.5), cex.lab=1.2, mgp=c(2.5,.7,0))
+plot(log.Nmass~log.LL, LES, col="grey", pch=16, xlab=expression(paste(log[10](LL))), ylab=expression(paste(log[10],(N[mass]))))
 tax <- "w.inGen"
 for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LL.N>5)])){
   plot.MAR(xvar = "log.LL", yvar = "log.Nmass",data= gen.data[which(gen.data$Genus==i),], linecol = mypal[colchoices[2]])
@@ -410,7 +381,7 @@ arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
 par(mar=c(4,4,1.5,1.5))
 ## scatterplot
 ####### Plotting the LMA vs Narea scaling in unit rather than log space ######
-plot(log.LL~log.LMA, LES, col="grey", pch=16, ylab="log(LL)", xlab="log(LMA)")
+plot(log.LL~log.LMA, LES, col="grey", pch=16, ylab=expression(paste(log[10](LL))), xlab=expression(paste(log[10](LMA))))
 
 tax <- "w.inGen"
 for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.LL>5)])){
@@ -434,6 +405,13 @@ for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax &
 
 #plot.MAR(xvar="log.LMA", yvar="log.LL", data= LES, linecol = "black", lwd=2)
 mtext(text = "b)", side = 3, adj=0, line=.2)
+
+
+
+
+
+
+
 
 
 
@@ -495,7 +473,7 @@ arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
 par(mar=c(4,4,1.5,1.5))
 ## scatterplot
 ####### Plotting the LMA vs Narea scaling in unit rather than log space ######
-plot(log.Narea~log.LMA, LES, col="grey", pch=16, ylab="log(Narea)", xlab="log(LMA)")
+plot(log.Narea~log.LMA, LES, col="grey", pch=16, ylab=expression(paste(log[10](N[area]))), xlab=expression(paste(log[10](LMA))))
 
 tax <- "w.inGen"
 for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.Narea>5)& all.results.cl$Slope_LMA.Narea>-1])){
@@ -597,6 +575,146 @@ mtext(text = "d)", side = 3, adj=0, line=.2)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+#________________________________________________________________
+###### FIG 6: Growth~Trait relationships ######
+#________________________________________________________________
+
+
+####### Figure 6: reploted with traits.mono and biost_growth instead of RGR.
+# for 6 panel figure without Nmass, but with rGR top row and biostGRWOTH bottom
+quartz(width=6.8, height=4) # Eco Let width is 173mm, 110mm or 82mm
+#pdf(file = "Traits-v-Growth_v2.pdf",width = 7.1, height=6)
+par(mar=c(0,0,0,0), oma=c(3.5,3.5,1.2,2),mfrow=c(2,4), cex=1.1,mgp=c(2.5,.5,0))
+
+ylims <- c(-5.5,0)
+cex.text <- .8
+cex.pts <- .9
+#### top three panels: RGR
+f0LL <- predict(modLLvRGR, re.form=NA)
+f1LL <- fitted(modLLvRGR)
+# sort lma values so lines draw right
+I <- order(plotavs90$mlog.LL[-which(is.na(plotavs90$RGR) | is.na(plotavs90$mlog.LL))])
+LLs <- sort(plotavs90$mlog.LL[-which(is.na(plotavs90$RGR) | is.na(plotavs90$mlog.LL))])
+spid <- plotavs90$SP.ID[-which(is.na(plotavs90$RGR) | is.na(plotavs90$mlog.LL))][I]
+plot(log(RGR)~mlog.LL, plotavs90, col=SP.ID, pch=16, cex=cex.pts,xaxt="n", xlab="", ylim=ylims) #xlab="log(Leaf Lifespan)")
+#mtext("Relative Growth Rate", side=2, line=2, cex=1.1)
+#mtext("log(Leaf Life)", side=1, line=1.5, cex=1.1)
+#lines(LLs, f0LL[I], lwd=4, lty=1)
+for(i in levels(spid)){
+  lines(LLs[which(spid==i)], f1LL[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3)
+}
+mtext(text = paste0("p=",round(anova(modLLvRGR, modLLvRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .9, line=-1, font=1, cex=cex.text )
+r2tmp <- round(r.squaredGLMM(modLLvRGR)[1], 2)
+mtext(text = bquote(~R[m]^2==.(r2tmp)), side=3, adj = .9, line=-2.2 ,cex=cex.text)
+mtext("a)", side=3, adj=0)
+
+### plotting LMA v RGR
+f0lma <- predict(modLMAvRGR, re.form=NA)
+f1lma <- fitted(modLMAvRGR)
+# sort lma values so lines draw right # no NA values in LMA
+I <- order(plotavs90$mlog.LMA)
+LMAs <- sort(plotavs90$mlog.LMA)
+spid <- plotavs90$SP.ID[I]
+plot(log(RGR)~mlog.LMA, plotavs90, col=SP.ID, pch=16, cex=cex.pts,xaxt="n", yaxt='n',ylim=ylims) #xlab="log(LMA)")#, xlim=c(2,2.6))#log(LMA)")
+#mtext("log(LMA)", side=1, line=1.5, cex=1.1)
+#lines(c(min(LMAs), max(LMAs)), c(max(f0lma), min(f0lma)), lwd=4, lty=3)
+for(i in levels(spid)){
+  lines(LMAs[which(spid==i)], f1lma[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3)
+}
+mtext(text = paste0("p=",round(anova(modLMAvRGR, modLMAvRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .05, line=-1 ,cex=cex.text)
+mtext("b)", side=3, adj=0)
+
+### plotting Nmass v RGR
+f0Nmass <- predict(modNmassvRGR, re.form=NA)
+f1Nmass <- fitted(modNmassvRGR)
+# sort lma values so lines draw right
+I <- order(plotavs90$mlog.Nmass[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Nmass))])
+Nmasss <- sort(plotavs90$mlog.Nmass[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Nmass))])
+spid <- plotavs90$SP.ID[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Nmass))][I]
+plot(log(RGR)~mlog.Nmass, plotavs90, col=SP.ID, pch=16, cex=cex.pts, xlab="", xlim=c(-.22,.25), xaxt="n", yaxt="n",ylim=ylims)#log(Nmass)")
+#mtext("log(Nmass)", side=1, line=1.5, cex=1.1)
+#lines(Nmasss, f0Nmass[I], lwd=4, lty=1)
+
+for(i in levels(spid)){
+  lines(Nmasss[which(spid==i)], f1Nmass[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3)
+}
+mtext(text = paste0("p=",round(anova(modNmassvRGR, modNmassvRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .01, line=-1 ,cex=cex.text)
+r2tmp <- round(r.squaredGLMM(modNmassvRGR)[1], 2)
+mtext(text = bquote(~R[m]^2==.(r2tmp)), side=3, adj = .01, line=-2.2 ,cex=cex.text)
+mtext("c)", side=3, adj=0)
+# 
+
+### plotting Narea v RGR
+f0Narea <- predict(modNareavRGR, re.form=NA)
+f1Narea <- fitted(modNareavRGR)
+# sort lma values so lines draw right
+I <- order(plotavs90$mlog.Narea[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))])
+Nareas <- sort(plotavs90$mlog.Narea[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))])
+spid <- plotavs90$SP.ID[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))][I]
+plot(log(RGR)~mlog.Narea, plotavs90, col=SP.ID, pch=16, cex=cex.pts, xlab="", xaxt="n", yaxt="n",ylim=ylims)#log(Narea)")
+#mtext("Relative Growth Rate", side=2, line=2, cex=1.1)
+#mtext("log(Narea)", side=1, line=1.5, cex=1.1)
+#lines(Nareas, f0Narea[I], lwd=4, lty=3)
+for(i in levels(spid)){
+  lines(Nareas[which(spid==i)], f1Narea[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3)
+}
+
+mtext(text = paste0("p=",round(anova(modNareavRGR, modNareavRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .05, line=-1 ,cex=cex.text)
+mtext("d)", side=3, adj=0)
+mtext("w/in spp", side=4, line=0)
+
+###### Community-weighted traits
+
+plot(log(RGR)~log.cw_LLp_if, biomass, pch=16, ylim=ylims, cex=cex.pts)
+abline(lm(log(RGR)~log.cw_LLp_if, biomass), lwd=3)
+mtext(text = paste0("p=", round(anova(LLmod2)$`Pr(>F)`[1],8), ","), side=3, adj=.1, line=-1, cex=cex.text)
+mtext(text = bquote(~R^2==.(round(summary(LLmod2)$r.squared,2))), side=3, adj = .95, line=-1 , cex=cex.text)
+mtext("log(RGR)", side=2, line=2, cex=1.1, adj=1.5)
+mtext("log(Leaf Life)", side=1, line=2, cex=1.1)
+#mtext("a)", side=3, adj=0)
+
+plot(log(RGR)~log.cw_LMAp_if, biomass, pch=16, yaxt="n", ylim=ylims, cex=cex.pts)
+abline(lm(log(RGR)~log.cw_LMAp_if, biomass), lwd=3, lty=2)
+mtext(text = paste0("p=", round(anova(LMAmod2)$`Pr(>F)`[1],2)), side=3, adj=.05, line=-1, cex=cex.text)
+mtext("log(LMA)", side=1, line=2, cex=1.1)
+#mtext("b)", side=3, adj=0)
+
+plot(log(RGR)~log.cw_Nmassp_if, biomass, pch=16, ylim=ylims, yaxt="n", cex=cex.pts)
+abline(lm(log(RGR)~log.cw_Nmassp_if, biomass), lwd=3, lty=1)
+mtext(text = paste0("p=", round(anova(Nmassmod2)$`Pr(>F)`[1],3),","), side=3, adj=.05, line=-1, cex=cex.text)
+mtext(text = bquote(~R^2==.(round(summary(Nmassmod2)$r.squared,2))), side=3, adj = .95, line=-1, cex=cex.text)
+#mtext("log(RGR)", side=2, line=2, cex=1.1)
+mtext("log(Nmass)", side=1, line=2, cex=1.1)
+#mtext("c)", side=3, adj=0)
+
+plot(log(RGR)~log.cw_Nareap_if, biomass, pch=16, ylim=ylims, yaxt="n", cex=cex.pts)#, yaxt="n")
+#axis(2,at = log(c(.01,.02,.03,0.04,.1,0.2,0.3)), labels =c(.01,.02,.03,0.04,.1,0.2,0.3) )
+abline(lm(log(RGR)~log.cw_Nareap_if, biomass), lwd=3, lty=2)
+mtext(text = paste0("p=", round(anova(Nareamod2)$`Pr(>F)`[1],2)), side=3, adj=.05, line=-1, cex=cex.text)
+mtext("log(Narea)", side=1, line=2, cex=1.1)
+#mtext("d)", side=3, adj=0)
+mtext("CW means", side=4, line=0)
+
+
+
+
+
+
+
+
+
+
 #________________________________________________________________
 ###### FIG S1: Funnel Plots for LMA vs LL ######
 #________________________________________________________________
@@ -604,40 +722,80 @@ mtext(text = "d)", side = 3, adj=0, line=.2)
 
 quartz(width=5.5,height=4.5)
 par(mar=c(4,4,0,1), mfrow=c(2,2), mgp=c(2.5,1,0), oma=c(0,0,2,0))
-plot(Slope_LMA.LL~varLMA, all.results, pch=16, col=Type, xlab="Var. in LMA", ylab="Slope   (LMA v LL)")
+plot(Slope_LMA.LL~varLMA, all.results.cl, pch=16, col=Type, xlab="Var. in LMA", ylab="Slope   (LMA v LL)")
 #mtext( text="Nmass v LMA", side=3, line=0, font=2)
 abline(h=0, col="grey", lty=2)
 abline(h=all.results$Slope_LMA.LL[which(all.results$Taxo.Unit=="fam.all")])
 mtext(text = "a)", side = 3, adj=0, line=.2)
-points(Slope_LMA.LL~varLMA, all.results[c(nrow(all.results)-1,nrow(all.results)),], pch=c(24,25), cex=1.4, bg=mypal[5:6])
+points(Slope_LMA.LL~varLMA, all.results.cl[c(nrow(all.results.cl)-1,nrow(all.results.cl)),], pch=c(24,25), cex=1.4, bg=mypal[colchoices[4:5]])
 abline(h=mean(all.results$Slope_LMA.LL[which(all.results$Type=="w.inSpp")], na.rm=T), col=mypal[1])
-legend('bottomright', legend = levels(all.results$Type), pch=c(16,16,16,16,24,25), ncol=2, col=c(mypal[1:4], "black","black"), pt.bg= mypal[1:6], bty ="n", cex=.7)
 
 
-plot(Rho_LMA.LL~varLMA, all.results, pch=16, col=Type, xlab="Var. in LMA", ylab="Rho   (LMA v LL)")
+plot(Rho_LMA.LL~varLMA, all.results.cl, pch=16, col=Type, xlab="Var. in LMA", ylab="Rho   (LMA v LL)")
 #mtext( text="Nmass v LMA", side=3, line=0, font=2)
 abline(h=0, col="grey", lty=2)
-abline(h=all.results$Rho_LMA.LL[which(all.results$Taxo.Unit=="fam.all")])
+abline(h=all.results.cl$Rho_LMA.LL[which(all.results.cl$Taxo.Unit=="fam.clean")])
 mtext(text = "b)", side = 3, adj=0, line=.2)
-points(Rho_LMA.LL~varLMA, all.results[c(nrow(all.results)-1,nrow(all.results)),], pch=c(24,25), cex=1.4, bg=mypal[5:6])
-abline(h=mean(all.results$Rho_LMA.LL[which(all.results$Type=="w.inSpp")], na.rm=T), col=mypal[1])
+points(Rho_LMA.LL~varLMA, all.results.cl[c(nrow(all.results.cl)-1,nrow(all.results.cl)),], pch=c(24,25), cex=1.4, bg=mypal[colchoices[4:5]])
+abline(h=mean(all.results.cl$Rho_LMA.LL[which(all.results.cl$Type=="w.inSpp")], na.rm=T), col=mypal[1])
 
 
-plot(Slope_LMA.LL~varLL, all.results, pch=16, col=Type, xlab="Var. in LL", ylab="Slope   (LMA v LL)")
+plot(Slope_LMA.LL~varLL, all.results.cl, pch=16, col=Type, xlab="Var. in LL", ylab="Slope   (LMA v LL)")
 abline(h=0, col="grey", lty=2)
-abline(h=all.results$Slope_LMA.LL[which(all.results$Taxo.Unit=="fam.all")])
+abline(h=all.results.cl$Slope_LMA.LL[which(all.results.cl$Taxo.Unit=="fam.clean")])
 mtext(text = "c)", side = 3, adj=0, line=.2)
-points(Slope_LMA.LL~n_LMA.LL, all.results[c(nrow(all.results)-1,nrow(all.results)),], pch=c(24,25), cex=1.4, bg=mypal[5:6])
-abline(h=mean(all.results$Slope_LMA.LL[which(all.results$Type=="w.inSpp")], na.rm=T), col=mypal[1])
+points(Slope_LMA.LL~varLL, all.results.cl[c(nrow(all.results.cl)-1,nrow(all.results.cl)),], pch=c(24,25), cex=1.4, bg=mypal[5:6])
+abline(h=mean(all.results.cl$Slope_LMA.LL[which(all.results.cl$Type=="w.inSpp")], na.rm=T), col=mypal[1])
 
-plot(Rho_LMA.LL~varLL, all.results, pch=16, col=Type, xlab="Var. in LL", ylab="Rho   (LMA v LL)")
+plot(Rho_LMA.LL~varLL, all.results.cl, pch=16, col=Type, xlab="Var. in LL", ylab="Rho   (LMA v LL)")
 abline(h=0, col="grey", lty=2)
-abline(h=all.results$Rho_LMA.LL[which(all.results$Taxo.Unit=="fam.all")])
-#legend('bottomright', legend = levels(all.results$Type), pch=c(16,16,16,16,24,25), ncol=2, col=c(mypal[1:4], "black","black"), pt.bg= mypal[1:6], bty ="n", cex=.7)
+abline(h=all.results.cl$Rho_LMA.LL[which(all.results.cl$Taxo.Unit=="fam.clean")])
+#legend('bottomright', legend = levels(all.results.cl$Type), pch=c(16,16,16,16,24,25), ncol=2, col=c(mypal[1:4], "black","black"), pt.bg= mypal[1:6], bty ="n", cex=.7)
 mtext(text = "d)", side = 3, adj=0, line=.2)
-points(Rho_LMA.LL~n_LMA.LL, all.results[c(nrow(all.results)-1,nrow(all.results)),], pch=c(24,25), cex=1.4, bg=mypal[5:6])
-abline(h=mean(all.results$Rho_LMA.LL[which(all.results$Type=="w.inSpp")], na.rm=T), col=mypal[1])
+points(Rho_LMA.LL~varLL, all.results.cl[c(nrow(all.results.cl)-1,nrow(all.results.cl)),], pch=c(24,25), cex=1.4, bg=mypal[colchoices[4:5]])
+abline(h=mean(all.results.cl$Rho_LMA.LL[which(all.results.cl$Type=="w.inSpp")], na.rm=T), col=mypal[1])
+legend('bottomright', legend = levels(all.results.cl$Type), pch=c(16,16,16,24,25), ncol=2, col=c(mypal[colchoices[1:3]], "black","black"), pt.bg= mypal[colchoices[1:5]], bty ="n", cex=.7)
 
+
+
+
+# ##### Lower Panel: funnel plots ............................................................
+
+quartz(width=5.5,height=3)
+par(mar=c(4,4,0,1), mfrow=c(1,2), mgp=c(2.5,1,0), oma=c(0,0,2,0))
+palette(mypal[colchoices])
+plot(Rho_LMA.N~varNmass, all.results.cl, pch=16, col=Type, xlab="Var. in %N", ylab="Rho   (LMA v Nmass)")
+#mtext( text="Nmass v LMA", side=3, line=0, font=2)
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.cl$Rho_LMA.N[which(all.results.cl$Taxo.Unit=="global")])
+mtext(text = "c)", side = 3, adj=0, line=.2)
+points(Rho_LMA.N~varNmass, all.results.cl[c(nrow(all.results.cl)-1,nrow(all.results.cl)),], pch=c(24,25), cex=1.4, bg=mypal[colchoices[c(length(colchoices)-1,length(colchoices))]])
+
+plot(Rho_LL.N~varNmass, all.results.cl, pch=16, col=Type, xlab="Var. in %N", ylab="Rho   (LL v Nmass)")
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.cl$Rho_LL.N[which(all.results.cl$Taxo.Unit=="global")])
+legend('topright', legend = levels(all.results.cl$Type), pch=c(16,16,16,24,25), col=c(mypal[colchoices[1:3]], "black","black"), pt.bg= mypal[colchoices], bty ="n", cex=.7)
+mtext(text = "d)", side = 3, adj=0, line=.2)
+points(Rho_LL.N~varNmass, all.results.cl[c(nrow(all.results.cl)-1,nrow(all.results.cl)),], pch=c(24,25), cex=1.4, bg=mypal[colchoices[c(length(colchoices)-1,length(colchoices))]])
+
+#
+
+quartz(width=5.5,height=3)
+par(mar=c(4,4,0,1), mfrow=c(1,2), mgp=c(2.5,1,0), oma=c(0,0,2,0))
+palette(mypal[colchoices])
+plot(Rho_LMA.Narea~varNarea, all.results.cl, pch=16, col=Type, xlab="Var. in %N", ylab="Rho   (LMA v Narea)")
+#mtext( text="Narea v LMA", side=3, line=0, font=2)
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.cl$Rho_LMA.Narea[which(all.results.cl$Taxo.Unit=="global")])
+mtext(text = "c)", side = 3, adj=0, line=.2)
+points(Rho_LMA.Narea~varNarea, all.results.cl[c(nrow(all.results.cl)-1,nrow(all.results.cl)),], pch=c(24,25), cex=1.4, bg=mypal[colchoices[c(length(colchoices)-1,length(colchoices))]])
+
+plot(Rho_LL.Narea~varNarea, all.results.cl, pch=16, col=Type, xlab="Var. in %N", ylab="Rho   (LL v Narea)")
+abline(h=0, col="grey", lty=2)
+abline(h=all.results.cl$Rho_LL.Narea[which(all.results.cl$Taxo.Unit=="global")])
+legend('bottomright', legend = levels(all.results.cl$Type), pch=c(16,16,16,24,25), col=c(mypal[colchoices[1:3]], "black","black"), pt.bg= mypal[colchoices], bty ="n", cex=.7)
+mtext(text = "d)", side = 3, adj=0, line=.2)
+points(Rho_LL.Narea~varNarea, all.results.cl[c(nrow(all.results.cl)-1,nrow(all.results.cl)),], pch=c(24,25), cex=1.4, bg=mypal[colchoices[c(length(colchoices)-1,length(colchoices))]])
 
 
 
@@ -789,7 +947,7 @@ abline(lmodel2(log.LMA~log.Narea, fam.data)$regression.results$Intercept[3], lmo
 
 mat <- matrix(c(1,3,
                 2,3), nrow=2, byrow = T)
-colchoices <- c(1,2,4,3,6)
+colchoices <- c(1,2,4,3,6,5)
 palette(mypal[colchoices])
 
 quartz(width=7.008, height=4)
@@ -1401,6 +1559,199 @@ for(i in levels(spid)){
 
 
 
+#________________________________________________________________
+###### Trait Covariation for Presentations ######
+#________________________________________________________________
+
+
+##### LMA v Nmass
+quartz(width=3.5, height=3.5)
+
+par(mar=c(4,4,1.5,1.5), mgp=c(2.2,.7,0), cex.lab=1.3, cex.axis=1.1)
+plot(log.Nmass~log.LMA, LES, col="grey", pch=16, xlab=expression(paste(log[10],"(LMA)")), ylab=expression(paste(log[10],(N[mass]), sep=" ")))
+tax <- "w.inGen"
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.N>5)])){
+  plot.MAR(xvar = "log.LMA", yvar = "log.Nmass",data= gen.data[which(gen.data$Genus==i),], linecol = mypal[colchoices[2]])
+}
+tax <- "Genw.inFam"
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.N>5)])){
+  plot.MAR(xvar = "log.LMA", yvar = "log.Nmass",data= geninfam.data[which(geninfam.data$Family==i),], linecol = mypal[colchoices[3]])
+}
+abline(a=all.results.cl$Int_LMA.N[nrow(all.results.cl)-1], b=all.results.cl$Slope_LMA.N[nrow(all.results.cl)-1], lwd=3, col="black")
+abline(a=all.results.cl$Int_LMA.N[nrow(all.results.cl)], b=all.results.cl$Slope_LMA.N[nrow(all.results.cl)], lwd=3, col="black", lty=3)
+tax <- "w.inSpp"
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.N>5)])){
+  plot.MAR(xvar = "log.LMA", yvar = "log.Nmass",data= spp.data[which(spp.data$Species==i),], linecol = mypal[colchoices[1]])
+}
+mtext(text = expression(paste("A) Scale Independent: LMA-",N[mass])), side = 3, adj=0.9, line=.2, cex=1.3)
+legend ("topright", bty="n", legend=c("w/in Spp", "w/in Gen", "w/in Fam"), lwd=c(2,2,2), lty=c(1,1,1), col=c(mypal[colchoices[c(1,2,3)]]), cex=.9)
+legend("bottomleft", bty="n", legend=c("Btw Fams","Global"), lwd=3, lty=c(1,3), cex=1)
+
+
+
+
+##### LMA v Narea
+quartz(width=3.5, height=3.5)
+
+par(mar=c(4,4,1.5,1.5), mgp=c(2.2,.7,0), cex.lab=1.3, cex.axis=1.1)
+plot(log.Narea~log.LMA, LES, col="grey", pch=16, ylab=expression(paste(log[10],(N[area]))), xlab=expression(paste(log[10],"(LMA)")), ylim=c(-.6,1.1))
+
+tax <- "w.inGen"
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.Narea>5 & all.results.cl$Slope_LMA.Narea>-1)])){
+  plot.MAR(xvar = "log.LMA", yvar = "log.Narea",data= gen.data[which(gen.data$Genus==i),], linecol = mypal[2])
+}
+
+tax <- "Genw.inFam"
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.Narea>5)])){
+  plot.MAR(xvar = "log.LMA", yvar = "log.Narea",data= geninfam.data[which(geninfam.data$Family==i),], linecol = mypal[4])
+}
+
+abline(a=all.results.cl$Int_LMA.Narea[nrow(all.results.cl)-1], b=all.results.cl$Slope_LMA.Narea[nrow(all.results.cl)-1], lwd=3, col="black")
+abline(a=all.results.cl$Int_LMA.Narea[nrow(all.results.cl)], b=all.results.cl$Slope_LMA.Narea[nrow(all.results.cl)], lwd=3, col="black", lty=3)
+
+# plot.MAR(xvar="log.LMA", yvar="log.Narea", data= fam.data, linecol = mypal[5], lwd=2)
+# 
+# plot.MAR(xvar="log.LMA", yvar="log.Narea", data= LES, linecol = "black", lwd=2)
+tax <- "w.inSpp"
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.Narea>5& all.results.cl$Slope_LMA.Narea>-1)])){
+  plot.MAR(xvar = "log.LMA", yvar = "log.Narea",data= spp.data[which(spp.data$Species==i),], linecol = mypal[1])
+}
+mtext(text = expression(paste("B) Stronger w/in spp: LMA-",N[area])), side = 3, adj=0.7, line=.2, cex=1.3)
+#legend ("topright", bty="n", legend=c("w/in Spp", "w/in Gen", "w/in Fam"), lwd=c(2,2,2), lty=c(1,1,1), col=c(mypal[colchoices[c(1,2,3)]]), cex=.9)
+#legend("bottomleft", bty="n", legend=c("Btw Fams","Global"), lwd=3, lty=c(1,3), cex=.9)
+
+
+
+
+
+##### LMA v LL
+quartz(width=3.5, height=3.5)
+
+par(mar=c(4,4,1.5,1.5), mgp=c(2.2,.7,0), cex.lab=1.3, cex.axis=1.1)
+plot(log.LL~log.LMA, LES, col="grey", pch=16, ylab=expression(paste(log[10],"(LL)")), xlab=expression(paste(log[10],"(LMA)")))
+
+tax <- "w.inGen"
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.LL>5)])){
+  plot.MAR(xvar = "log.LMA", yvar = "log.LL",data= gen.data[which(gen.data$Genus==i),], linecol = mypal[colchoices[2]])
+}
+
+tax <- "Genw.inFam"
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.LL>5)])){
+  plot.MAR(xvar = "log.LMA", yvar = "log.LL",data= geninfam.data[which(geninfam.data$Family==i),], linecol = mypal[colchoices[3]])
+}
+
+
+abline(a=all.results.cl$Int_LMA.LL[nrow(all.results.cl)-1], b=all.results.cl$Slope_LMA.LL[nrow(all.results.cl)-1], lwd=3, col="black")
+abline(a=all.results.cl$Int_LMA.LL[nrow(all.results.cl)], b=all.results.cl$Slope_LMA.LL[nrow(all.results.cl)], lwd=3, col="black", lty=3)
+tax <- "w.inSpp"
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.LL>5)])){
+  plot.MAR(xvar = "log.LMA", yvar = "log.LL",data= spp.data[which(spp.data$Species==i),], linecol = mypal[colchoices[1]])
+}
+
+mtext(text = expression(paste("C) Switch sign w/in spp: LMA-LL")), side = 3, adj=0.7, line=.2, cex=1.3)
+#legend ("topright", bty="n", legend=c("w/in Spp", "w/in Gen", "w/in Fam"), lwd=c(2,2,2), lty=c(1,1,1), col=c(mypal[colchoices[c(1,2,3)]]), cex=.9)
+#legend("bottomleft", bty="n", legend=c("Btw Fams","Global"), lwd=3, lty=c(1,3), cex=.9)
+
+
+
+###### LMA vs LL boxplots
+quartz(width=2.75, height=3.5)
+par(mfrow=c(2,1), mar=c(0,4,0,1), oma=c(4,0,2,0),mgp=c(2.2,.7,0), cex.lab=1.4, cex.axis=1.2)
+p <- boxplot(Slope_LMA.LL~Type, all.results.cl[which(all.results.cl$n_LMA.LL>5& !all.results.cl$Type %in% c("global","Famclean")),]
+             , ylim=c(-2.5,4),las=3, ylab="MA Slope" #, main="log(LMA)~log(Nmass) strict"
+             , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+             , staplelwd=0, outpch=16, outcex=.7, outcol=mypal[colchoices]
+             , boxwex=.7, xaxt="n")
+abline(h=0, lty=2)
+m <- lmodel2(log.LL~log.LMA, allspp)
+points(y=m$regression.results$Slope[3],x=5, pch=16, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+m <- lmodel2(log.LL~log.LMA, fam.dataclean)
+points(y=m$regression.results$Slope[3],x=4, pch=16, cex=1.3, col="black")
+arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3)
+arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3)
+
+#text(y=par()$usr[3]+.2, x=c(1,2,3,4,5,6), labels = p$n)
+#text(y=par()$usr[4]-.2,x=.5, labels = "a)")
+mtext(text = "D)", side = 3, adj=0, line=.2, cex=1.4)
+mtext(text= "LMA vs LL", side=3, line=.2, cex=1.4)
+# par(mar=c(6,4,0,1))
+p <- boxplot(Rho_LMA.LL~Type, all.results.cl[which(all.results.cl$n_LMA.LL>5& !all.results.cl$Type %in% c("global","Famclean")),]
+             , ylim=c(-1,1.4),las=3, ylab="Rho"
+             , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+             , staplelwd=0, outpch=16, outcex=.7, outcol=mypal[colchoices]
+             , boxwex=.7, xaxt="n")
+axis(1,labels = c("","", "","",""), at=c(1,2,3,4,5), las=3,tck=0.075)
+#mtext(text=c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), side = 1,at = c(1,2,3,4,5), pos=2, srt=50)
+text(x = c(1,2,3,4,5), y= par("usr")[3]-.2,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), srt=45, adj=1,xpd=NA, cex=1.4, font=1)
+
+abline(h=0, lty=2)
+text(y=par()$usr[4]-.2, x=c(1,2,3), labels = p$n[1:3])
+text(y=par()$usr[4]-.25, x=c(4,5), labels=paste0("(",all.results.cl$n_LMA.LL[c((nrow(all.results.cl)-1),nrow(all.results.cl))],")"),cex=1)
+#polygon(x = c(1,2,3,3,2,1), y=na.omit(c(meancis$m10_LMA.LL, rev(meancis$m90_LMA.LL))), border="#EEEEEE",col="#EEEEEE")#lightgrey",col = "lightgrey")
+m <- cor.test(x=allspp$log.LMA, y=allspp$log.LL)
+points(y=m$estimate,x=5, pch=16, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3, col="darkgrey")
+m <- cor.test(x=fam.dataclean$log.LMA, y=fam.dataclean$log.LL)
+points(y=m$estimate,x=4, pch=16, cex=1.3, col="black")
+arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
+
+
+
+
+
+
+
+
+#________________________________________________________________
+###### Trait Env Examples for Presentation ######
+#________________________________________________________________
+
+
+quartz(width=3.5, height=3.5)
+par(mar=c(3.5,3.5,1,1), mgp=c(2,.7,0))
+plot(log.LL~climPC2 , traits.common[which(traits.common$SP.ID %in% c("PSEMEN","PINPON","PINCON","PINJEF","TSUHET","ABICON")),], pch=16, col="grey", xlim=c(-3.6,3.6), ylim=c(1.38,2.35), xlab="Plot Warmth (climate PC2)", ylab=expression(paste(log[10](LL))))
+for (i in c("PSEMEN","PINPON","PINCON","PINJEF","TSUHET","ABICON")){
+  tmpmod <- lm(log.LL~climPC2, traits.common[which(traits.common$SP.ID==i),])
+  #lines(fitted(tmpmod)~traits.common$climPC2[which(traits.common$SP.ID==i & !is.na(traits.common$log.LL))], lwd=2, col=mypal[colchoices[1]])
+  lty <- ifelse(summary(tmpmod)$coefficients[2,4]>0.05,3,1)
+  lines(fitted(tmpmod)[order(fitted(tmpmod))]~tmpmod$model$climPC2[order(fitted(tmpmod))], lwd=2, lty=lty, col=mypal[colchoices[1]])
+}
+legend(x=.2, y=2.4, legend="w/in spp", lwd=2, col=mypal[colchoices[1]], bty="n")
+legend(x=.7, y=2.4, legend="", pch=16, col="grey", bty="n")
+
+points(log.cw_LLp_if~climPC2, biomass, pch=17, col="black")
+abline(lm(log.cw_LLp_if~climPC2, biomass), lwd=3)
+
+legend(x=.2, y=2.33, legend="CWM", lwd=2, col="black", bty="n")
+legend(x=.7, y=2.33, legend="", pch=17, col="black", bty="n")
+
+
+
+quartz(width=3.5, height=3.5)
+par(mar=c(3.5,3.5,1,1), mgp=c(2,.7,0))
+
+plot(log.LMA~climPC2 , traits.common[which(traits.common$SP.ID %in% c("PSEMEN","PINPON","PINCON","PINJEF","TSUHET","ABICON")),], pch=16, col="grey", xlim=c(-3.5,3.5), ylim=c(1.8,2.8))
+for (i in c("PSEMEN","PINPON","PINCON","PINJEF","TSUHET","ABICON")){
+  tmpmod <- lm(log.LMA~climPC2, traits.common[which(traits.common$SP.ID==i),])
+  lty <- ifelse(summary(tmpmod)$coefficients[2,4]>0.05,3,1)
+lines(fitted(tmpmod)[order(fitted(tmpmod))]~tmpmod$model$climPC2[order(fitted(tmpmod))], lwd=2, lty=lty, col=mypal[colchoices[1]])
+#  print(summary(tmpmod))
+  }
+#legend(x=.4, y=3, legend="w/in spp", lwd=2, col=mypal[colchoices[1]], bty="n")
+#legend(x=.8, y=2.6, legend="", pch=16, col="grey", bty="n")
+
+
+points(log.cw_LMAp_if~climPC2, biomass, pch=17, col="black")
+abline(lm(log.cw_LMAp_if~climPC2, biomass), lwd=3)
+#legend(x=.4, y=2.5, legend="CW mean", lwd=2, col="black", bty="n")
+#legend(x=.8, y=2.5, legend="", pch=17, col="black", bty="n")
+
+
+
 
 
 
@@ -1421,11 +1772,13 @@ meancis <- all.results.cl %>% group_by(Type) %>% summarise(m2.5_LMA.LL = mean(lc
                                                            m2.5_LL.Narea = mean(lci_2.5_LL.Narea, na.rm=T), m5_LL.Narea = mean(lci_5_LL.Narea, na.rm=T), m10_LL.Narea = mean(lci_10_LL.Narea, na.rm=T),
                                                            m97.5_LL.Narea = mean(uci_2.5_LL.Narea, na.rm=T), m95_LL.Narea = mean(uci_5_LL.Narea, na.rm=T), m90_LL.Narea = mean(uci_10_LL.Narea, na.rm=T))
 # I think the easiest thing will be to make two quartez: top with boxplots and bottom with funnel
-
+colchoices <- c(1,2,4,3,6)
+palette(mypal[colchoices])
 
 xvals <- as.numeric(all.results.cl$Type)
 pchs <- rep(1, times=nrow(all.results.cl))
 pchs[which(all.results.cl$sig_LMA.N>0)] <- 16
+crit <-.1
 ### Lower boxplots with Rho
 
 quartz(width=5, height=6)
@@ -1447,8 +1800,8 @@ m <- cor.test(x=fam.dataclean$log.LMA, y=fam.dataclean$log.Nmass)
 points(y=m$estimate,x=4, pch=17, cex=1.3, col="black")
 arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
 # layering points on top of null model
-points(Rho_LMA.N~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.N>5 & all.results.cl$sig_LMA.N>0),], pch=16)
-points(Rho_LMA.N~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.N>5 & all.results.cl$sig_LMA.N==0),], pch=1)
+points(Rho_LMA.N~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.N>5 & all.results.cl$sig_LMA.N<crit),], pch=16)
+points(Rho_LMA.N~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.N>5 & all.results.cl$sig_LMA.N>=crit),], pch=1)
 axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
 abline(h=0, lty=2)
 text(y=par()$usr[4]-.2,x=3, labels = "a) LMA vs Nmass")
@@ -1470,8 +1823,8 @@ m <- cor.test(x=fam.dataclean$log.LL, y=fam.dataclean$log.Nmass)
 points(y=m$estimate,x=4, pch=17, cex=1.3, col="black")
 arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
 # layering points on top of null model
-points(Rho_LL.N~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LL.N>5 & all.results.cl$sig_LL.N>0),], pch=16)
-points(Rho_LL.N~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LL.N>5 & all.results.cl$sig_LL.N==0),], pch=1)
+points(Rho_LL.N~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LL.N>5 & all.results.cl$sig_LL.N<crit),], pch=16)
+points(Rho_LL.N~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LL.N>5 & all.results.cl$sig_LL.N>=crit),], pch=1)
 axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
 abline(h=0, lty=2)
 #text(y=par()$usr[4]-.2,x=.5, labels = "b)")
@@ -1495,8 +1848,8 @@ m <- cor.test(x=fam.dataclean$log.LMA, y=fam.dataclean$log.Narea)
 points(y=m$estimate,x=4, pch=17, cex=1.3, col="black")
 arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
 # layering points on top of null model
-points(Rho_LMA.Narea~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$sig_LMA.Narea>0),], pch=16)
-points(Rho_LMA.Narea~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$sig_LMA.Narea==0),], pch=1)
+points(Rho_LMA.Narea~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$sig_LMA.Narea<crit),], pch=16)
+points(Rho_LMA.Narea~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.Narea>5 & all.results.cl$sig_LMA.Narea>=crit),], pch=1)
 axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
 abline(h=0, lty=2)
 #text(y=par()$usr[4]-.2,x=.5, labels = "b)")
@@ -1522,8 +1875,8 @@ m <- cor.test(x=fam.dataclean$log.LL, y=fam.dataclean$log.Narea)
 points(y=m$estimate,x=4, pch=17, cex=1.3, col="black")
 arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
 # layering points on top of null model
-points(Rho_LL.Narea~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LL.Narea>5 & all.results.cl$sig_LL.Narea>0),], pch=16)
-points(Rho_LL.Narea~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LL.Narea>5 & all.results.cl$sig_LL.Narea==0),], pch=1)
+points(Rho_LL.Narea~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LL.Narea>5 & all.results.cl$sig_LL.Narea<crit),], pch=16)
+points(Rho_LL.Narea~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LL.Narea>5 & all.results.cl$sig_LL.Narea>=crit),], pch=1)
 axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
 abline(h=0, lty=2)
 #text(y=par()$usr[4]-.2,x=.5, labels = "b)")
@@ -1549,8 +1902,8 @@ m <- cor.test(x=fam.dataclean$log.LMA, y=fam.dataclean$log.LL)
 points(y=m$estimate,x=4, pch=17, cex=1.3, col="black")
 arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
 # layering points on top of null model
-points(Rho_LMA.LL~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.LL>5 & all.results.cl$sig_LMA.LL>0),], pch=16)
-points(Rho_LMA.LL~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.LL>5 & all.results.cl$sig_LMA.LL==0),], pch=1)
+points(Rho_LMA.LL~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.LL>5 & all.results.cl$sig_LMA.LL<crit),], pch=16)
+points(Rho_LMA.LL~jitter(as.numeric(Type)), all.results.cl[which(all.results.cl$n_LMA.LL>5 & all.results.cl$sig_LMA.LL>=crit),], pch=1)
 axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
 abline(h=0, lty=2)
 #text(y=par()$usr[4]-.2,x=.5, labels = "b)")
@@ -1559,3 +1912,33 @@ text(y=par()$usr[4]-.2,x=3, labels = "e) Leaf Life vs LMA")
 plot(1~1, type="n", bty="n", xlab="", ylab="", xaxt="n", yaxt="n")
 legend("center",legend = c("not different from null","different from null"), pch = c(1,16),bty="n")
 legend("bottomleft", bty="n", legend = "mean of 10%-90%\nnull distributions", fill = "#DDDDDD")
+
+
+
+
+#### sample sizes
+xtabs(~sig_LMA.N+Type, all.results.cl[which(!is.na(all.results.cl$sig_LMA.N) & all.results.cl$n_LMA.N>5),])
+
+xtabs(~sig_LL.N+Type, all.results.cl[which(!is.na(all.results.cl$sig_LL.N) & all.results.cl$n_LL.N>5),])
+xtabs(~sig_LMA.LL+Type, all.results.cl[which(!is.na(all.results.cl$sig_LMA.LL) & all.results.cl$n_LMA.LL>5),])
+xtabs(~sig_LMA.Narea+Type, all.results.cl[which(!is.na(all.results.cl$sig_LMA.Narea) & all.results.cl$n_LMA.Narea>5),])
+
+xtabs(~sig_LL.Narea+Type, all.results.cl[which(!is.na(all.results.cl$sig_LL.Narea) & all.results.cl$n_LL.Narea>5),])
+
+
+
+
+
+
+######## Figure S6: Leaf Fraction Figure #################
+
+
+quartz(width=5, height=3)
+par(mar=c(4,4,2,1), mfrow=c(1,2), mgp=c(2.5,1,0))
+
+plot(RGR~LeafFrac, plotavs90[-which(plotavs90$PLOT_ID %in% c(43,55)),], pch=16, col=SP.ID, log="xy", main="a) W/in Species", xlab="Leaf Fraction", cex.main=.9)
+legend("topleft", legend=levels(plotavs90$SP.ID), col=mypal[1:5], pch=16, bty="n", cex=.7)
+#mtext(side=3,adj=-.1, "a)")as variation in leaf resource use strategy
+
+plot(RGR~LeafFrac, biomass[-which(biomass$PLOT_ID %in% c(43,55)),], pch=16, log="xy", xlab="Leaf Fraction", main="b) Across Communities", cex.main=.9)
+#mtext(side=3,adj=-.1, "b)")
