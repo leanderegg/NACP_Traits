@@ -21,6 +21,7 @@ require(ggplot2)
 require(stringr)
 require(stringi)
 require(MuMIn)
+require(lmodel2)
 # optimized pairs function
 source("/Users/leeanderegg/Desktop/ZuurMixedModelling/AllRCode/HighstatLibV6.R")
 # ggplot funcitons (sets default w/ no background, also greats multiplot() function)
@@ -562,6 +563,7 @@ soil.top <- soil[which(soil$Layer=="top"), ]
 # on 5.27.16 I deleted the units row in this dataset to make _v2 so that types import correctly.
 biomass <- read.csv("NACP_TERRA_PNW_forest_biomass_productivity_v2.csv", header= T,na.strings = "-9999" )
 biomass$soil_N <- soil.top$soil_N[match(biomass$PLOT_ID, soil.top$PLOT_ID)]
+biomass$soil_pH <- soil.top$soil_pH[match(biomass$PLOT_ID, soil.top$PLOT_ID)]
 biomass$RGR <- log(biomass$AG_BIOMASS_TREE_TOTAL_AS_CARBON) - log(biomass$AG_BIOMASS_TREE_TOTAL_AS_CARBON - biomass$AG_PROD_TREE_TOTAL_AS_CARBON)
 ## control growth for existing biomass
 growthmod <- lm(AG_PROD_TREE_TOTAL_AS_CARBON~AG_BIOMASS_TREE_TOTAL_AS_CARBON, data=biomass)
@@ -1248,77 +1250,114 @@ traits.dominants$SP.ID <- factor(traits.dominants$SP.ID)
 
 
 # make a function to quickly perform and plot variance decomps of log and raw traits
-variance.decomp <- function(dataz, lab){
+variance.decomp <- function(dataz, lab, fitfam=F){
   
   #### logged trait values
-  SLAvar2 <- lmer(SLA_HSA~ (1|GENUS/SPECIES/PLOT_ID), dataz)
-  LMAvar2 <- lmer(log.LMA~ (1|GENUS/SPECIES/PLOT_ID), dataz)
-  LeafLifevar2 <- lmer(log.LL~ (1|GENUS/SPECIES/PLOT_ID), dataz)
-  LeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), dataz)
-  LeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), dataz)
-  LeafNitvar2 <- lmer(log.Nmass~ (1|GENUS/SPECIES/PLOT_ID), dataz)
-  Nareavar2 <- lmer(log.Narea~ (1|GENUS/SPECIES/PLOT_ID), dataz)
-  
-  SLAvariance <- data.frame(VarCorr(SLAvar2))
-  LMAvariance <- data.frame(VarCorr(LMAvar2))
-  LeafLifevariance <- data.frame(VarCorr(LeafLifevar2))
-  LeafCNvariance <- data.frame(VarCorr(LeafCNvar2))
-  LeafCarvariance <- data.frame(VarCorr(LeafCarbvar2))
-  LeafNitvariance <- data.frame(VarCorr(LeafNitvar2))
-  Nareavariance <- data.frame(VarCorr(Nareavar2))
-  
-  traitvars <- data.frame(LMAvariance[,4], LeafLifevariance[,4], LeafNitvariance[,4], Nareavariance[,4], LeafCarvariance[,4], LeafCNvariance[,4])
-  colnames(traitvars) <- c("log.LMA", "log.LL","log.Nmass","log.Narea","Cmass", "LEAF_CN")
-  rownames(traitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
-  traitvars_scaled <- traitvars  
-  for(i in 1:ncol(traitvars)){
-    traitvars_scaled[,i] <- traitvars[,i]/sum(traitvars[,i])
+  if (fitfam ==F){
+    SLAvar2 <- lmer(SLA_HSA~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+    LMAvar2 <- lmer(log.LMA~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+    LeafLifevar2 <- lmer(log.LL~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+    LeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+    LeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+    LeafNitvar2 <- lmer(log.Nmass~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+    Nareavar2 <- lmer(log.Narea~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+    
+    SLAvariance <- data.frame(VarCorr(SLAvar2))
+    LMAvariance <- data.frame(VarCorr(LMAvar2))
+    LeafLifevariance <- data.frame(VarCorr(LeafLifevar2))
+    LeafCNvariance <- data.frame(VarCorr(LeafCNvar2))
+    LeafCarvariance <- data.frame(VarCorr(LeafCarbvar2))
+    LeafNitvariance <- data.frame(VarCorr(LeafNitvar2))
+    Nareavariance <- data.frame(VarCorr(Nareavar2))
+    
+    traitvars <- data.frame(LMAvariance[,4], LeafLifevariance[,4], LeafNitvariance[,4], Nareavariance[,4], LeafCarvariance[,4], LeafCNvariance[,4])
+    colnames(traitvars) <- c("log.LMA", "log.LL","log.Nmass","log.Narea","Cmass", "LEAF_CN")
+    rownames(traitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
+    traitvars_scaled <- traitvars  
+    for(i in 1:ncol(traitvars)){
+      traitvars_scaled[,i] <- traitvars[,i]/sum(traitvars[,i])
+    }
+    # reorder appropriately so that it plots with w.inPlots on top and btw Genera on bottom.
+    traitvars_scaled1 <- traitvars_scaled[c(3,2,1,4),]
+    
+    
+    quartz(width=5, height=4, "logged")
+    cols <- brewer.pal(11, "PRGn")[c(1,3,9,11)]
+    cols <- rev(c(brewer.pal(11,"RdYlGn")[1],mypal[colchoices[c(1,2,3)]]))
+    barplot(as.matrix(traitvars_scaled1),beside=F,legend.text = F,xpd = T, names.arg = c("log\n(LMA)", "log\n(LL)","log\n(Nm)","log\n(Na)", "%C","C/N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"99"), ylab="Proportion of total Variance", xlab=lab)
+    # almost works: expression(paste("log\n","(",N[mass],")", sep="")) # except it offsets the upper and lower lines
+    legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"99")[c(4,3,2,1)], ncol=2, bty="n",  cex=1.2)
+    
+    
+    #### raw values
+    rLMAvar2 <- lmer(LMA~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+    rLeafLifevar2 <- lmer(LEAF_LIFE~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+    rLeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+    rLeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+    rLeafNitvar2 <- lmer(LEAF_NITROGEN~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+    rNareavar2 <- lmer(Narea~ (1|GENUS/SPECIES/PLOT_ID), dataz)
+    
+    #rSLAvariance <- data.frame(VarCorr(rSLAvar2))
+    rLMAvariance <- data.frame(VarCorr(rLMAvar2))
+    rLeafLifevariance <- data.frame(VarCorr(rLeafLifevar2))
+    rLeafCNvariance <- data.frame(VarCorr(rLeafCNvar2))
+    rLeafCarvariance <- data.frame(VarCorr(rLeafCarbvar2))
+    rLeafNitvariance <- data.frame(VarCorr(rLeafNitvar2))
+    rNareavariance <- data.frame(VarCorr(rNareavar2))
+    
+    rtraitvars <- data.frame(rLMAvariance[,4], rLeafLifevariance[,4], rLeafNitvariance[,4], rNareavariance[,4], rLeafCarvariance[,4], rLeafCNvariance[,4])
+    colnames(rtraitvars) <- c("LMA", "LEAF_Life", "Nmass","Narea","Cmass","LEAF_CN")
+    rownames(rtraitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
+    rtraitvars_scaled <- rtraitvars  
+    for(i in 1:ncol(rtraitvars)){
+      rtraitvars_scaled[,i] <- rtraitvars[,i]/sum(rtraitvars[,i])
+    }
+    rtraitvars_scaled1 <- rtraitvars_scaled[c(3,2,1,4),]
+    
+    quartz(width=5, height=4, "raw")
+    cols <- brewer.pal(11, "PRGn")[c(1,3,9,11)]
+    barplot(as.matrix(rtraitvars_scaled1),beside=F,legend.text = F,xpd = T, names.arg = c("LMA", "Leaf\nLife",expression(N[mass]),expression(N[area]), "%C","C/N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab=lab)
+    legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,2,1)], ncol=2, bty="n",  cex=1.2)
+    
+    return(list(raw = rtraitvars_scaled1, logged = traitvars_scaled1))
   }
-  # reorder appropriately so that it plots with w.inPlots on top and btw Genera on bottom.
-  traitvars_scaled1 <- traitvars_scaled[c(3,2,1,4),]
   
-  
-  quartz(width=5, height=4, "logged")
-  cols <- brewer.pal(11, "PRGn")[c(1,3,9,11)]
-  cols <- rev(c(brewer.pal(11,"RdYlGn")[1],mypal[colchoices[c(1,2,3)]]))
-  barplot(as.matrix(traitvars_scaled1),beside=F,legend.text = F,xpd = T, names.arg = c("log\n(LMA)", "log\n(LL)","log\n(Nm)","log\n(Na)", "%C","C/N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"99"), ylab="Proportion of total Variance", xlab=lab)
-  # almost works: expression(paste("log\n","(",N[mass],")", sep="")) # except it offsets the upper and lower lines
-  legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"99")[c(4,3,2,1)], ncol=2, bty="n",  cex=1.2)
-  
-  
-  #### raw values
-  rLMAvar2 <- lmer(LMA~ (1|GENUS/SPECIES/PLOT_ID), dataz)
-  rLeafLifevar2 <- lmer(LEAF_LIFE~ (1|GENUS/SPECIES/PLOT_ID), dataz)
-  rLeafCNvar2 <- lmer(LEAF_CN~ (1|GENUS/SPECIES/PLOT_ID), dataz)
-  rLeafCarbvar2 <- lmer(LEAF_CARBON~ (1|GENUS/SPECIES/PLOT_ID), dataz)
-  rLeafNitvar2 <- lmer(LEAF_NITROGEN~ (1|GENUS/SPECIES/PLOT_ID), dataz)
-  rNareavar2 <- lmer(Narea~ (1|GENUS/SPECIES/PLOT_ID), dataz)
-  
-  #rSLAvariance <- data.frame(VarCorr(rSLAvar2))
-  rLMAvariance <- data.frame(VarCorr(rLMAvar2))
-  rLeafLifevariance <- data.frame(VarCorr(rLeafLifevar2))
-  rLeafCNvariance <- data.frame(VarCorr(rLeafCNvar2))
-  rLeafCarvariance <- data.frame(VarCorr(rLeafCarbvar2))
-  rLeafNitvariance <- data.frame(VarCorr(rLeafNitvar2))
-  rNareavariance <- data.frame(VarCorr(rNareavar2))
-  
-  rtraitvars <- data.frame(rLMAvariance[,4], rLeafLifevariance[,4], rLeafNitvariance[,4], rNareavariance[,4], rLeafCarvariance[,4], rLeafCNvariance[,4])
-  colnames(rtraitvars) <- c("LMA", "LEAF_Life", "Nmass","Narea","Cmass","LEAF_CN")
-  rownames(rtraitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus", "WtinPlot")
-  rtraitvars_scaled <- rtraitvars  
-  for(i in 1:ncol(rtraitvars)){
-    rtraitvars_scaled[,i] <- rtraitvars[,i]/sum(rtraitvars[,i])
+  if(fitfam==T){
+    SLAvar2 <- lmer(SLA_HSA~ (1|Family/GENUS/SPECIES/PLOT_ID), dataz)
+    LMAvar2 <- lmer(log.LMA~ (1|Family/GENUS/SPECIES/PLOT_ID), dataz)
+    LeafLifevar2 <- lmer(log.LL~ (1|Family/GENUS/SPECIES/PLOT_ID), dataz)
+    LeafCNvar2 <- lmer(LEAF_CN~ (1|Family/GENUS/SPECIES/PLOT_ID), dataz)
+    LeafCarbvar2 <- lmer(LEAF_CARBON~ (1|Family/GENUS/SPECIES/PLOT_ID), dataz)
+    LeafNitvar2 <- lmer(log.Nmass~ (1|Family/GENUS/SPECIES/PLOT_ID), dataz)
+    Nareavar2 <- lmer(log.Narea~ (1|Family/GENUS/SPECIES/PLOT_ID), dataz)
+    
+    SLAvariance <- data.frame(VarCorr(SLAvar2))
+    LMAvariance <- data.frame(VarCorr(LMAvar2))
+    LeafLifevariance <- data.frame(VarCorr(LeafLifevar2))
+    LeafCNvariance <- data.frame(VarCorr(LeafCNvar2))
+    LeafCarvariance <- data.frame(VarCorr(LeafCarbvar2))
+    LeafNitvariance <- data.frame(VarCorr(LeafNitvar2))
+    Nareavariance <- data.frame(VarCorr(Nareavar2))
+    
+    traitvars <- data.frame(LMAvariance[,4], LeafLifevariance[,4], LeafNitvariance[,4], Nareavariance[,4], LeafCarvariance[,4], LeafCNvariance[,4])
+    colnames(traitvars) <- c("log.LMA", "log.LL","log.Nmass","log.Narea","Cmass", "LEAF_CN")
+    rownames(traitvars) <- c("BtwPlot", "BtwSpecies", "BtwGenus","BtwFam", "WtinPlot")
+    traitvars_scaled <- traitvars  
+    for(i in 1:ncol(traitvars)){
+      traitvars_scaled[,i] <- traitvars[,i]/sum(traitvars[,i])
+    }
+    # reorder appropriately so that it plots with w.inPlots on top and btw Genera on bottom.
+    traitvars_scaled1 <- traitvars_scaled[c(4,3,2,1,5),]
+    return(traitvars_scaled1)
   }
-  rtraitvars_scaled1 <- rtraitvars_scaled[c(3,2,1,4),]
   
-  quartz(width=5, height=4, "raw")
-  cols <- brewer.pal(11, "PRGn")[c(1,3,9,11)]
-  barplot(as.matrix(rtraitvars_scaled1),beside=F,legend.text = F,xpd = T, names.arg = c("LMA", "Leaf\nLife",expression(N[mass]),expression(N[area]), "%C","C/N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab=lab)
-  legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,2,1)], ncol=2, bty="n",  cex=1.2)
-  
-  return(list(raw = rtraitvars_scaled1, logged = traitvars_scaled1))
   
 }
+
+alltraitsvars <- variance.decomp(dataz=traits, lab="all traits", fitfam = T)
+alltraitsvars.comb <- rbind(alltraitsvars[1:3,], colSums(alltraitsvars[4:5,]))
+rownames(alltraitsvars.comb)[3] <- "WtinSpecies"
+
 
 # anything with >9 trait measurements
 variance.decomp(dataz=traits.common, lab="traits.common")
@@ -1329,7 +1368,7 @@ variance.decomp(dataz=traits.conifers, lab="traits.conifers")
 # anything thats a dominant but pull out the non-conifer
 traits.domcon <- traits.dominants[-which(traits.dominants$SP.ID =="QUECHR"),]
 domconvars <- variance.decomp(dataz=traits.domcon, lab="traits.domcon")
-
+# dominant species that are evergreen
 traits.domcon1 <- traits.dominants[-which(traits.dominants$SP.ID %in% c("QUECHR", "LAROCC")),]
 domconvars1 <- variance.decomp(dataz=traits.domcon1, lab="traits.domcon1")
 

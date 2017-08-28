@@ -759,6 +759,35 @@ names(global_LL.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLL",
 
 
 
+
+
+
+############ CMW analysis #####################
+
+
+
+CWM_LMA.LL <- c("CWM", fit.MAR(xvar='log.cw_LMAp_if',yvar="log.cw_LLp_if",data=biomass),rep(NA, times=7), "CWM")
+names(CWM_LMA.LL) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varLL","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
+
+
+CWM_LMA.N <- c("CWM", fit.MAR(xvar='log.cw_LMAp_if',yvar="log.cw_Nmassp_if",data=biomass),rep(NA, times=7), "CWM")
+names(CWM_LMA.N) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNmass", "lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
+
+CWM_LL.N <- c("CWM", fit.MAR(xvar='log.cw_LLp_if',yvar="log.cw_Nmassp_if",data=biomass),rep(NA, times=7), "CWM")
+names(CWM_LL.N) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLL","varNmass","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
+
+CWM_LMA.Narea <- c("CWM", fit.MAR(xvar='log.cw_LMAp_if',yvar="log.cw_Nareap_if",data=biomass),rep(NA, times=7), "CWM")
+names(CWM_LMA.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLMA","varNarea","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
+
+CWM_LL.Narea <- c("CWM", fit.MAR(xvar="log.cw_LLp_if",yvar='log.cw_Nareap_if',data=biomass),rep(NA, times=7), "CWM")
+names(CWM_LL.Narea) <- c("Taxo.Unit","Int","Slope","Rho","r.sq", "n","varLL","varNarea","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig","Type")
+
+
+
+
+
+
+
 ###### .Combining Results into one dataframe #####
 
 # first add a "Type" column
@@ -806,6 +835,16 @@ colnames(LLNarea)[c(2:6, 9:15)] <- paste(colnames(all.results.LLNarea)[c(2:6, 9:
 
 all.results <- cbind(LMALL, LMAN[,-c(1,7,16)], LLNmass[,-c(1,7,8,16)], LMANarea[,-c(1,7,16)], LLNarea[,-c(1,7,8,16)]) # drop the duplicate 'var' columns
 
+
+### add in CWMs to dataframe post hoc
+allcwms <- c(CWM_LMA.LL, CWM_LMA.N[-c(1,7,16)], CWM_LL.N[-c(1,7,8,16)], CWM_LMA.Narea[-c(1,7,16)], CWM_LL.Narea[-c(1,7,8,16)])
+test <- all.results
+test$Taxo.Unit <- as.character(test$Taxo.Unit)
+test$Type <- as.character(test$Type)
+test[254,] <- allcwms
+
+all.results <- test
+
 #write.csv(all.results, "Results_SimpleMAreg_v1_030817.csv")
 #write.csv(all.results, "Results_SimpleMAreg_v2_031417.csv")
 #write.csv(all.results, "Results_SimpleMAreg_v3_031717.csv")
@@ -815,6 +854,7 @@ all.results <- cbind(LMALL, LMAN[,-c(1,7,16)], LLNmass[,-c(1,7,8,16)], LMANarea[
 #write.csv(all.results, "Results_SimpleMAreg_v7_051717.csv") # switched to LLNmass, and added CIs from null model
 #write.csv(all.results, "Results_SimpleMAreg_v8_051717.csv") # fixed bug that screwed up LL.Narea null model (when taxa had more variance than all families)
 write.csv(all.results, "Results_SimpleMAreg_v9rawavgs_20170620.csv")
+write.csv(all.results, "Results_SimpleMAreg_v9rawavgs_20170828_wCWM.csv") # with CWMs now added
 #all.resultsold <- read.csv("Results_SimpleMAreg_v8_051717.csv")
 
 
@@ -832,11 +872,20 @@ write.csv(all.results, "Results_SimpleMAreg_v9rawavgs_20170620.csv")
 #________________________________________________________________________
 ########## LOAD RESULTS DATA ##################
 
+# older version without community weighted mean row
 all.results <- read.csv("Results_SimpleMAreg_v9rawavgs_20170620.csv", row.names = 1)
 levels(all.results$Type) <- list(w.inSpp = "w.inSpp", w.inGen = "w.inGen", Sppw.inFam= "Sppw.inFam",Genw.inFam="Genw.inFam", Fam="Fam",Famclean="Famclean", global="global")
 
 all.results.cl <- all.results %>% filter(Type %in% c("w.inSpp","w.inGen","Genw.inFam","Famclean","global"))
 all.results.cl$Type <- factor(all.results.cl$Type)
+
+
+
+all.results.cwm <- read.csv("Results_SimpleMAreg_v9rawavgs_20170828_wCMW.csv", row.names = 1)
+levels(all.results$Type) <- list(w.inSpp = "w.inSpp", w.inGen = "w.inGen", Sppw.inFam= "Sppw.inFam",Genw.inFam="Genw.inFam", Fam="Fam",Famclean="Famclean", global="global", CWM="CWM")
+
+all.results.cwm.cl <- all.results %>% filter(Type %in% c("w.inSpp","w.inGen","Genw.inFam","Famclean","global", "CWM"))
+all.results.cwm.cl$Type <- factor(all.results.cl$Type)
 
 
 
@@ -1386,7 +1435,7 @@ colnames(spp.results) <- c("Species", "Int","Slope","Rho","r.sq","n","varLMA","v
 for(i in 1:length(unique(traits.common.sun$SP.ID))){
   species <- levels(traits.common.sun$SP.ID)[i]
   print(species)
-  dataz <- traits.common[which(traits.common$SP.ID==species),]
+  dataz <- traits.common.sun[which(traits.common.sun$SP.ID==species),]
   res <- fit.MAR(xvar='log.LMA',yvar="log.LL",data=dataz)
   spp.results[i,1] <- species
   spp.results[i,2:8] <- res

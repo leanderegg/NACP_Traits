@@ -566,6 +566,37 @@ Stand 43, 55 (PSEMEN) are both extremely high RGR for very low LeafFrac. They're
 
 
 
+######## New commit 07.26.17 ######
+started adding analysis of spp means for trait-env but realized I should commit before I fuck shit up too badly.
+  - but first I added mean environmental variables to spp.traits and a section for SPPmean analysis in Cd-Trait-Environment_Analysis.R
+
+
+
+- ran .ne model selection and averaging for all traits on SPPmean
+  - added SPPmean to the output for each trait and the variable importance and effect size .ne dataframes.
+  
+  
+Added in domSPPavs (took the average only of stands with 90% dominance, dropped me down to 11 species) to Cd-Trait-Growth_Analyses.R
+-Also moved the CWmean Trait-Growth code to the Trait_Growth_Analyses with the rest.
+-added SPP mean trait-growth analysis to the same.
+-Added row of plots w/spp means to Fig6.
+
+
+
+####### as of 08.28.17
+started making new figures for the ms revision
+
+## Made a new Fig 1 with Narea vs LMA + 3 different var decomps. Added this to Cd-ManuscriptFigures, whereas previous figures and all calculation code is in Cd-Initial_Analysis
+- updated code in Initial_Analysis to also fit btw family component for PNW dataset. Then updated objects to combine w.in plot and btw plot components for plotting
+
+## started updating trait covariance figures with CWM values added.
+- to do this I had to calculate the covariances for CWMs and tack them on to the end of all.results
+- I did this and saved a new version. But the new version fucks up all my old plotting code. So I should probably stick with the older version ()
+
+
+
+
+
 
 ############# USEFUL PACKAGES ########################
 TR8 for pulling life history, height, growth form, etc. data from various databases.

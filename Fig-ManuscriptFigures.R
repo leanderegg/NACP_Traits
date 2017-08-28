@@ -34,6 +34,69 @@ plot.MAR <- function(xvar, yvar, data, method="SMA", linecol, lwd=1) {
 }
 
 
+#________________________________________________________________
+###### FIG 1: Variance Decomp ######
+#________________________________________________________________
+# current plant:
+# panel a) global var decomp
+# panel b) all PNW trees 
+# panel c) all evergreen-needleleaf PFT
+# panel d) log.Nare vs log.LMA for different subsets.
+# Ecol Let width options = 3.23, 4.33 or 6.81
+
+quartz(width=4.33, height=4.73)
+par(mfrow=c(2,2), mgp=c(2,.7,0), cex.lab=1.1, cex.axis=1.1, mar=c(4.5,2,1.5,2),oma=c(0,2,3.8,0))
+
+
+plot(log.Narea~log.LMA, allspp, col="grey", pch=16, xlab=expression(paste(log[10](LMA))))
+mtext(expression(paste(log[10](N[area]))), side=2, line=2)
+points(log.Narea~log.LMA, traits)
+points(log.Narea~log.LMA, traits.domcon1, pch=16, cex=.8, col=mypal[3])
+points(biomass$log.cw_Nareap_if~biomass$log.cw_LMAp_if, bg=mypal[5], pch=24)
+mtext("a)", side=3, adj=-.1, line=.3)
+legend(x=1.1, y=2.5, xpd=NA,legend = c("Global","PNW woody plants", "Evgrn Needle PFT", "PNW CWMs"), pch=c(16,1,16,24), col=c("grey","black",mypal[3],"black"), pt.bg = mypal[5], bty="n")
+
+
+#par(mgp=c(3,.7,0), cex.lab=1.1, cex.axis=1.1, mfrow=c(1,3), mar=c(5,2,5,2), oma=c(0,3,0,0))
+cols <- rev(c(mypal[colchoices[c(1,2,3)]],"#CCCCCC"))#brewer.pal(11, "RdBu")[c(11,9,1, 6)]
+# With old colors, alpha=CC, with new colors, alpha=99
+bp <-barplot(as.matrix(traitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("","","",""),las=2,args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"99")
+             , ylab= "Proportion of total Variance" #ylab="Proportion of total Variance\n(log traits)"
+             , xlab="", mgp=c(2.5,.8,0))
+#legend(xpd=T, x = 0, y=1.2, legend=rev(c("btw Fams","w/in Fam","w/in Gen","w/in Spp")), fill=rev(paste0(cols,"99")), ncol=2, bty="n",  cex=1.2)
+text(x = bp, y= par("usr")[3]-.05,labels =  c(expression(paste(log[10](LMA))), expression(paste(log[10](LL))),expression(paste(log[10](N[mass]))),expression(paste(log[10](N[area])))), srt=40, adj=1,xpd=NA, cex=1.1, font=1)
+mtext("b)", side=3, adj=-.1, line=0.3)
+mtext("Prop of Total Variance", side=2, line=2.3)
+mtext("Global", side=3, line=0.2)
+
+legend(xpd=NA, x = 0, y=1.95, legend=rev(c("btw Fams","w/in Fam","w/in Gen","w/in Spp")), fill=rev(paste0(cols,"99")), ncol=1, bty="n",  cex=1)
+
+
+#barplot(as.matrix(rtraitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("", "","",""),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"99"),mgp=c(2,1,0), ylab="")#Proportion of total Variance\n(raw traits)", mgp=c(2,1,0))
+#text(x = bp, y= par("usr")[3]-.05,labels =  c("LMA", "LL",expression(paste(N[mass])),expression(paste(N[area]))), srt=40, adj=1,xpd=NA, cex=1.4, font=1)
+#mtext("Global (raw)", side=3, line=0.3)
+
+bp <-barplot(as.matrix(alltraitsvars.comb[,1:4]),beside=F,legend.text = F,xpd = T, names.arg = c("","","",""),las=2,args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"99")
+             , ylab= "Proportion of total Variance" #ylab="Proportion of total Variance\n(log traits)"
+             , xlab="", mgp=c(2.5,.8,0), las=2)
+#legend(xpd=T, x = 0, y=1.2, legend=rev(c("btw Fams","w/in Fam","w/in Gen","w/in Spp")), fill=rev(paste0(cols,"99")), ncol=2, bty="n",  cex=1.2)
+text(x = bp, y= par("usr")[3]-.05,labels =  c(expression(paste(log[10](LMA))), expression(paste(log[10](LL))),expression(paste(log[10](N[mass]))),expression(paste(log[10](N[area])))), srt=40, adj=1,xpd=NA, cex=1.1, font=1)
+mtext("c)", side=3, adj=-.2, line=0.3)
+mtext("Prop of Total Variance", side=2, line=2.3)
+mtext("PNW woody plants", side=3, line=0.3)
+
+#legend(xpd=NA, x = 0, y=1.6, legend=rev(c("btw Fams","w/in Fam","w/in Gen","w/in Spp")), fill=rev(paste0(cols,"99")), ncol=4, bty="n",  cex=1.2)
+
+
+barplot(as.matrix(domconvars1.comb[,1:4]),beside=F,legend.text = F,xpd = T, names.arg = c("", "","",""),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols[-1],"99"), ylab="", mgp=c(2,1,0))
+text(x = bp, y= par("usr")[3]-.05,labels =  c(expression(paste(log[10](LMA))), expression(paste(log[10](LL))),expression(paste(log[10](N[mass]))),expression(paste(log[10](N[area])))), srt=40, adj=1,xpd=NA, cex=1.1, font=1)
+mtext("d)", side=3, adj=-.2, line=.3)
+mtext("Evgrn Needle PFT", side=3, line=0.3)
+
+
+
+
+
 
 
 
@@ -185,7 +248,7 @@ m <- lmodel2(log.Nmass~log.LMA, allspp)
 points(y=m$regression.results$Slope[3],x=5, pch=16, cex=1.3, col="darkgrey")
 arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
 arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
-m <- lmodel2(log.Mmass~log.LMA, fam.dataclean)
+m <- lmodel2(log.Nmass~log.LMA, fam.dataclean)
 points(y=m$regression.results$Slope[3],x=4, pch=16, cex=1.3, col="black")
 arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3)
 arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3)
@@ -591,15 +654,14 @@ mtext(text = "d)", side = 3, adj=0, line=.2)
 #________________________________________________________________
 
 
-####### Figure 6: reploted with traits.mono and biost_growth instead of RGR.
-# for 6 panel figure without Nmass, but with rGR top row and biostGRWOTH bottom
-quartz(width=6.8, height=4) # Eco Let width is 173mm, 110mm or 82mm
+quartz(width=6.8, height=5.5) # Eco Let width is 173mm, 110mm or 82mm
 #pdf(file = "Traits-v-Growth_v2.pdf",width = 7.1, height=6)
-par(mar=c(0,0,0,0), oma=c(3.5,3.5,1.2,2),mfrow=c(2,4), cex=1.1,mgp=c(2.5,.5,0))
+par(mar=c(0,0,0,0), oma=c(3.5,3.5,1.2,2),mfrow=c(3,4), cex=1.1,mgp=c(2.5,.5,0), cex.axis=.9)
 
-ylims <- c(-5.5,0)
+ylims <- c(-2.6,0)
 cex.text <- .8
 cex.pts <- .9
+palette(paste0(mypal,"AA"))
 #### top three panels: RGR
 f0LL <- predict(modLLvRGR, re.form=NA)
 f1LL <- fitted(modLLvRGR)
@@ -607,10 +669,11 @@ f1LL <- fitted(modLLvRGR)
 I <- order(plotavs90$mlog.LL[-which(is.na(plotavs90$RGR) | is.na(plotavs90$mlog.LL))])
 LLs <- sort(plotavs90$mlog.LL[-which(is.na(plotavs90$RGR) | is.na(plotavs90$mlog.LL))])
 spid <- plotavs90$SP.ID[-which(is.na(plotavs90$RGR) | is.na(plotavs90$mlog.LL))][I]
-plot(log(RGR)~mlog.LL, plotavs90, col=SP.ID, pch=16, cex=cex.pts,xaxt="n", xlab="", ylim=ylims) #xlab="log(Leaf Lifespan)")
+plot(log(RGR, base=10)~mlog.LL, plotavs90, col=SP.ID, pch=16, cex=cex.pts,xaxt="n", xlab="", ylim=ylims) #xlab="log(Leaf Lifespan)")
 #mtext("Relative Growth Rate", side=2, line=2, cex=1.1)
 #mtext("log(Leaf Life)", side=1, line=1.5, cex=1.1)
 #lines(LLs, f0LL[I], lwd=4, lty=1)
+palette(mypal)
 for(i in levels(spid)){
   lines(LLs[which(spid==i)], f1LL[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3)
 }
@@ -620,32 +683,35 @@ mtext(text = bquote(~R[m]^2==.(r2tmp)), side=3, adj = .9, line=-2.2 ,cex=cex.tex
 mtext("a)", side=3, adj=0)
 
 ### plotting LMA v RGR
+palette(paste0(mypal,"AA"))
 f0lma <- predict(modLMAvRGR, re.form=NA)
 f1lma <- fitted(modLMAvRGR)
 # sort lma values so lines draw right # no NA values in LMA
 I <- order(plotavs90$mlog.LMA)
 LMAs <- sort(plotavs90$mlog.LMA)
 spid <- plotavs90$SP.ID[I]
-plot(log(RGR)~mlog.LMA, plotavs90, col=SP.ID, pch=16, cex=cex.pts,xaxt="n", yaxt='n',ylim=ylims) #xlab="log(LMA)")#, xlim=c(2,2.6))#log(LMA)")
+plot(log(RGR, base=10)~mlog.LMA, plotavs90, col=SP.ID, pch=16, cex=cex.pts,xaxt="n", yaxt='n',ylim=ylims) #xlab="log(LMA)")#, xlim=c(2,2.6))#log(LMA)")
 #mtext("log(LMA)", side=1, line=1.5, cex=1.1)
 #lines(c(min(LMAs), max(LMAs)), c(max(f0lma), min(f0lma)), lwd=4, lty=3)
+palette(mypal)
 for(i in levels(spid)){
-  lines(LMAs[which(spid==i)], f1lma[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3)
+  lines(LMAs[which(spid==i)], f1lma[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3, lty=2)
 }
 mtext(text = paste0("p=",round(anova(modLMAvRGR, modLMAvRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .05, line=-1 ,cex=cex.text)
 mtext("b)", side=3, adj=0)
 
 ### plotting Nmass v RGR
+palette(paste0(mypal,"AA"))
 f0Nmass <- predict(modNmassvRGR, re.form=NA)
 f1Nmass <- fitted(modNmassvRGR)
 # sort lma values so lines draw right
 I <- order(plotavs90$mlog.Nmass[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Nmass))])
 Nmasss <- sort(plotavs90$mlog.Nmass[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Nmass))])
 spid <- plotavs90$SP.ID[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Nmass))][I]
-plot(log(RGR)~mlog.Nmass, plotavs90, col=SP.ID, pch=16, cex=cex.pts, xlab="", xlim=c(-.22,.25), xaxt="n", yaxt="n",ylim=ylims)#log(Nmass)")
+plot(log(RGR, base=10)~mlog.Nmass, plotavs90, col=SP.ID, pch=16, cex=cex.pts, xlab="", xlim=c(-.22,.25), xaxt="n", yaxt="n",ylim=ylims)#log(Nmass)")
 #mtext("log(Nmass)", side=1, line=1.5, cex=1.1)
 #lines(Nmasss, f0Nmass[I], lwd=4, lty=1)
-
+palette(mypal)
 for(i in levels(spid)){
   lines(Nmasss[which(spid==i)], f1Nmass[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3)
 }
@@ -656,58 +722,339 @@ mtext("c)", side=3, adj=0)
 # 
 
 ### plotting Narea v RGR
+palette(paste0(mypal,"AA"))
 f0Narea <- predict(modNareavRGR, re.form=NA)
 f1Narea <- fitted(modNareavRGR)
 # sort lma values so lines draw right
 I <- order(plotavs90$mlog.Narea[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))])
 Nareas <- sort(plotavs90$mlog.Narea[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))])
 spid <- plotavs90$SP.ID[which(!is.na(plotavs90$RGR) & !is.na(plotavs90$mlog.Narea))][I]
-plot(log(RGR)~mlog.Narea, plotavs90, col=SP.ID, pch=16, cex=cex.pts, xlab="", xaxt="n", yaxt="n",ylim=ylims)#log(Narea)")
+plot(log(RGR, base=10)~mlog.Narea, plotavs90, col=SP.ID, pch=16, cex=cex.pts, xlab="", xaxt="n", yaxt="n",ylim=ylims)#log(Narea)")
 #mtext("Relative Growth Rate", side=2, line=2, cex=1.1)
 #mtext("log(Narea)", side=1, line=1.5, cex=1.1)
 #lines(Nareas, f0Narea[I], lwd=4, lty=3)
+palette(mypal)
 for(i in levels(spid)){
-  lines(Nareas[which(spid==i)], f1Narea[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3)
+  lines(Nareas[which(spid==i)], f1Narea[I][which(spid==i)],  col=spid[which(spid==i)], lwd=3, lty=2)
 }
 
 mtext(text = paste0("p=",round(anova(modNareavRGR, modNareavRGRnull)$`Pr(>Chisq)`[2],3)), side=3, adj = .05, line=-1 ,cex=cex.text)
 mtext("d)", side=3, adj=0)
 mtext("w/in spp", side=4, line=0)
 
-###### Community-weighted traits
 
-plot(log(RGR)~log.cw_LLp_if, biomass, pch=16, ylim=ylims, cex=cex.pts)
-abline(lm(log(RGR)~log.cw_LLp_if, biomass), lwd=3)
-mtext(text = paste0("p=", round(anova(LLmod2)$`Pr(>F)`[1],8), ","), side=3, adj=.1, line=-1, cex=cex.text)
-mtext(text = bquote(~R^2==.(round(summary(LLmod2)$r.squared,2))), side=3, adj = .95, line=-1 , cex=cex.text)
-mtext("log(RGR)", side=2, line=2, cex=1.1, adj=1.5)
-mtext("log(Leaf Life)", side=1, line=2, cex=1.1)
+###### Species Means ######
+
+plot(log(RGR, base=10)~log.LL, domSPPavs, pch=16, ylim=ylims, cex=cex.pts, xaxt="n")
+abline(lm(log(RGR, base=10)~log.LL, domSPPavs), lwd=3)
+mtext(text = paste0("p=", round(anova(LLmodSPP2)$`Pr(>F)`[1],2), ","), side=3, adj=.1, line=-1, cex=cex.text)
+mtext(text = bquote(~R^2==.(round(summary(LLmodSPP2)$r.squared,3))), side=3, adj = .95, line=-1 , cex=cex.text)
+mtext(expression(paste(log[10](RGR))), side=2, line=2, cex=1.1)
+#mtext("log(Leaf Life)", side=1, line=2, cex=1.1)
 #mtext("a)", side=3, adj=0)
 
-plot(log(RGR)~log.cw_LMAp_if, biomass, pch=16, yaxt="n", ylim=ylims, cex=cex.pts)
-abline(lm(log(RGR)~log.cw_LMAp_if, biomass), lwd=3, lty=2)
-mtext(text = paste0("p=", round(anova(LMAmod2)$`Pr(>F)`[1],2)), side=3, adj=.05, line=-1, cex=cex.text)
-mtext("log(LMA)", side=1, line=2, cex=1.1)
+plot(log(RGR, base=10)~log.LMA, domSPPavs, pch=16, yaxt="n", ylim=ylims, cex=cex.pts, xaxt="n")
+abline(lm(log(RGR, base=10)~log.LMA, domSPPavs), lwd=3, lty=2)
+mtext(text = paste0("p=", round(anova(LMAmodSPP2)$`Pr(>F)`[1],2)), side=3, adj=.05, line=-1, cex=cex.text)
+#mtext("log(LMA)", side=1, line=2, cex=1.1)
 #mtext("b)", side=3, adj=0)
 
-plot(log(RGR)~log.cw_Nmassp_if, biomass, pch=16, ylim=ylims, yaxt="n", cex=cex.pts)
-abline(lm(log(RGR)~log.cw_Nmassp_if, biomass), lwd=3, lty=1)
-mtext(text = paste0("p=", round(anova(Nmassmod2)$`Pr(>F)`[1],3),","), side=3, adj=.05, line=-1, cex=cex.text)
-mtext(text = bquote(~R^2==.(round(summary(Nmassmod2)$r.squared,2))), side=3, adj = .95, line=-1, cex=cex.text)
-#mtext("log(RGR)", side=2, line=2, cex=1.1)
-mtext("log(Nmass)", side=1, line=2, cex=1.1)
+plot(log(RGR, base=10)~log.Nmass, domSPPavs, pch=16, ylim=ylims, yaxt="n", cex=cex.pts, xaxt="n")
+abline(lm(log(RGR, base=10)~log.Nmass, domSPPavs), lwd=3, lty=2)
+mtext(text = paste0("p=", round(anova(NmassmodSPP2)$`Pr(>F)`[1],3),","), side=3, adj=.05, line=-1, cex=cex.text)
+#mtext(text = bquote(~R^2==.(round(summary(NmassmodSPP2)$r.squared,2))), side=3, adj = .95, line=-1, cex=cex.text)
+#mtext("log(RGR, base=10)", side=2, line=2, cex=1.1)
+#mtext("log(Nmass)", side=1, line=2, cex=1.1)
 #mtext("c)", side=3, adj=0)
 
-plot(log(RGR)~log.cw_Nareap_if, biomass, pch=16, ylim=ylims, yaxt="n", cex=cex.pts)#, yaxt="n")
+plot(log(RGR, base=10)~log.Narea, domSPPavs, pch=16, ylim=ylims, yaxt="n", cex=cex.pts, xaxt="n")#, yaxt="n")
 #axis(2,at = log(c(.01,.02,.03,0.04,.1,0.2,0.3)), labels =c(.01,.02,.03,0.04,.1,0.2,0.3) )
-abline(lm(log(RGR)~log.cw_Nareap_if, biomass), lwd=3, lty=2)
+abline(lm(log(RGR, base=10)~log.Narea, domSPPavs), lwd=3, lty=2)
+mtext(text = paste0("p=", round(anova(NareamodSPP2)$`Pr(>F)`[1],2)), side=3, adj=.05, line=-1, cex=cex.text)
+#mtext("log(Narea)", side=1, line=2, cex=1.1)
+#mtext("d)", side=3, adj=0)
+mtext("Among species", side=4, line=0)
+
+
+
+
+###### Community-weighted traits
+
+plot(log(RGR, base=10)~log.cw_LLp_if, biomass, pch=16, ylim=ylims, cex=cex.pts, col="grey")
+abline(lm(log(RGR, base=10)~log.cw_LLp_if, biomass), lwd=3)
+mtext(text = paste0("p=", round(anova(LLmod2)$`Pr(>F)`[1],8), ","), side=3, adj=.1, line=-1, cex=cex.text)
+mtext(text = bquote(~R^2==.(round(summary(LLmod2)$r.squared,2))), side=3, adj = .95, line=-1 , cex=cex.text)
+#mtext(expression(paste(log[10](RGR))), side=2, line=2, cex=1.1, adj=1.5)
+mtext(expression(paste(log[10](LL))), side=1, line=2, cex=1.1)
+#mtext("a)", side=3, adj=0)
+
+plot(log(RGR, base=10)~log.cw_LMAp_if, biomass, pch=16, yaxt="n", ylim=ylims, cex=cex.pts, col="grey")
+abline(lm(log(RGR, base=10)~log.cw_LMAp_if, biomass), lwd=3, lty=2)
+mtext(text = paste0("p=", round(anova(LMAmod2)$`Pr(>F)`[1],2)), side=3, adj=.05, line=-1, cex=cex.text)
+mtext(expression(paste(log[10](LMA))), side=1, line=2, cex=1.1)
+#mtext("b)", side=3, adj=0)
+
+plot(log(RGR, base=10)~log.cw_Nmassp_if, biomass, pch=16, ylim=ylims, yaxt="n", cex=cex.pts, col="grey")
+abline(lm(log(RGR, base=10)~log.cw_Nmassp_if, biomass), lwd=3, lty=1)
+mtext(text = paste0("p=", round(anova(Nmassmod2)$`Pr(>F)`[1],3),","), side=3, adj=.05, line=-1, cex=cex.text)
+mtext(text = bquote(~R^2==.(round(summary(Nmassmod2)$r.squared,2))), side=3, adj = .95, line=-1, cex=cex.text)
+#mtext("log(RGR, base=10)", side=2, line=2, cex=1.1)
+mtext(expression(paste(log[10](Nmass))), side=1, line=2, cex=1.1)
+#mtext("c)", side=3, adj=0)
+
+plot(log(RGR, base=10)~log.cw_Nareap_if, biomass, pch=16, ylim=ylims, yaxt="n", cex=cex.pts, col="grey")#, yaxt="n")
+#axis(2,at = log(c(.01,.02,.03,0.04,.1,0.2,0.3)), labels =c(.01,.02,.03,0.04,.1,0.2,0.3) )
+abline(lm(log(RGR, base=10)~log.cw_Nareap_if, biomass), lwd=3, lty=2)
 mtext(text = paste0("p=", round(anova(Nareamod2)$`Pr(>F)`[1],2)), side=3, adj=.05, line=-1, cex=cex.text)
-mtext("log(Narea)", side=1, line=2, cex=1.1)
+mtext(expression(paste(log[10](Narea))), side=1, line=2, cex=1.1)
 #mtext("d)", side=3, adj=0)
 mtext("CW means", side=4, line=0)
+palette(mypal)
 
 
 
+
+
+#__________________________________________________________________________________
+########## **Fig5 NEW: Ensemble Effects, R2 NO ECOREG (.ne) #########
+#_________________________________________________________________________________
+
+
+quartz(width=3.33, height=6.5) # full page = 6.81
+par(mfcol=c(6,1), mar=c(0,3.5,0,0), oma=c(5,0,2,1), mgp=c(2.5,.75,0), cex=.9)
+panlab.cex <- .9
+panlab.ln <- -1.2
+CWbg <- "white"#mypal[6]#"white"
+SPPbg <- "black"#mypal[colchoices[2]]#"black"#mypal[2]
+boxcol <- "grey"#paste0(mypal[colchoices[1]],"66")#"grey"
+ptcex=1.1
+boxwex = 0.4
+### Effect Sizes #####
+boxplot(value~trait, avglong.ne[which(avglong.ne$variable=="climPC1" & avglong.ne$SP.ID!="CWmean" & avglong.ne$SP.ID!="SPPmean" ),], at=c(1,2,3,4)
+        , ylim=c(-.7,1), xaxt="n", xlim=c(0.5,4.5)
+        ,outpch=1, border=boxcol, col=boxcol, outcol=boxcol
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=boxwex, whiskcol=boxcol #, boxwex=1, medlwd=3
+        ,las=2, range=0)
+#plot(value~xvals, avglong.ne[which(avglong.ne$trait=="LeafLife" & avglong.ne$SP.ID!="CWmean"),], pch=16, xaxt="n", ylab="", ylim=c(-0.7,1), xlab="", xlim=c(0.6,6.4))
+abline(h=0, col="grey")
+points(value~trait, avglong.ne[which(avglong.ne$variable=="climPC1"  & avglong.ne$SP.ID=="SPPmean"),], pch=25,cex=ptcex, bg=SPPbg)
+points(value~trait, avglong.ne[which(avglong.ne$variable=="climPC1"  & avglong.ne$SP.ID=="CWmean"),], pch=24, bg=CWbg, cex=ptcex)
+mtext(text = "B)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+mtext(text = "wetness",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+#text(x=7, y=0, pos=3, labels = "NA",cex=.7)
+
+boxplot(value~trait, avglong.ne[which(avglong.ne$variable=="climPC2" & avglong.ne$SP.ID!="CWmean" & avglong.ne$SP.ID!="SPPmean" ),], at=c(1,2,3,4)
+        , ylim=c(-.7,1), xaxt="n", xlim=c(0.5,4.5)
+        ,outpch=1, border=boxcol, col=boxcol, outcol=boxcol
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=boxwex, whiskcol=boxcol #, boxwex=1, medlwd=3
+        ,las=2, range=0)
+#plot(value~xvals, avglong.ne[which(avglong.ne$trait=="LeafLife" & avglong.ne$SP.ID!="CWmean"),], pch=16, xaxt="n", ylab="", ylim=c(-0.7,1), xlab="", xlim=c(0.6,6.4))
+abline(h=0, col="grey")
+points(value~trait, avglong.ne[which(avglong.ne$variable=="climPC2"  & avglong.ne$SP.ID=="SPPmean"),], pch=25,cex=ptcex, bg=SPPbg)
+points(value~trait, avglong.ne[which(avglong.ne$variable=="climPC2"  & avglong.ne$SP.ID=="CWmean"),], pch=24, bg=CWbg, cex=ptcex)
+mtext(text = "D)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+mtext(text = "warmth",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+#text(x=7, y=0, pos=3, labels = "NA",cex=.7)
+
+boxplot(value~trait, avglong.ne[which(avglong.ne$variable=="soil_N" & avglong.ne$SP.ID!="CWmean" & avglong.ne$SP.ID!="SPPmean" ),], at=c(1,2,3,4)
+        , ylim=c(-.7,1), xaxt="n", xlim=c(0.5,4.5)
+        ,outpch=1, border=boxcol, col=boxcol, outcol=boxcol
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=boxwex, whiskcol=boxcol #, boxwex=1, medlwd=3
+        ,las=2, range=0)
+#plot(value~xvals, avglong.ne[which(avglong.ne$trait=="LeafLife" & avglong.ne$SP.ID!="CWmean"),], pch=16, xaxt="n", ylab="", ylim=c(-0.7,1), xlab="", xlim=c(0.6,6.4))
+abline(h=0, col="grey")
+points(value~trait, avglong.ne[which(avglong.ne$variable=="soil_N"  & avglong.ne$SP.ID=="SPPmean"),], pch=25,cex=ptcex, bg=SPPbg)
+points(value~trait, avglong.ne[which(avglong.ne$variable=="soil_N"  & avglong.ne$SP.ID=="CWmean"),], pch=24, bg=CWbg, cex=ptcex)
+mtext(text = "F)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+mtext(text = "soil N",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+mtext(text="Standardized Effect Sizes",side = 2, adj=-.1, line=2.1)
+#text(x=7, y=0, pos=3, labels = "NA",cex=.7)
+
+boxplot(value~trait, avglong.ne[which(avglong.ne$variable=="Stand_Age" & avglong.ne$SP.ID!="CWmean" & avglong.ne$SP.ID!="SPPmean" ),], at=c(1,2,3,4)
+        , ylim=c(-.7,1), xaxt="n", xlim=c(0.5,4.5)
+        ,outpch=1, border=boxcol, col=boxcol, outcol=boxcol
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=boxwex, whiskcol=boxcol #, boxwex=1, medlwd=3
+        ,las=2, range=0)
+#plot(value~xvals, avglong.ne[which(avglong.ne$trait=="LeafLife" & avglong.ne$SP.ID!="CWmean"),], pch=16, xaxt="n", ylab="", ylim=c(-0.7,1), xlab="", xlim=c(0.6,6.4))
+abline(h=0, col="grey")
+points(value~trait, avglong.ne[which(avglong.ne$variable=="Stand_Age"  & avglong.ne$SP.ID=="SPPmean"),], pch=25,cex=ptcex, bg=SPPbg)
+points(value~trait, avglong.ne[which(avglong.ne$variable=="Stand_Age"  & avglong.ne$SP.ID=="CWmean"),], pch=24, bg=CWbg, cex=ptcex)
+mtext(text = "H)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+mtext(text = "log(Age)",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+#text(x=7, y=0, pos=3, labels = "NA",cex=.7)
+
+
+boxplot(value~trait, avglong.ne[which(avglong.ne$variable=="LAI" & avglong.ne$SP.ID!="CWmean" & avglong.ne$SP.ID!="SPPmean" ),], at=c(1,2,3,4)
+        , ylim=c(-.7,1), xaxt="n", xlim=c(0.5,4.5)
+        ,outpch=1, border=boxcol, col=boxcol, outcol=boxcol
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=boxwex, whiskcol=boxcol #, boxwex=1, medlwd=3
+        ,las=2, range=0)
+#plot(value~xvals, avglong.ne[which(avglong.ne$trait=="LeafLife" & avglong.ne$SP.ID!="CWmean"),], pch=16, xaxt="n", ylab="", ylim=c(-0.7,1), xlab="", xlim=c(0.6,6.4))
+abline(h=0, col="grey")
+points(value~trait, avglong.ne[which(avglong.ne$variable=="LAI"  & avglong.ne$SP.ID=="SPPmean"),], pch=25,cex=ptcex, bg=SPPbg)
+points(value~trait, avglong.ne[which(avglong.ne$variable=="LAI"  & avglong.ne$SP.ID=="CWmean"),], pch=24, bg=CWbg, cex=ptcex)
+mtext(text = "LAI",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+
+boxplot(value~trait, avglong.ne[which(avglong.ne$variable=="Growth" & avglong.ne$SP.ID!="CWmean" & avglong.ne$SP.ID!="SPPmean" ),], at=c(1,2,3,4)
+        , ylim=c(-.7,1), xaxt="n", xlim=c(0.5,4.5)
+        ,outpch=1, border=boxcol, col=boxcol, outcol=boxcol
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=boxwex, whiskcol=boxcol #, boxwex=1, medlwd=3
+        ,las=2, range=0)
+#plot(value~xvals, avglong.ne[which(avglong.ne$trait=="LeafLife" & avglong.ne$SP.ID!="CWmean"),], pch=16, xaxt="n", ylab="", ylim=c(-0.7,1), xlab="", xlim=c(0.6,6.4))
+abline(h=0, col="grey")
+points(value~trait, avglong.ne[which(avglong.ne$variable=="Growth"  & avglong.ne$SP.ID=="SPPmean"),], pch=25,cex=ptcex, bg=SPPbg)
+points(value~trait, avglong.ne[which(avglong.ne$variable=="Growth"  & avglong.ne$SP.ID=="CWmean"),], pch=24, bg=CWbg, cex=ptcex)
+mtext(text = "Growth",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+
+axis(side = 1,at = c(1,2,3,4), labels = c("Leaf Life", "LMA","Narea", "Nmass"), xpd=NA, las=3, srt=50, xlim=c(0.6,6.4))
+
+
+
+
+
+
+
+
+### Variable Importances #####
+
+boxplot(value~xvals, impslong.ne[which(impslong.ne$trait=="LeafLife" & impslong.ne$SP.ID!="CWmean"),], at=c(1,2,3,4,5,6)
+        , ylim=c(0,1.3), yaxt="n", xaxt="n"
+        ,outpch=1, border=boxcol, col=boxcol, outcol=boxcol
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol=boxcol #, boxwex=1, medlwd=3
+        ,las=2, range=0)
+points(value~xvals, impslong.ne[which(impslong.ne$trait=="LeafLife" & impslong.ne$SP.ID=="SPPmean"),], pch=25,cex=ptcex, bg=SPPbg)
+points(value~xvals, impslong.ne[which(impslong.ne$trait=="LeafLife" & impslong.ne$SP.ID=="CWmean"),], pch=24, bg=CWbg, cex=ptcex)
+axis(2,at=c(0,.25,.5,.75,1), labels = c(0,.25,.5,.75,1))
+mtext(text = "C)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+
+boxplot(value~xvals, impslong.ne[which(impslong.ne$trait=="LMA" & impslong.ne$SP.ID!="CWmean"),], at=c(1,2,3,4,5,6)
+        , ylim=c(0,1.3), yaxt="n", xaxt="n"
+        ,outpch=1, border=boxcol, col=boxcol, outcol=boxcol
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol=boxcol #, boxwex=1, medlwd=3
+        ,las=2, range=0)
+points(value~xvals, impslong.ne[which(impslong.ne$trait=="LMA" & impslong.ne$SP.ID=="SPPmean"),], pch=25,cex=ptcex, bg=SPPbg)
+points(value~xvals, impslong.ne[which(impslong.ne$trait=="LMA" & impslong.ne$SP.ID=="CWmean"),], pch=24, bg=CWbg, cex=ptcex)
+axis(2,at=c(0,.25,.5,.75,1), labels = c(0,.25,.5,.75,1))
+mtext(text = "E)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+
+boxplot(value~xvals, impslong.ne[which(impslong.ne$trait=="Nmass" & impslong.ne$SP.ID!="CWmean"),], at=c(1,2,3,4,5,6)
+        , ylim=c(0,1.3), yaxt="n", xaxt="n"
+        ,outpch=1, border=boxcol, col=boxcol, outcol=boxcol
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol=boxcol #, boxwex=1, medlwd=3
+        ,las=2, range=0)
+points(value~xvals, impslong.ne[which(impslong.ne$trait=="Nmass" & impslong.ne$SP.ID=="SPPmean"),], pch=25,cex=ptcex, bg=SPPbg)
+points(value~xvals, impslong.ne[which(impslong.ne$trait=="Nmass" & impslong.ne$SP.ID=="CWmean"),], pch=24, cex=ptcex,bg=CWbg)
+axis(2,at=c(0,.25,.5,.75,1), labels = c(0,.25,.5,.75,1))
+mtext(text = "G)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+mtext(text="Vairable Importances",side = 2, adj=-.2, line=2.1)
+
+boxplot(value~xvals, impslong.ne[which(impslong.ne$trait=="Narea" & impslong.ne$SP.ID!="CWmean"),], at=c(1,2,3,4,5,6)
+        , ylim=c(0,1.3), yaxt="n", xaxt="n"
+        ,outpch=1, border=boxcol, col=boxcol, outcol=boxcol
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol=boxcol #, boxwex=1, medlwd=3
+        ,las=2, range=0)
+points(value~xvals, impslong.ne[which(impslong.ne$trait=="Narea" & impslong.ne$SP.ID=="SPPmean"),], pch=25,cex=ptcex, bg=SPPbg)
+points(value~xvals, impslong.ne[which(impslong.ne$trait=="Narea" & impslong.ne$SP.ID=="CWmean"),], pch=24, cex=ptcex,bg=CWbg)
+axis(2,at=c(0,.25,.5,.75,1), labels = c(0,.25,.5,.75,1))
+mtext(text = "I)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+axis(side = 1,at = c(1,2,3,4,5,6), labels = c("Wetness", "Warmth","Soil N", "log(Age)","LAI","Gr Rate"), xpd=NA, las=3, srt=50, xlim=c(0.6,6.4))
+
+
+
+###### Old version with dotplot
+# plot(value~xvals, impslong[which(impslong$trait=="LeafLife"),], pch=16, xaxt="n", ylab="", ylim=c(0,1.3), xlab="", xlim=c(0.6,7.4))
+# #abline(h=0)
+# mtext(text = "E)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+# #mtext(text = "log(LL)",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+# plot(value~xvals, impslong[which(impslong$trait=="LMA"),], pch=16, xaxt="n", ylab="", ylim=c(0,1.3), xlab="", xlim=c(0.6,7.4))
+# #abline(h=0)
+# mtext(text = "F)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+# #mtext(text = "log(LMA)",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+# plot(value~xvals, impslong[which(impslong$trait=="Nmass"),], pch=16, xaxt="n", ylab="", ylim=c(0,1.3), xlab="", xlim=c(0.6,7.4))
+# #abline(h=0)
+# mtext(text = "G)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+# #mtext(text = "log(Nmass)",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+# mtext(text="Standardized Effect Sizes",side = 2, adj=-.1, line=2.1)
+# plot(value~xvals, impslong[which(impslong$trait=="Narea"),], pch=16, xaxt="n", ylab="", ylim=c(0,1.3), xlab="", xlim=c(0.6,7.4))
+# #abline(h=0)
+# mtext(text = "H)",side = 3,line = panlab.ln,adj=0.02,cex=panlab.cex )
+# #mtext(text = "log(Narea)",side = 3,line = panlab.ln,adj=0.9,cex=panlab.cex)
+
+
+
+
+
+
+#________________________________________________________
+#### figure of R2s for the different traits
+
+
+
+quartz(width=4.33, height=2)
+par(mar=c(.2,5,3,3), mgp=c(2,.75,0))
+boxplot(llbestmods.ne$r.squaredGLMM.R2m[-which(llbestmods.ne$SP.ID %in% c("SPPmean","CWmean"))]~rep(1, times=6), horizontal=T, at=4, xlim=c(0,5), ylim=c(0,1)
+        , yaxt="n", xaxt="n"
+        ,outpch=1, border=boxcol, col=boxcol, outcol=boxcol
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol=boxcol
+        , range=0)
+boxplot(lmabestmods.ne$r.squaredGLMM.R2m[-which(lmabestmods.ne$SP.ID%in% c("SPPmean","CWmean"))]~rep(1, times=6), horizontal=T, at=3, xlim=c(0,5), ylim=c(0,1)
+        , yaxt="n", xaxt="n"
+        ,outpch=1, border=boxcol, col=boxcol, outcol=boxcol
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol=boxcol, add=T , range=0)
+boxplot(nmassbestmods.ne$r.squaredGLMM.R2m[-which(nmassbestmods.ne$SP.ID%in% c("SPPmean","CWmean"))]~rep(1, times=6), horizontal=T, at=2, xlim=c(0,5), ylim=c(0,1)
+        , yaxt="n", xaxt="n"
+        ,outpch=1, border=boxcol, col=boxcol, outcol=boxcol
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol=boxcol, add=T , range=0)
+boxplot(nareabestmods.ne$r.squaredGLMM.R2m[-which(nareabestmods.ne$SP.ID%in% c("SPPmean","CWmean"))]~rep(1, times=6), horizontal=T, at=1, xlim=c(0,5), ylim=c(0,1)
+        , yaxt="n", xaxt="n"
+        ,outpch=1, border=boxcol, col=boxcol, outcol=boxcol
+        , staplewex=0, notch=F, medcol="black" #, medlwd=0
+        , whisklty=1, whisklwd=2, boxwex=.7, whiskcol=boxcol, add=T , range=0)
+
+
+#plot(llbestmods.ne$r.squaredGLMM.R2m[-which(llbestmods.ne$SP.ID=="CWmean")]~rep(1, times=6), ylim=c(0,1), xlim=c(0,5), xaxt="n", ylab=expression(paste(R^2," or marginal ",R^2)), pch=16)
+#points(lmabestmods.ne$r.squaredGLMM.R2m[-which(lmabestmods.ne$SP.ID=="CWmean")]~rep(2, times=6), pch=16)
+#points(nmassbestmods.ne$r.squaredGLMM.R2m[-which(nmassbestmods.ne$SP.ID=="CWmean")]~rep(3, times=6), pch=16)
+#points(nareabestmods.ne$r.squaredGLMM.R2m[-which(nareabestmods.ne$SP.ID=="CWmean")]~rep(4, times=6), pch=16)
+points(c(4)~llbestmods.ne$r.squaredGLMM.R2c[which(llbestmods.ne$SP.ID=="CWmean")], pch=24,bg=CWbg) # the simple R^2 is stored in R2c for CWmean
+points(c(3)~lmabestmods.ne$r.squaredGLMM.R2c[which(lmabestmods.ne$SP.ID=="CWmean")], pch=24,bg=CWbg)
+points(c(2)~nmassbestmods.ne$r.squaredGLMM.R2c[which(nmassbestmods.ne$SP.ID=="CWmean")], pch=24,bg=CWbg)
+points(c(1)~nareabestmods.ne$r.squaredGLMM.R2c[which(nareabestmods.ne$SP.ID=="CWmean")], pch=24,bg=CWbg)
+#SPP means
+points(c(4)~llbestmods.ne$r.squaredGLMM.R2c[which(llbestmods.ne$SP.ID=="SPPmean")], pch=25, bg=SPPbg) # the simple R^2 is stored in R2c for CWmean
+points(c(3)~lmabestmods.ne$r.squaredGLMM.R2c[which(lmabestmods.ne$SP.ID=="SPPmean")], pch=25, bg=SPPbg)
+points(c(2)~nmassbestmods.ne$r.squaredGLMM.R2c[which(nmassbestmods.ne$SP.ID=="SPPmean")], pch=25, bg=SPPbg)
+points(c(1)~nareabestmods.ne$r.squaredGLMM.R2c[which(nareabestmods.ne$SP.ID=="SPPmean")], pch=25, bg=SPPbg)
+
+# add in ecoregion only rsquareds
+# points(c(4,3,2,1)~colMeans(ecoregmods[,-1]), pch=4,bg=CWbg) # the simple R^2 is stored in R2c for CWmean
+# points(c(4,3,2,1)~CWecoregmods, pch=23,bg=CWbg) # the simple R^2 is stored in R2c for CWmean
+
+
+
+axis(3)
+axis(2, labels = c("Narea","Nmass","LMA","Leaf Life"), at=c(1,2,3,4), las=2)
+mtext(side=3,text = expression(paste(R^2," or marginal ", R^2)), line=1.7)
+legend(x=.675, y=1, legend = "Ind. Spp", fill=boxcol, bty="n",col = boxcol,border = boxcol, cex=.8)
+legend(x=.7, y=2.3, legend = c("CW mean","Spp mean"), pt.bg=c(CWbg, SPPbg), bty="n",pch=c(24,25), cex=.8)
+# legend(x=.7-.1, y=3+2.5, legend = c("CWM Ecoreg", "Spp Ecoreg"), bty="n", pch=c(23,4), cex=.8)
+
+# legend(x=.75, y=2.5, legend = c("CWM-eco","CWM-full","Spp-eco"), bg=CWbg, bty="n",pch=c(23,24,4), cex=.7)
+# legend(x=.73, y=.9, legend = "Spp-env", fill="gray", bty="n",col = boxcol,border = boxcol, cex=.7)
+mtext("A)", cex=panlab.cex, side=3, adj=0.02, line=panlab.ln)
 
 
 
@@ -796,6 +1143,107 @@ abline(h=all.results.cl$Rho_LL.Narea[which(all.results.cl$Taxo.Unit=="global")])
 legend('bottomright', legend = levels(all.results.cl$Type), pch=c(16,16,16,24,25), col=c(mypal[colchoices[1:3]], "black","black"), pt.bg= mypal[colchoices], bty ="n", cex=.7)
 mtext(text = "d)", side = 3, adj=0, line=.2)
 points(Rho_LL.Narea~varNarea, all.results.cl[c(nrow(all.results.cl)-1,nrow(all.results.cl)),], pch=c(24,25), cex=1.4, bg=mypal[colchoices[c(length(colchoices)-1,length(colchoices))]])
+
+
+
+
+
+
+
+#________________________________________________________________
+###### FIG SX: LMA vs LL for only LAI<4 ######
+#________________________________________________________________
+
+
+mat <- matrix(c(1,3,
+                2,3), nrow=2, byrow = T)
+colchoices <- c(1,2,4,3,6)
+palette(mypal[colchoices])
+
+quartz(width=7.008, height=4)
+layout(mat)
+par(mar=c(0,4,6,1))
+p <- boxplot(Slope_LMA.LL~Type, all.results.cl[which(all.results.cl$n_LMA.LL>5& !all.results.cl$Type %in% c("global","Famclean")),]
+             , ylim=c(-2.5,4),las=3, ylab="MA Slope" #, main="log(LMA)~log(Nmass) strict"
+             , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+             , staplelwd=0, outpch=16, outcex=.7, outcol=mypal[colchoices]
+             , boxwex=.7, xaxt="n")
+
+abline(h=0, lty=2)
+boxplot(spp.results$Slope, at=1, add=T, col="white")
+m <- lmodel2(log.LL~log.LMA, allspp)
+points(y=m$regression.results$Slope[3],x=5, pch=16, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+m <- lmodel2(log.LL~log.LMA, fam.dataclean)
+points(y=m$regression.results$Slope[3],x=4, pch=16, cex=1.3, col="black")
+arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3)
+arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3)
+
+#text(y=par()$usr[3]+.2, x=c(1,2,3,4,5,6), labels = p$n)
+#text(y=par()$usr[4]-.2,x=.5, labels = "a)")
+mtext(text = "a)", side = 3, adj=0, line=.2)
+mtext(text= "LL vs LMA", side=3, line=.2)
+par(mar=c(6,4,0,1))
+p <- boxplot(Rho_LMA.LL~Type, all.results.cl[which(all.results.cl$n_LMA.LL>5& !all.results.cl$Type %in% c("global","Famclean")),]
+             , ylim=c(-1,1.4),las=3, ylab="Rho"
+             , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+             , staplelwd=0, outpch=16, outcex=.7, outcol=mypal[colchoices]
+             , boxwex=.7, xaxt="n")
+
+axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global"), at=c(1,2,3,4,5), las=3)
+abline(h=0, lty=2)
+boxplot(spp.results$Rho, add=T, at=1, col="white")
+text(y=par()$usr[4]-.2, x=c(1,2,3), labels = p$n[1:3])
+text(y=par()$usr[4]-.2, x=c(4,5), labels=paste0("(",all.results.cl$n_LMA.LL[c((nrow(all.results.cl)-1),nrow(all.results.cl))],")"),cex=.8)
+#polygon(x = c(1,2,3,3,2,1), y=na.omit(c(meancis$m10_LMA.LL, rev(meancis$m90_LMA.LL))), border="#EEEEEE",col="#EEEEEE")#lightgrey",col = "lightgrey")
+m <- cor.test(x=allspp$log.LMA, y=allspp$log.LL)
+points(y=m$estimate,x=5, pch=16, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3, col="darkgrey")
+m <- cor.test(x=fam.dataclean$log.LMA, y=fam.dataclean$log.LL)
+points(y=m$estimate,x=4, pch=16, cex=1.3, col="black")
+arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
+
+
+par(mar=c(4,4,1.5,1.5))
+## scatterplot
+####### Plotting the LMA vs Narea scaling in unit rather than log space ######
+plot(log.LL~log.LMA, LES, col="grey", pch=16, ylab=expression(paste(log[10](LL))), xlab=expression(paste(log[10](LMA))))
+
+tax <- "w.inGen"
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.LL>5)])){
+  plot.MAR(xvar = "log.LMA", yvar = "log.LL",data= gen.data[which(gen.data$Genus==i),], linecol = mypal[colchoices[2]])
+}
+
+tax <- "Genw.inFam"
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.LL>5)])){
+  plot.MAR(xvar = "log.LMA", yvar = "log.LL",data= geninfam.data[which(geninfam.data$Family==i),], linecol = mypal[colchoices[3]])
+}
+
+
+abline(a=all.results.cl$Int_LMA.LL[nrow(all.results.cl)-1], b=all.results.cl$Slope_LMA.LL[nrow(all.results.cl)-1], lwd=3, col="black")
+abline(a=all.results.cl$Int_LMA.LL[nrow(all.results.cl)], b=all.results.cl$Slope_LMA.LL[nrow(all.results.cl)], lwd=3, col="black", lty=3)
+tax <- "w.inSpp"
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.LL>5)])){
+  plot.MAR(xvar = "log.LMA", yvar = "log.LL",data= spp.data[which(spp.data$Species==i),], linecol =  mypal[colchoices[1]])
+}
+for (i in as.character(spp.results$Species[which(spp.results$n>5)])){
+  plot.MAR(xvar = "log.LMA", yvar = "log.LL",data= traits.common.sun[which(traits.common.sun$SP.ID==i),], linecol = "black", lwd=2)
+}
+
+#plot.MAR(xvar="log.LMA", yvar="log.LL", data= fam.data, linecol = mypal[colchoices[4]], lwd=2)
+
+#plot.MAR(xvar="log.LMA", yvar="log.LL", data= LES, linecol = "black", lwd=2)
+mtext(text = "b)", side = 3, adj=0, line=.2)
+
+
+
+
+
+
+
 
 
 
@@ -1754,6 +2202,29 @@ abline(lm(log.cw_LMAp_if~climPC2, biomass), lwd=3)
 
 
 
+quartz(width=3.5, height=3.5)
+par(mar=c(3.5,3.5,1,1), mgp=c(2,.7,0))
+
+plot(log.Narea~climPC2 , traits.common[which(traits.common$SP.ID %in% c("PSEMEN","PINPON","PINCON","PINJEF","TSUHET","ABICON")),], pch=16, col="grey", xlim=c(-3.5,3.5))
+for (i in c("PSEMEN","PINPON","PINCON","PINJEF","TSUHET","ABICON")){
+  tmpmod <- lm(log.Narea~climPC2, traits.common[which(traits.common$SP.ID==i),])
+  lty <- ifelse(summary(tmpmod)$coefficients[2,4]>0.05,3,1)
+  lines(fitted(tmpmod)[order(fitted(tmpmod))]~tmpmod$model$climPC2[order(fitted(tmpmod))], lwd=2, lty=lty, col=mypal[colchoices[1]])
+  #  print(summary(tmpmod))
+}
+#legend(x=.4, y=3, legend="w/in spp", lwd=2, col=mypal[colchoices[1]], bty="n")
+#legend(x=.8, y=2.6, legend="", pch=16, col="grey", bty="n")
+
+
+points(log.cw_LMAp_if~climPC2, biomass, pch=17, col="black")
+abline(lm(log.cw_LMAp_if~climPC2, biomass), lwd=3)
+#legend(x=.4, y=2.5, legend="CW mean", lwd=2, col="black", bty="n")
+#legend(x=.8, y=2.5, legend="", pch=17, col="black", bty="n")
+
+
+
+
+
 
 #________________________________________________________________
 ###### Null Model Plots - for supplement ######
@@ -1942,3 +2413,102 @@ legend("topleft", legend=levels(plotavs90$SP.ID), col=mypal[1:5], pch=16, bty="n
 
 plot(RGR~LeafFrac, biomass[-which(biomass$PLOT_ID %in% c(43,55)),], pch=16, log="xy", xlab="Leaf Fraction", main="b) Across Communities", cex.main=.9)
 #mtext(side=3,adj=-.1, "b)")
+
+
+
+
+
+
+#________________________________________________________________________________________________
+########## Figs 2-6 with CWMs added  ########
+#_________________________________________________________________________________________________
+
+all.results.cwm <- read.csv("Results_SimpleMAreg_v9rawavgs_20170828.csv", row.names = 1)
+levels(all.resultscwm$Type) <- list(w.inSpp = "w.inSpp", w.inGen = "w.inGen", Sppw.inFam= "Sppw.inFam",Genw.inFam="Genw.inFam", Fam="Fam",Famclean="Famclean", global="global", CWM="CWM")
+
+all.results.cwm.cl <- all.results.cwm %>% filter(Type %in% c("w.inSpp","w.inGen","Genw.inFam","Famclean","global", "CWM"))
+all.results.cwm.cl$Type <- factor(all.results.cwm.cl$Type)
+
+
+
+## LMA v Nmass boxplots
+mat <- matrix(c(1,3,
+                2,3), nrow=2, byrow = T)
+colchoices <- c(1,2,4,3,6)
+palette(mypal[colchoices])
+
+quartz(width=7.008, height=4)
+layout(mat)
+par(mar=c(0,4,5,1))
+
+# Slope boxplots
+p <- boxplot(Slope_LMA.N~Type, all.results.cl[which(all.results.cl$n_LMA.N>5& !all.results.cl$Type %in% c("global","Famclean","CWM") ),]
+             , ylim=c(-2.2,1.5),las=3, ylab="MA Slope" #, main="log(LMA)~log(Nmass) strict"
+             , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+             , staplelwd=0, outpch=16, outcex=.7, outcol=mypal[colchoices]
+             , boxwex=.7, xaxt="n")
+# add global and bewteen family points and error bars
+m <- lmodel2(log.Nmass~log.LMA, allspp)
+points(y=m$regression.results$Slope[3],x=5, pch=16, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+arrows(x0=5,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3, col="darkgrey")
+m <- lmodel2(log.Nmass~log.LMA, fam.dataclean)
+points(y=m$regression.results$Slope[3],x=4, pch=16, cex=1.3, col="black")
+arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3)
+arrows(x0=4,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3)
+m <- lmodel2(log.cw_Nmassp_if~log.cw_LMAp_if, biomass)
+points(y=m$regression.results$Slope[3],x=6, pch=24, cex=1.3, col="black", bg=mypal[5])
+arrows(x0=6,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`2.5%-Slope`[3], length = 0,lwd=3)
+arrows(x0=6,y0=m$regression.results$Slope[3], y1= m$confidence.intervals$`97.5%-Slope`[3], length = 0,lwd=3)
+
+abline(h=0, lty=2)
+mtext(text = "a)", side = 3, adj=0, line=.2)
+mtext(text= expression(paste("LMA vs ", N[mass], sep=" ")), side=3, line=.2)
+
+# Rho boxplots
+par(mar=c(5,4,0,1))
+p <- boxplot(Rho_LMA.N~Type, all.results.cl[which(all.results.cl$n_LMA.N>5 & !all.results.cl$Type %in% c("global","Famclean", "CWM") ),]
+             , ylim=c(-1,1.1),las=3, ylab="Rho"
+             , col=paste0(mypal[colchoices],"66"), boxcol=paste0(mypal[colchoices],"66")
+             ,whisklty=1, whisklwd=3, whiskcol=paste0(mypal[colchoices],"AA")
+             , staplelwd=0, outpch=16, outcex=.7, outcol=mypal[colchoices]
+             , boxwex=.7, xaxt="n")
+# add global and between family points
+m <- cor.test(x=allspp$log.LMA, y=allspp$log.Nmass)
+points(y=m$estimate,x=5, pch=16, cex=1.3, col="darkgrey")
+arrows(x0=5,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3, col="darkgrey")
+m <- cor.test(x=fam.dataclean$log.LMA, y=fam.dataclean$log.Nmass)
+points(y=m$estimate,x=4, pch=16, cex=1.3, col="black")
+arrows(x0=4,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3)
+m <- cor.test(x=biomass$log.cw_LMAp_if, y=biomass$log.cw_Nmassp_if)
+points(y=m$estimate,x=6, pch=24, cex=1.3, col="black", bg=mypal[5])
+arrows(x0=6,y0=m$conf.int[2], y1= m$conf.int[1], length = 0,lwd=3, col=mypal[5])
+
+# add axes and sample sizes
+axis(1,labels = c("w/in Spp","w/in Gen", "w/in Fam","btw Fam","global","PNW cwm"), at=c(1,2,3,4,5,6), las=3)
+abline(h=0, lty=2)
+text(y=par()$usr[4]-.2, x=c(1,2,3), labels = p$n[1:3])
+text(y=par()$usr[4]-.2,x=c(4,5), labels=paste0("(",all.results.cl$n_LMA.N[c((nrow(all.results.cl)-1),nrow(all.results.cl))],")"), cex=0.7)
+
+
+
+# scatterplot w/ lines
+par(mar=c(4,4,1.5,1.5), cex.lab=1.2, mgp=c(2.5,.7,0))
+plot(log.Nmass~log.LMA, LES, col="grey", pch=16, xlab=expression(paste(log[10],"(LMA)")), ylab=expression(paste(log[10],(N[mass]), sep=" ")))
+tax <- "w.inGen"
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.N>5)])){
+  plot.MAR(xvar = "log.LMA", yvar = "log.Nmass",data= gen.data[which(gen.data$Genus==i),], linecol = mypal[colchoices[2]])
+}
+tax <- "Genw.inFam"
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.N>5)])){
+  plot.MAR(xvar = "log.LMA", yvar = "log.Nmass",data= geninfam.data[which(geninfam.data$Family==i),], linecol = mypal[colchoices[3]])
+}
+abline(a=all.results.cl$Int_LMA.N[nrow(all.results.cl)-1], b=all.results.cl$Slope_LMA.N[nrow(all.results.cl)-1], lwd=3, col="black")
+abline(a=all.results.cl$Int_LMA.N[nrow(all.results.cl)], b=all.results.cl$Slope_LMA.N[nrow(all.results.cl)], lwd=3, col="black", lty=3)
+tax <- "w.inSpp"
+for (i in as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.N>5)])){
+  plot.MAR(xvar = "log.LMA", yvar = "log.Nmass",data= spp.data[which(spp.data$Species==i),], linecol = mypal[colchoices[1]])
+}
+points(biomass$log.cw_Nmassp_if~biomass$log.cw_LMAp_if, pch=24, bg=mypal[5])
+mtext(text = "b)", side = 3, adj=0, line=.2)
