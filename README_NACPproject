@@ -591,7 +591,32 @@ started making new figures for the ms revision
 
 ## started updating trait covariance figures with CWM values added.
 - to do this I had to calculate the covariances for CWMs and tack them on to the end of all.results
-- I did this and saved a new version. But the new version fucks up all my old plotting code. So I should probably stick with the older version ()
+- I did this and saved a new version (20170828_wCWM). But the new version fucks up all my old plotting code. So I should probably stick with the older version (20170620) 
+
+# I also started adding new Trait-Env plotting code to Cd-Manuscript Figures
+- This new approach makes panels the climate variable and bars the trait. This might make things better...?
+
+
+### new commit 08.28.17
+realized that soil_pH is actually probably pretty damn important. Certainly shows strong trends with CWM traits and maybe w/in spp traits as well.
+- however, all the sample sizes decrease by ~50% if I use pH...
+- and get no PINCON or PINJEF with soil pH because it wasn't measured.
+- ** never finished making objects with pH models because I'd need to drop PINCON and PINJEF
+
+- updated all plots (changed the labels for Figs 2-4 to be 'Y vs X' and fixed axis screw up in Fig2).
+- created Figs 2-4 with CWM patterns added on, either just in the boxplot and with a line, or with points on top of the scatterplot. Code at end of Fig-ManuscriptFigures.R
+- updated Table S4 with CWMs - in Fig-ManuscriptFigures.R, and saved new csvs for CWMs
+- created Table S2 with Variance decomp components (output of all three analyses now standardized and concatenated at the end of the Variance Decomp code in Cd-Initial_Analysis.R)
+- updated Table S5 with best model results from SPPmeans. Cleaned up the code a bit.
+
+
+
+
+##### New Commit 11.18.17 ####
+
+Recieved decent reviews, and now starting to address them.
+I'm committing before I rerun all of the analyses while saving the confidence intervals of the SMA slopes. Only then can I try to plot them as Ben Blonder suggests.
+
 
 
 

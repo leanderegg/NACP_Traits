@@ -1356,7 +1356,8 @@ variance.decomp <- function(dataz, lab, fitfam=F){
 
 alltraitsvars <- variance.decomp(dataz=traits, lab="all traits", fitfam = T)
 alltraitsvars.comb <- rbind(alltraitsvars[1:3,], colSums(alltraitsvars[4:5,]))
-rownames(alltraitsvars.comb)[3] <- "WtinSpecies"
+rownames(alltraitsvars.comb)[4] <- "WtinSpecies"
+allPNWvars <- data.frame(alltraitsvars.comb[,c(1:4)], "Type"=c(rep("all_PNW", times=nrow(alltraitsvars.comb))))
 
 
 # anything with >9 trait measurements
@@ -1375,8 +1376,11 @@ domconvars1 <- variance.decomp(dataz=traits.domcon1, lab="traits.domcon1")
 
 domconvars1.comb <- rbind(domconvars1$logged[1:2,], colSums(domconvars1$logged[3:4,]))
 rownames(domconvars1.comb)[3] <- "WtinSpecies"
-
-
+PNWdomconvars <- data.frame(domconvars1.comb[,c(1:4)], "Type"=rep("domcons", times=nrow(domconvars1.comb)))
+PNWdomconvars[4,] <- rep(NA, times=5)
+PNWdomconvars[4,5] <- "domcons"
+PNWdomconvars <- PNWdomconvars[c(4,1:3),]
+row.names(PNWdomconvars)[1] <- "BtwFam" 
 
 
 ########## showing how much of trait space these conifers still cover ##########
@@ -1596,6 +1600,18 @@ quartz(width=5, height=4)
 cols <- brewer.pal(11, "RdBu")[c(11,9,1, 6)]
 barplot(as.matrix(traitvars_scaled2),beside=F,legend.text = F,xpd = T, names.arg = c("SLA", "Leaf\nLife","C/N","%C","%N"),args.legend = list(x=4, y=1.3, ncol=2), col = paste0(cols,"CC"), ylab="Proportion of total Variance", xlab="Entire Dataset")
 legend(xpd=T, x = 1, y=1.3, legend=c("W/in Plot", "Btw Plots", "Btw Spp", "Btw Genera"), fill=paste0(cols,"CC")[c(4,3,1,2)], ncol=2, bty="n",  cex=1.2)
+
+
+
+######## Table S2: Variance Decompositions ##############
+globalvars <- traitvars_scaled2
+row.names(globalvars) <- row.names(allPNWvars)
+colnames(globalvars) <- colnames(allPNWvars)[-5]
+globalvars$Type <- rep("global", times=nrow(globalvars))
+vardecomps <- rbind(globalvars, allPNWvars, PNWdomconvars)
+
+
+write.csv(vardecomps, "VarianceDecompositionResults_GlobalPNWDomcons_20171001.csv")
 
 # 
 # 

@@ -882,10 +882,10 @@ all.results.cl$Type <- factor(all.results.cl$Type)
 
 
 all.results.cwm <- read.csv("Results_SimpleMAreg_v9rawavgs_20170828_wCMW.csv", row.names = 1)
-levels(all.results$Type) <- list(w.inSpp = "w.inSpp", w.inGen = "w.inGen", Sppw.inFam= "Sppw.inFam",Genw.inFam="Genw.inFam", Fam="Fam",Famclean="Famclean", global="global", CWM="CWM")
+levels(all.results.cwm$Type) <- list(w.inSpp = "w.inSpp", w.inGen = "w.inGen", Sppw.inFam= "Sppw.inFam",Genw.inFam="Genw.inFam", Fam="Fam",Famclean="Famclean", global="global", CWM="CWM")
 
-all.results.cwm.cl <- all.results %>% filter(Type %in% c("w.inSpp","w.inGen","Genw.inFam","Famclean","global", "CWM"))
-all.results.cwm.cl$Type <- factor(all.results.cl$Type)
+all.results.cwm.cl <- all.results.cwm %>% filter(Type %in% c("w.inSpp","w.inGen","Genw.inFam","Famclean","global", "CWM"))
+all.results.cwm.cl$Type <- factor(all.results.cwm.cl$Type)
 
 
 
@@ -1448,6 +1448,47 @@ for(i in 1:length(unique(traits.common.sun$SP.ID))){
 
 
 
-                                           
-                                           
+  
+
+
+#------------------------------------------------------------------------
+##########  Re-analysis only with PNW samples with LAI <median LL to seperate the sun/shade issue #####
+#------------------------------------------------------------------------
+
+traits.common.old <- traits.common5 %>% group_by(SP.ID) %>% filter(LLmonths > median(LLmonths, na.rm=T))
+
+traits.common.old <- traits.common5 %>% group_by(SP.ID) %>% filter(LLmonths > quantile(LLmonths,.25, na.rm=T))
+
+
+
+
+#traits.common.sun <- traits.common.s[which(traits.common$SP.
+
+
+
+
+####### ***LMA and LL*** #####################
+
+############ .Species level analysis #####################
+
+
+spp.results <- data.frame(matrix(NA, nrow=length(unique(traits.common.old$SP.ID)), ncol=15))
+colnames(spp.results) <- c("Species", "Int","Slope","Rho","r.sq","n","varLMA","varLL","lci_2.5","lci_5","lci_10","uci_10","uci_5","uci_2.5", "sig")
+for(i in 1:length(unique(traits.common.old$SP.ID))){
+  species <- levels(traits.common.old$SP.ID)[i]
+  print(species)
+  dataz <- traits.common.old[which(traits.common.old$SP.ID==species),]
+  res <- fit.MAR(xvar='log.LMA',yvar="log.LL",data=dataz)
+  spp.results.old[i,1] <- species
+  spp.results.old[i,2:8] <- res
+  if (!is.na(res[1]) &res[5]>4){ # only fit null model if there are >5 data points
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.LL", observed = dataz, nulldata = allspp, nits = 1000)  
+    spp.results.old[i, 9:14] <- nullbounds
+    spp.results.old[i,15] <- test.sig(x=spp.results.old$Rho[i], test=nullbounds)
+  }
+}
+
+
+spp.results.oldmed <- spp.results.old  
+
                                            

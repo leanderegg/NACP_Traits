@@ -74,19 +74,73 @@ biomass$SP4.PLOT <- paste(biomass$SPP_O4_ABBREV,biomass$PLOT_ID, sep="-")
 ############ CWMs based on species mean trait values #######################################
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # 
-# ####### Plot Trait values based on species mean values ######
-# biomass$wSLA1 <- species.means$mSLA[match(biomass$SPP_O1_ABBREV, species.means$SP.ID)]*biomass$SPP_O1_BASAL_AREA_FRACTION/100
-# biomass$wSLA2 <- species.means$mSLA[match(biomass$SPP_O2_ABBREV, species.means$SP.ID)]*biomass$SPP_O2_BASAL_AREA_FRACTION/100
-# biomass$wSLA3 <- species.means$mSLA[match(biomass$SPP_O3_ABBREV, species.means$SP.ID)]*biomass$SPP_O3_BASAL_AREA_FRACTION/100
-# biomass$wSLA4 <- species.means$mSLA[match(biomass$SPP_O4_ABBREV, species.means$SP.ID)]*biomass$SPP_O4_BASAL_AREA_FRACTION/100
+# ####### Plot Trait values based on spp mean values ######
+biomass$wLMA1 <- spp.traits$mLMA[match(biomass$SPP_O1_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O1_BASAL_AREA_FRACTION/100
+biomass$wLMA2 <- spp.traits$mLMA[match(biomass$SPP_O2_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O2_BASAL_AREA_FRACTION/100
+biomass$wLMA3 <- spp.traits$mLMA[match(biomass$SPP_O3_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O3_BASAL_AREA_FRACTION/100
+biomass$wLMA4 <- spp.traits$mLMA[match(biomass$SPP_O4_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O4_BASAL_AREA_FRACTION/100
 # # # cut out this step to limit the number of columns I create.
 # # biomass$wSLA1 <- biomass$SLA1 * biomass$SPP_O1_BASAL_AREA_FRACTION/100
 # # biomass$wSLA2 <- biomass$SLA2 * biomass$SPP_O2_BASAL_AREA_FRACTION/100
 # # biomass$wSLA3 <- biomass$SLA3 * biomass$SPP_O3_BASAL_AREA_FRACTION/100
 # # biomass$wSLA4 <- biomass$SLA4 * biomass$SPP_O4_BASAL_AREA_FRACTION/100
-# biomass$cw_SLA <- apply(biomass[,c("wSLA1", "wSLA2","wSLA3","wSLA4")],MARGIN=1,FUN=sum, na.rm=T)
-# biomass$cw_SLA[which(biomass$cw_SLA==0)] <- NA
+biomass$cw_LMA <- apply(biomass[,c("wLMA1", "wLMA2","wLMA3","wLMA4")],MARGIN=1,FUN=sum, na.rm=T) 
+biomass$cw_LMA[which(biomass$cw_LMA==0)] <- NA
 # 
+
+
+biomass$wLL1 <- spp.traits$mLLmonths[match(biomass$SPP_O1_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O1_BASAL_AREA_FRACTION/100
+biomass$wLL2 <- spp.traits$mLLmonths[match(biomass$SPP_O2_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O2_BASAL_AREA_FRACTION/100
+biomass$wLL3 <- spp.traits$mLLmonths[match(biomass$SPP_O3_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O3_BASAL_AREA_FRACTION/100
+biomass$wLL4 <- spp.traits$mLLmonths[match(biomass$SPP_O4_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O4_BASAL_AREA_FRACTION/100
+
+biomass$cw_LL <- apply(biomass[,c("wLL1", "wLL2","wLL3","wLL4")],MARGIN=1,FUN=sum, na.rm=T) 
+biomass$cw_LL[which(biomass$cw_LL==0)] <- NA
+
+
+biomass$wNmass1 <- spp.traits$mNmass[match(biomass$SPP_O1_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O1_BASAL_AREA_FRACTION/100
+biomass$wNmass2 <- spp.traits$mNmass[match(biomass$SPP_O2_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O2_BASAL_AREA_FRACTION/100
+biomass$wNmass3 <- spp.traits$mNmass[match(biomass$SPP_O3_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O3_BASAL_AREA_FRACTION/100
+biomass$wNmass4 <- spp.traits$mNmass[match(biomass$SPP_O4_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O4_BASAL_AREA_FRACTION/100
+
+biomass$cw_Nmass <- apply(biomass[,c("wNmass1", "wNmass2","wNmass3","wNmass4")],MARGIN=1,FUN=sum, na.rm=T) 
+biomass$cw_Nmass[which(biomass$cw_Nmass==0)] <- NA
+
+
+
+biomass$wNarea1 <- spp.traits$mNarea[match(biomass$SPP_O1_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O1_BASAL_AREA_FRACTION/100
+biomass$wNarea2 <- spp.traits$mNarea[match(biomass$SPP_O2_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O2_BASAL_AREA_FRACTION/100
+biomass$wNarea3 <- spp.traits$mNarea[match(biomass$SPP_O3_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O3_BASAL_AREA_FRACTION/100
+biomass$wNarea4 <- spp.traits$mNarea[match(biomass$SPP_O4_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O4_BASAL_AREA_FRACTION/100
+
+biomass$cw_Narea <- apply(biomass[,c("wNarea1", "wNarea2","wNarea3","wNarea4")],MARGIN=1,FUN=sum, na.rm=T) 
+biomass$cw_Narea[which(biomass$cw_Narea==0)] <- NA
+
+
+quartz(width=5, height=5)
+par(mfrow=c(2,2), mar=c(3.5,3.5,2,2), oma=c(0,0,0,0), mgp=c(2.5,1,0))
+
+plot(log.cw_LMAp_if~log(cw_LMA, base=10), biomass, ylab="CW LMA from plot data"
+     , xlab="CW LMA from spp data"
+     , ylim=c(2.1,2.7), xlim=c(2.1,2.7))
+abline(a=0,b=1)
+mtext(text = paste("R2=", round(summary(lm(log.cw_LMAp_if~log(cw_LMA, base=10), biomass))$r.squared,3)))
+
+plot(log.cw_LLp_if~log(cw_LL, base=10), biomass, ylab="CW LL from plot data", xlab="CW LL from spp data"
+     , ylim=c(1.4,2.4), xlim=c(1.4,2.4))
+abline(a=0,b=1)
+mtext(text = paste("R2=", round(summary(lm(log.cw_LLp_if~log(cw_LL, base=10), biomass))$r.squared,3)))
+
+plot(log.cw_Nmassp_if~log(cw_Nmass, base=10), biomass, ylab="CW Nmass from plot data", xlab="CW Nmass from spp data"
+     , ylim=c(-0.15,0.2), xlim=c(-0.15,0.2))
+abline(a=0,b=1)
+mtext(text = paste("R2=", round(summary(lm(log.cw_Nmassp_if~log(cw_Nmass, base=10), biomass))$r.squared,3)))
+
+plot(log.cw_Nareap_if~log(cw_Narea, base=10), biomass, ylab="CW Narea from plot data", xlab="CW Narea from spp data"
+     , ylim=c(0.05,0.6), xlim=c(0.05,0.6))
+abline(a=0,b=1)
+mtext(text = paste("R2=", round(summary(lm(log.cw_Nareap_if~log(cw_Narea, base=10), biomass))$r.squared,3)))
+
 # plot(cw_SLA~MAP, biomass, col=SPP_O1_ABBREV, pch=14 + as.numeric(biomass$PROJECT))
 #   # surprisingly linear increase in SLA w/ MAP, despite using spp means
 # plot(cw_SLA~MAT_C, biomass, col=SPP_O1_ABBREV, pch=14 + as.numeric(biomass$PROJECT))
