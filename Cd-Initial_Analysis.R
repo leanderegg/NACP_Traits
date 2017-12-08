@@ -49,7 +49,7 @@ palette(mypal)
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ## public TRY traits 
-# TRY <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Try_public_LES traits/TRY_publicLES_011717.csv")
+TRY <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Try_public_LES traits/TRY_publicLES_011717.csv")
 # TRY$DataName <- gsub(TRY$DataName, pattern=" ",replacement = ".")
 # #TRYnew <- TRY[-which(is.na(TRY$StdValue)),]
 # TRYtest <- TRY %>% select(ObservationID, DatasetID, AccSpeciesName, DataName, OrigValueStr) %>% filter(!duplicated(.))
@@ -79,13 +79,17 @@ palette(mypal)
 
 # TRYsla <- TRY %>% filter(TraitID=="11") %>% arrange(AccSpeciesName, DatasetID, ObservationID)
 # TRYnmass <- TRY %>% filter(TraitID=="14") %>% arrange(AccSpeciesName, DatasetID, ObservationID)
-# TRYll <- TRY %>% filter(TraitID=="12") %>% arrange(AccSpeciesName, DatasetID, ObservationID)
+TRYll <- TRY %>% filter(TraitID=="12") %>% arrange(AccSpeciesName, DatasetID, ObservationID)
+TRYllreps <- TRYll[which(TRYll$AccSpeciesName %in% names(which(xtabs(~AccSpeciesName, TRYll)>5))),]
+  # just quick see if we even have the possibility of gaining any species
+  # looks like we could theoretically gain Aceras anthropophorum and Avenula pubescens
+TRYllgood <- TRYllreps[which(TRYllreps$AccSpeciesName %in% c("Aceras anthropophorum", "Avenula pubescens")),]
 
 #### NOTE: 
 TRY <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Try_public_LES traits/try_traits_new_031417.csv", header=T)
 
 tmp <- TRY[which(TRY$LL>0, TRY$SLA>0),]
-tmp1 <- tmp[which(tmp$SpeciesName %in% names(which(xtabs(~SpeciesName, tmp)>2))),]
+tmp1 <- tmp[which(tmp$SpeciesName %in% names(which(xtabs(~SpeciesName, tmp)>4))),]
 tmp1$SpeciesName <- factor(tmp1$SpeciesName)
 
 ## Wright et al 2004 LES data

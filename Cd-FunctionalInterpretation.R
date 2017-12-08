@@ -20,6 +20,27 @@ ITresN <- resid(lm(log.Nmass~log.LMA, traits.common5))
 plot(ITresN~log.LL, traits.common5[-which(is.na(traits.common5$log.Nmass) | is.na(traits.common5$log.LMA)),], col=SP.ID)
 
 
+#### examining Viburnum dataset:
+vib <- read.table("/Users/leeanderegg/Desktop/alltrait_raw.txt", header = T)
+vib$LLmonths <- vib$LLS / 4
+vib$log.LL <- log(vib$LLmonths, base=10)
+vib$log.LMA <- log(vib$LMA, base=10)
+vib$log.Nmass <- log(vib$X.N, base=10)
+
+
+##### Helianthus common garden
+hel <- read.csv("/Users/leeanderegg/Desktop/Mason2015_Helianthus/Helianthus_data_Mason2015_commongarden.csv", header=T,na.strings = ".")
+
+hel <- hel[which(hel$Species != "H. divaricatus"),]
+hel$Species <- factor(hel$Species)
+plot(log(LL_days)~log(LMA), hel, col=Species, pch=as.numeric(Species))
+for(i in levels(hel$Species)){
+  plot.MAR(xvar = "LMA", yvar = "LL_days",data = hel[which(hel$Species==i),], linecol = "black")
+}
+
+
+
+
 ################### IMPORT and COMBINE ################
 ###### combining all the other datasets into something I can add to LES and traits for Variance Decomp and covariance analysis
 

@@ -617,6 +617,19 @@ realized that soil_pH is actually probably pretty damn important. Certainly show
 Recieved decent reviews, and now starting to address them.
 I'm committing before I rerun all of the analyses while saving the confidence intervals of the SMA slopes. Only then can I try to plot them as Ben Blonder suggests.
 
+Take away from rerunning all of these analyses:
+- Somehow, a number of Genw.inFam results changed (both slope and rho), but I have no idea why. However, this doesn't seem to be directional, but rather random and unbiased.
+- some significances definitely changed, but they also seem to be random, and just about what we would expect based on random draws from the null model (i.e. symmetrical)
+  - They're also typically not big jumps, but rather only to category one up or down.
+
+
+***** For some statistics, I was calling all.results but filtering with all.results.cl
+++ LL v Nmass - Didn't really change slopes (decreased sig w/ V2 var weight), but made all the correlations comparisons significant.
+++ LMA v Nmass - didn't change any slopes, made the corrs more significant
+++ LMA v LL - made all slopes more significant, corrs all were significant anyway
+- LMA v Narea - was good to begin with, but changed p values a tad, updated in Table S3 v8
+
+
 
 
 

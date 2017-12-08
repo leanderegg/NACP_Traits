@@ -117,29 +117,29 @@ biomass$cw_Narea <- apply(biomass[,c("wNarea1", "wNarea2","wNarea3","wNarea4")],
 biomass$cw_Narea[which(biomass$cw_Narea==0)] <- NA
 
 
-quartz(width=5, height=5)
-par(mfrow=c(2,2), mar=c(3.5,3.5,2,2), oma=c(0,0,0,0), mgp=c(2.5,1,0))
-
-plot(log.cw_LMAp_if~log(cw_LMA, base=10), biomass, ylab="CW LMA from plot data"
-     , xlab="CW LMA from spp data"
-     , ylim=c(2.1,2.7), xlim=c(2.1,2.7))
-abline(a=0,b=1)
-mtext(text = paste("R2=", round(summary(lm(log.cw_LMAp_if~log(cw_LMA, base=10), biomass))$r.squared,3)))
-
-plot(log.cw_LLp_if~log(cw_LL, base=10), biomass, ylab="CW LL from plot data", xlab="CW LL from spp data"
-     , ylim=c(1.4,2.4), xlim=c(1.4,2.4))
-abline(a=0,b=1)
-mtext(text = paste("R2=", round(summary(lm(log.cw_LLp_if~log(cw_LL, base=10), biomass))$r.squared,3)))
-
-plot(log.cw_Nmassp_if~log(cw_Nmass, base=10), biomass, ylab="CW Nmass from plot data", xlab="CW Nmass from spp data"
-     , ylim=c(-0.15,0.2), xlim=c(-0.15,0.2))
-abline(a=0,b=1)
-mtext(text = paste("R2=", round(summary(lm(log.cw_Nmassp_if~log(cw_Nmass, base=10), biomass))$r.squared,3)))
-
-plot(log.cw_Nareap_if~log(cw_Narea, base=10), biomass, ylab="CW Narea from plot data", xlab="CW Narea from spp data"
-     , ylim=c(0.05,0.6), xlim=c(0.05,0.6))
-abline(a=0,b=1)
-mtext(text = paste("R2=", round(summary(lm(log.cw_Nareap_if~log(cw_Narea, base=10), biomass))$r.squared,3)))
+# quartz(width=5, height=5)
+# par(mfrow=c(2,2), mar=c(3.5,3.5,2,2), oma=c(0,0,0,0), mgp=c(2.5,1,0))
+# 
+# plot(log.cw_LMAp_if~log(cw_LMA, base=10), biomass, ylab="CW LMA from plot data"
+#      , xlab="CW LMA from spp data"
+#      , ylim=c(2.1,2.7), xlim=c(2.1,2.7))
+# abline(a=0,b=1)
+# mtext(text = paste("R2=", round(summary(lm(log.cw_LMAp_if~log(cw_LMA, base=10), biomass))$r.squared,3)))
+# 
+# plot(log.cw_LLp_if~log(cw_LL, base=10), biomass, ylab="CW LL from plot data", xlab="CW LL from spp data"
+#      , ylim=c(1.4,2.4), xlim=c(1.4,2.4))
+# abline(a=0,b=1)
+# mtext(text = paste("R2=", round(summary(lm(log.cw_LLp_if~log(cw_LL, base=10), biomass))$r.squared,3)))
+# 
+# plot(log.cw_Nmassp_if~log(cw_Nmass, base=10), biomass, ylab="CW Nmass from plot data", xlab="CW Nmass from spp data"
+#      , ylim=c(-0.15,0.2), xlim=c(-0.15,0.2))
+# abline(a=0,b=1)
+# mtext(text = paste("R2=", round(summary(lm(log.cw_Nmassp_if~log(cw_Nmass, base=10), biomass))$r.squared,3)))
+# 
+# plot(log.cw_Nareap_if~log(cw_Narea, base=10), biomass, ylab="CW Narea from plot data", xlab="CW Narea from spp data"
+#      , ylim=c(0.05,0.6), xlim=c(0.05,0.6))
+# abline(a=0,b=1)
+# mtext(text = paste("R2=", round(summary(lm(log.cw_Nareap_if~log(cw_Narea, base=10), biomass))$r.squared,3)))
 
 # plot(cw_SLA~MAP, biomass, col=SPP_O1_ABBREV, pch=14 + as.numeric(biomass$PROJECT))
 #   # surprisingly linear increase in SLA w/ MAP, despite using spp means
@@ -446,6 +446,16 @@ biomass$log.cw_Nareap_if <- log(biomass$cw_Nareap_if, base=10)
 
 
 
+
+
+
+
+
+
+
+
+
+############ OLD CODE: ###############################
 
 
 # #______________________________________________________
