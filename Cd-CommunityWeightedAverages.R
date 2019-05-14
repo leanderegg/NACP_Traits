@@ -5,6 +5,10 @@
 
 ############ ***Community-weighted trait calculations *** ####################
 
+
+### ****** Deprecated and moved to Cd-Anderegg2018_Manuscript_Analysis_v2.R **********************
+# as of 3/2018?
+
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 # note on nomenclature:
@@ -18,15 +22,15 @@
 # total species means
 #species.means <- traits %>% group_by(GENUS,SPECIES,SP.ID) %>% summarise(mLMA_HSA = mean(LMA_HSA, na.rm=T), mLLmonths = mean(LLmonths, na.rm=T), mCARBON = mean(LEAF_CARBON, na.rm=T), mNITROGEN = mean(LEAF_NITROGEN, na.rm=T), mCN = mean(LEAF_CN, na.rm=T), N = n(), nPlots = length(unique(PLOT_ID)), nProj = length(unique(PROJECT)), nEcoReg = length(unique(ECOREGION)), mMAP = mean(MAP), mMAT = mean(MAT), mlog.LMA = mean(log.LMA, na.rm=T), mlog.LL =mean(log.LL, na.rm=T), mlog.Nmass=mean(log.Nmass, na.rm=T), mlog.LMA_PSA = mean(log.LMA_PSA, na.rm=T), mRGR = mean(RGRdom, na.rm=T), mstGrowthdom = mean(stGrowthdom, na.rm=T)) 
 ## site means
-  # Note: mLMA = LMA_PSA, and mLMA_HSA = LMA_HSA
+  # Note: mLMA = LMA_HSA, and mLMA_PSA = LMA_PSA, I've used LMA_HSA in full dataset creation
   # also, mlog.Trait = mean of logged traits
   # log.Trait = log of mean traits
 
 spp.traits <- traits %>% group_by(SP.ID) %>% summarise(nsample = n(), SLA = mean(SLA_HSA, na.rm=T), nSLA = n()- length(which(is.na(SLA_HSA))), CN = mean(LEAF_CN, na.rm=T), nCN = n()- length(which(is.na(LEAF_CN)))
                                                        , LIFE = mean(LEAF_LIFE, na.rm=T), nLIFE=n()- length(which(is.na(LEAF_LIFE))), nplots =length(unique(PLOT_ID))
-                                                       , mLMA = mean(LMA_PSA, na.rm=T), mLLmonths= mean(LLmonths, na.rm=T), mNmass = mean(LEAF_NITROGEN, na.rm=T), mNarea=mean(Narea, na.rm=T)
+                                                       , mLMA = mean(LMA, na.rm=T), mLLmonths= mean(LLmonths, na.rm=T), mNmass = mean(LEAF_NITROGEN, na.rm=T), mNarea=mean(Narea, na.rm=T)
                                                        , mlog.LMA = mean(log.LMA, na.rm=T), mlog.LL = mean(log.LL, na.rm=T), mlog.Narea=mean(log.Narea, na.rm=T), mlog.Nmass=mean(log.Nmass, na.rm=T)
-                                                       , RGR = mean(RGRdom, na.rm=T), stGrowth = mean(stGrowthdom, na.rm=T)
+                                                       # , RGR = mean(RGRdom, na.rm=T), stGrowth = mean(stGrowthdom, na.rm=T)
                                                        , climPC1 = mean(climPC1, na.rm=T), climPC2 = mean(climPC2, na.rm=T), climPC3 = mean(climPC3, na.rm=T)
                                                        , soil_N= mean(soil_N, na.rm=T), soil_pH=mean(soil_pH, na.rm=T), ASA = mean(ASA, na.rm=T), LAI_O=mean(LAI_O, na.rm=T), AG_TGROWTH = mean(AG_TGROWTH, na.rm=T))
 spp.traits$log.LMA <- log(spp.traits$mLMA, base=10)
@@ -34,16 +38,16 @@ spp.traits$log.LL <- log(spp.traits$mLLmonths, base=10)
 spp.traits$log.Nmass <- log(spp.traits$mNmass, base=10)
 spp.traits$log.Narea <- log(spp.traits$mNarea, base=10)
 
-## An idea: leaf lifespan seems to vary quite a bit with MAT. What if I calculated plot averaged leaf lifespan based on spp averages vs based on the actual data from the plot? could say something about using a single value for a species?
+
+# calculate species means for each plot in which they occur
 spp.plot.traits <- traits %>% group_by(SP.ID, PLOT_ID) %>% summarise(nsample = n(), mSLA = mean(SLA_HSA, na.rm=T), nSLA = n()- length(which(is.na(SLA_HSA))), mCN = mean(LEAF_CN, na.rm=T), nCN = n()- length(which(is.na(LEAF_CN)))
                                                                      , mLIFE = mean(LEAF_LIFE, na.rm=T), nLIFE=n()- length(which(is.na(LEAF_LIFE))), mNmass = mean(LEAF_NITROGEN, na.rm=T), nplots =length(unique(PLOT_ID))
-                                                                     , mLMA = mean(LMA_PSA, na.rm=T), mLLmonths= mean(LLmonths, na.rm=T), mNarea=mean(Narea, na.rm=T)
+                                                                     , mLMA = mean(LMA, na.rm=T), mLLmonths= mean(LLmonths, na.rm=T), mNarea=mean(Narea, na.rm=T)
                                                                      , mlog.LMA = mean(log.LMA, na.rm=T), mlog.LL = mean(log.LL, na.rm=T), mlog.Narea=mean(log.Narea, na.rm=T), mlog.Nmass=mean(log.Nmass, na.rm=T)
-                                                                     , RGR = unique(RGRdom), stGrowth = mean(stGrowthdom, na.rm=T)
+                                                                     #, RGR = unique(RGRdom), stGrowth = mean(stGrowthdom, na.rm=T)
                                                                      , climPC1 = unique(climPC1), climPC2 = unique(climPC2), climPC3 = unique(climPC3)
                                                                      )
-
-# Note: I used LMA_PSA in other trait analysis in TaxonomicAnalysis. So I've switched to it here
+# create unique species-plot tag
 spp.plot.traits$SP.PLOT <- paste(spp.plot.traits$SP.ID, spp.plot.traits$PLOT_ID, sep="-")
 
 
@@ -292,7 +296,7 @@ biomass$climPC2 <-spp.plot.traits$climPC2[match(biomass$SP1.PLOT, spp.plot.trait
 #_____________________________________________________________________________
 ###### Infilling spp trait values with spp means when they're missing ###########
 #_____________________________________________________________________________
-### Infilling LMA of spp with <30% of BA with species mean values
+### Infilling LMA of spp with <25% of BA with species mean values
 
 ####### Creating BA-weighted LMA values using spp means
 biomass$wLMA1 <- spp.traits$mLMA[match(biomass$SPP_O1_ABBREV, spp.traits$SP.ID)]*biomass$SPP_O1_BASAL_AREA_FRACTION/100

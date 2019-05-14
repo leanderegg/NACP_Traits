@@ -8,13 +8,44 @@ par(mfrow=c(2,2), mgp=c(2,.7,0), cex.lab=1.1, cex.axis=1.1, mar=c(4.5,2,1.5,2),o
 plot(log.Narea~log.LMA, allspp, col="grey", pch=16, xlab=expression(paste(log[10](LMA))))
 mtext(expression(paste(log[10](N[area]))), side=2, line=2)
 points(log.Narea~log.LMA, traits)
-#points(log.Narea~log.LMA, spp.data, pch=3, col="darkblue")
-
 points(log.Narea~log.LMA, traits.domcon1, pch=16, cex=.8, col=mypal[3])
 points(biomass$log.cw_Nareap_if~biomass$log.cw_LMAp_if, bg=mypal[5], pch=24)
 
 mtext("a)", side=3, adj=-.1, line=.3)
 legend(x=1.1, y=2.5, xpd=NA,legend = c("Global","PNW woody plants", "Evgrn Needle PFT", "PNW CWMs"), pch=c(16,1,16,24), col=c("grey","black",mypal[3],"black"), pt.bg = mypal[5], bty="n")
+
+
+plot(I(10^log.Narea)~I(10^log.LMA), allspp, col="grey", pch=16, xlab="raw LMA")
+mtext(expression(paste("raw ",N[mass])), side=2, line=2)
+#points(I(10^log.Narea)~I(10^log.LMA), spp.data, pch=3, col="darkblue")
+points(I(10^log.Narea)~I(10^log.LMA), traits)
+points(I(10^log.Narea)~I(10^log.LMA), traits.domcon1, pch=16, cex=.8, col=mypal[3])
+points(I(10^biomass$log.cw_Nareap_if)~I(10^biomass$log.cw_LMAp_if), bg=mypal[5], pch=24)
+
+mtext("b)", side=3, adj=-.1, line=.3)
+
+
+
+plot(log.Nmass~log.LL, allspp, col="grey", pch=16, xlab=expression(paste(log[10](LL))))
+mtext(expression(paste(log[10](N[mass]))), side=2, line=2)
+#points(log.Nmass~log.LL, spp.data, pch=3, col="darkblue")
+points(log.Nmass~log.LL, traits)
+points(log.Nmass~log.LL, traits.domcon1, pch=16, cex=.8, col=mypal[3])
+points(biomass$log.cw_Nmassp_if~biomass$log.cw_LLp_if, bg=mypal[5], pch=24)
+mtext("c)", side=3, adj=-.1, line=.3)
+
+
+
+
+plot(I(10^log.Nmass)~I(10^log.LL), allspp, col="grey", pch=16, xlab="raw LL")
+mtext(expression(paste("raw ",N[mass])), side=2, line=2)
+#points(I(10^log.Nmass)~I(10^log.LL), spp.data, pch=3, col="darkblue")
+points(I(10^log.Nmass)~I(10^log.LL), traits)
+points(I(10^log.Nmass)~I(10^log.LL), traits.domcon1, pch=16, cex=.8, col=mypal[3])
+points(I(10^biomass$log.cw_Nmassp_if)~I(10^biomass$log.cw_LLp_if), bg=mypal[5], pch=24)
+mtext("d)", side=3, adj=-.1, line=.3)
+
+
 
 
 

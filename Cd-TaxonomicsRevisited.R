@@ -4,6 +4,10 @@
 ########################## *** +++AVERAGED RAW TRAITS+++ rather than averaged log.traits ****** ##############################
 #________________________________________________________________________________________________________________
 #################################################################################################################
+##### Note: this was deprecated and moved to Cd-Anderegg2018_Manuscript_Analysis_v2.R #######
+#****** This is now just a reminder of some of the original decisions made during analysis.
+
+
 # This script is copied exactly from Cd-TaxonomicAnalysis.R.
 # But I'm going to rename previously 'log.TRAIT' columns and switch rlog.TRAIT columns to be log.TRAIT so that we use those instead.
 
@@ -193,8 +197,13 @@ rho.sig <- function(rho, n){
   pt(-abs(t), n-2,)*2
 }
 
+
+
+
 ############# **LMA vs Nmass** ###########
 ############ .Species level analysis #####################
+niters <- 10000
+
 ptm <- proc.time()
 set.seed(42)
 spp.results <- data.frame(matrix(NA, nrow=length(unique(spp.data$Species)), ncol=17))
@@ -207,7 +216,7 @@ for(i in 1:length(unique(spp.data$Species))){
   spp.results[i,1] <- species
   spp.results[i,2:10] <- res
   if (!is.na(res[1]) & res[7]>4){ # only fit null model if there are >5 data points
-    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Nmass", observed = dataz, nulldata = allspp, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Nmass", observed = dataz, nulldata = allspp, nits = niters)  
     spp.results[i, 11:16] <- nullbounds
     spp.results[i,17] <- test.sig(x=spp.results$Rho[i], test=nullbounds)
   }
@@ -232,7 +241,7 @@ for(i in 1:length(unique(gen.data$Genus))){
   res <- fit.MAR(xvar='log.LMA',yvar="log.Nmass",data=dataz)
   gen.results[i,2:10] <- res 
   if (!is.na(res[1]) & res[7]>4){ # only fit null model if there are >5 data points, and the fit.MAR actually ran
-    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Nmass", observed = dataz, nulldata = allgen, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Nmass", observed = dataz, nulldata = allgen, nits = niters)  
     gen.results[i, 11:16] <- nullbounds
     gen.results[i,17] <- test.sig(x=gen.results$Rho[i], test=nullbounds)
   }
@@ -253,7 +262,7 @@ for(i in 1:length(unique(sppinfam.data$Family))){
   sppinfam.results[i,1] <- family
   sppinfam.results[i,2:10] <- res
   if (!is.na(res[1]) & res[7]>4){ # only fit null model if there are >5 data points
-    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Nmass", observed = dataz, nulldata = allfam, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Nmass", observed = dataz, nulldata = allfam, nits = niters)  
     sppinfam.results[i, 11:16] <- nullbounds
     sppinfam.results[i,17] <- test.sig(x=sppinfam.results$Rho[i], test=nullbounds)
   }
@@ -273,7 +282,7 @@ for(i in 1:length(unique(geninfam.data$Family))){
   geninfam.results[i,1] <- family
   geninfam.results[i,2:10] <- res
   if (!is.na(res[1]) & res[7]>4){ # only fit null model if there are >5 data points
-    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Nmass", observed = dataz, nulldata = allfam, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Nmass", observed = dataz, nulldata = allfam, nits = niters)  
     geninfam.results[i, 11:16] <- nullbounds
     geninfam.results[i,17] <- test.sig(x=geninfam.results$Rho[i], test=nullbounds)
   }
@@ -330,7 +339,7 @@ for(i in 1:length(unique(spp.data$Species))){
   spp.results[i,1] <- species
   spp.results[i,2:10] <- res
   if (!is.na(res[1]) &res[7]>4){ # only fit null model if there are >5 data points
-    nullbounds <- fit.null(xvar='log.LMA', yvar="log.LL", observed = dataz, nulldata = allspp, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.LL", observed = dataz, nulldata = allspp, nits = niters)  
     spp.results[i, 11:16] <- nullbounds
     spp.results[i,17] <- test.sig(x=spp.results$Rho[i], test=nullbounds)
   }
@@ -350,7 +359,7 @@ for(i in 1:length(unique(gen.data$Genus))){
   res <- fit.MAR(xvar='log.LMA',yvar="log.LL",data=dataz)
   gen.results[i,2:10] <- res 
   if (!is.na(res[1]) & res[7]>4){ # only fit null model if there are >5 data points, and the fit.MAR actually ran
-    nullbounds <- fit.null(xvar='log.LMA', yvar="log.LL", observed = dataz, nulldata = allgen, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.LL", observed = dataz, nulldata = allgen, nits = niters)  
     gen.results[i, 11:16] <- nullbounds
     gen.results[i,17] <- test.sig(x=gen.results$Rho[i], test=nullbounds)
   }
@@ -371,7 +380,7 @@ for(i in 1:length(unique(sppinfam.data$Family))){
   sppinfam.results[i,1] <- family
   sppinfam.results[i,2:10] <- res
   if (!is.na(res[1]) & res[7]>4){ # only fit null model if there are >5 data points
-    nullbounds <- fit.null(xvar='log.LMA', yvar="log.LL", observed = dataz, nulldata = allfam, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.LL", observed = dataz, nulldata = allfam, nits = niters)  
     sppinfam.results[i, 11:16] <- nullbounds
     sppinfam.results[i,17] <- test.sig(x=sppinfam.results$Rho[i], test=nullbounds)
   }
@@ -391,7 +400,7 @@ for(i in 1:length(unique(geninfam.data$Family))){
   geninfam.results[i,1] <- family
   geninfam.results[i,2:10] <- res
   if (!is.na(res[1]) & res[7]>4){ # only fit null model if there are >5 data points
-    nullbounds <- fit.null(xvar='log.LMA', yvar="log.LL", observed = dataz, nulldata = allfam, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.LL", observed = dataz, nulldata = allfam, nits = niters)  
     geninfam.results[i, 11:16] <- nullbounds
     geninfam.results[i,17] <- test.sig(x=geninfam.results$Rho[i], test=nullbounds)
   }
@@ -443,7 +452,7 @@ for(i in 1:length(unique(spp.data$Species))){
   spp.results[i,1] <- species
   spp.results[i,2:10] <- res
   if (!is.na(res[1]) &res[7]>4){ # only fit null model if there are >5 data points
-    nullbounds <- fit.null(xvar='log.LL', yvar="log.Nmass", observed = dataz, nulldata = allspp, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LL', yvar="log.Nmass", observed = dataz, nulldata = allspp, nits = niters)  
     spp.results[i, 11:16] <- nullbounds
     spp.results[i,17] <- test.sig(x=spp.results$Rho[i], test=nullbounds)
   }
@@ -462,7 +471,7 @@ for(i in 1:length(unique(gen.data$Genus))){
   res <- fit.MAR(xvar='log.LL',yvar="log.Nmass",data=dataz)
   gen.results[i,2:10] <- res 
   if (!is.na(res[1]) & res[7]>4){ # only fit null model if there are >5 data points, and the fit.MAR actually ran
-    nullbounds <- fit.null(xvar='log.LL', yvar="log.Nmass", observed = dataz, nulldata = allgen, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LL', yvar="log.Nmass", observed = dataz, nulldata = allgen, nits = niters)  
     gen.results[i, 11:16] <- nullbounds
     gen.results[i,17] <- test.sig(x=gen.results$Rho[i], test=nullbounds)
   }
@@ -482,7 +491,7 @@ for(i in 1:length(unique(sppinfam.data$Family))){
   sppinfam.results[i,1] <- family
   sppinfam.results[i,2:10] <- res
   if (!is.na(res[1]) & res[7]>4){ # only fit null model if there are >5 data points
-    nullbounds <- fit.null(xvar='log.LL', yvar="log.Nmass", observed = dataz, nulldata = allfam, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LL', yvar="log.Nmass", observed = dataz, nulldata = allfam, nits = niters)  
     sppinfam.results[i, 11:16] <- nullbounds
     sppinfam.results[i,17] <- test.sig(x=sppinfam.results$Rho[i], test=nullbounds)
   }
@@ -503,7 +512,7 @@ for(i in 1:length(unique(geninfam.data$Family))){
   geninfam.results[i,1] <- family
   geninfam.results[i,2:10] <- res
   if (!is.na(res[1]) & res[7]>4){ # only fit null model if there are >5 data points
-    nullbounds <- fit.null(xvar='log.LL', yvar="log.Nmass", observed = dataz, nulldata = allfam, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LL', yvar="log.Nmass", observed = dataz, nulldata = allfam, nits = niters)  
     geninfam.results[i, 11:16] <- nullbounds
     geninfam.results[i,17] <- test.sig(x=geninfam.results$Rho[i], test=nullbounds)
   }
@@ -562,7 +571,7 @@ for(i in 1:length(unique(spp.data$Species))){
   spp.results[i,1] <- species
   spp.results[i,2:10] <- res
   if (!is.na(res[1]) &res[7]>4){ # only fit null model if there are >5 data points
-    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Narea", observed = dataz, nulldata = allspp, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Narea", observed = dataz, nulldata = allspp, nits = niters)  
     spp.results[i, 11:16] <- nullbounds
     spp.results[i,17] <- test.sig(x=spp.results$Rho[i], test=nullbounds)
   }
@@ -581,7 +590,7 @@ for(i in 1:length(unique(gen.data$Genus))){
   res <- fit.MAR(xvar='log.LMA',yvar="log.Narea",data=dataz)
   gen.results[i,2:10] <- res 
   if (!is.na(res[1]) & res[7]>4){ # only fit null model if there are >5 data points, and the fit.MAR actually ran
-    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Narea", observed = dataz, nulldata = allgen, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Narea", observed = dataz, nulldata = allgen, nits = niters)  
     gen.results[i, 11:16] <- nullbounds
     gen.results[i,17] <- test.sig(x=gen.results$Rho[i], test=nullbounds)
   }
@@ -601,7 +610,7 @@ for(i in 1:length(unique(sppinfam.data$Family))){
   sppinfam.results[i,1] <- family
   sppinfam.results[i,2:10] <- res
   if (!is.na(res[1]) & res[7]>4){ # only fit null model if there are >5 data points
-    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Narea", observed = dataz, nulldata = allfam, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Narea", observed = dataz, nulldata = allfam, nits = niters)  
     sppinfam.results[i, 11:16] <- nullbounds
     sppinfam.results[i,17] <- test.sig(x=sppinfam.results$Rho[i], test=nullbounds)
   }
@@ -623,7 +632,7 @@ for(i in 1:length(unique(geninfam.data$Family))){
   geninfam.results[i,1] <- family
   geninfam.results[i,2:10] <- res
   if (!is.na(res[1]) & res[7]>4){ # only fit null model if there are >5 data points
-    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Narea", observed = dataz, nulldata = allfam, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LMA', yvar="log.Narea", observed = dataz, nulldata = allfam, nits = niters)  
     geninfam.results[i, 11:16] <- nullbounds
     geninfam.results[i,17] <- test.sig(x=geninfam.results$Rho[i], test=nullbounds)
   }
@@ -681,7 +690,7 @@ for(i in 1:length(unique(spp.data$Species))){
   spp.results[i,1] <- species
   spp.results[i,2:10] <- res
   if (!is.na(res[1]) &res[7]>4){ # only fit null model if there are >5 data points
-    nullbounds <- fit.null(xvar='log.LL', yvar="log.Narea", observed = dataz, nulldata = allspp, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LL', yvar="log.Narea", observed = dataz, nulldata = allspp, nits = niters)  
     spp.results[i, 11:16] <- nullbounds
     spp.results[i,17] <- test.sig(x=spp.results$Rho[i], test=nullbounds)
   }
@@ -700,7 +709,7 @@ for(i in 1:length(unique(gen.data$Genus))){
   res <- fit.MAR(xvar="log.LL",yvar='log.Narea',data=dataz)
   gen.results[i,2:10] <- res 
   if (!is.na(res[1]) & res[7]>4){ # only fit null model if there are >5 data points, and the fit.MAR actually ran
-    nullbounds <- fit.null(xvar='log.LL', yvar="log.Narea", observed = dataz, nulldata = allgen, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LL', yvar="log.Narea", observed = dataz, nulldata = allgen, nits = niters)  
     gen.results[i, 11:16] <- nullbounds
     gen.results[i,17] <- test.sig(x=gen.results$Rho[i], test=nullbounds)
   }
@@ -720,7 +729,7 @@ for(i in 1:length(unique(sppinfam.data$Family))){
   sppinfam.results[i,1] <- family
   sppinfam.results[i,2:10] <- res
   if (!is.na(res[1]) & res[7]>4){ # only fit null model if there are >5 data points
-    nullbounds <- fit.null(xvar='log.LL', yvar="log.Narea", observed = dataz, nulldata = allfam, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LL', yvar="log.Narea", observed = dataz, nulldata = allfam, nits = niters)  
     sppinfam.results[i, 11:16] <- nullbounds
     sppinfam.results[i,17] <- test.sig(x=sppinfam.results$Rho[i], test=nullbounds)
   }
@@ -742,7 +751,7 @@ for(i in 1:length(unique(geninfam.data$Family))){
   geninfam.results[i,1] <- family
   geninfam.results[i,2:10] <- res
   if (!is.na(res[1]) & res[7]>4){ # only fit null model if there are >5 data points
-    nullbounds <- fit.null(xvar='log.LL', yvar="log.Narea", observed = dataz, nulldata = allfam, nits = 1000)  
+    nullbounds <- fit.null(xvar='log.LL', yvar="log.Narea", observed = dataz, nulldata = allfam, nits = niters)  
     geninfam.results[i, 11:16] <- nullbounds
     geninfam.results[i,17] <- test.sig(x=geninfam.results$Rho[i], test=nullbounds)
   }
@@ -847,9 +856,45 @@ allcwms <- c(CWM_LMA.LL, CWM_LMA.N[-c(1,9,18)], CWM_LL.N[-c(1,9,10,18)], CWM_LMA
 test <- all.results
 test$Taxo.Unit <- as.character(test$Taxo.Unit)
 test$Type <- as.character(test$Type)
-test[254,] <- allcwms
+test[nrow(test)+1,] <- allcwms
 
 all.results.cwm <- test
+
+
+#---> addition of Mt Rainier species deprecated as of 12.20.17 because code has been updated to include them from the beginning
+
+# ### add in Mt Rainier species as of 12.11.17 
+# # takes all.results and adds in 6 rows in w/in spp for Mt Rainier.
+# # did this so I didn't have to completely rerun the entire analysis above. 
+# # Instead, just make the Rainier.results dfs in Cd-Mt_Rainier_LMA_creation
+# 
+# empty <-  data.frame(matrix(NA, nrow = 6, ncol=ncol(all.results.cwm)))
+# names(empty) <- names(all.results.cwm)
+# empty$Taxo.Unit <- c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")
+# empty$Type <- "w.inSpp"
+# all.resultstest <- rbind(all.results[which(all.results$Type=="w.inSpp"),], empty, all.results[which(all.results$Type!="w.inSpp"),])
+# all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LMA.LL", colnames(all.resultstest))] <- Rain.results.LMALL[,which(!colnames(Rain.results.LMALL) %in% c("Species","varLMA","varLL","rho.sig"))]
+# all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), c("varLMA","varLL")] <- Rain.results.LMALL[,c("varLMA","varLL")]
+# all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LMA.N", colnames(all.resultstest))[1:14]] <- Rain.results.LMAN[,which(!colnames(Rain.results.LMAN) %in% c("Species","varLMA","varNmass","rho.sig"))]
+# all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), c("varNmass")] <- Rain.results.LMAN[,c("varNmass")]
+# all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LMA.Narea", colnames(all.resultstest))] <- Rain.results.LMANarea[,which(!colnames(Rain.results.LMANarea) %in% c("Species","varLMA","varNarea","rho.sig"))]
+# all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), c("varNarea")] <- Rain.results.LMANarea[,c("varNarea")]
+# all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LL.N", colnames(all.resultstest))[1:14]] <- Rain.results.LLN[,which(!colnames(Rain.results.LLN) %in% c("Species","varLL","varNmass","rho.sig"))]
+# all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LL.Narea", colnames(all.resultstest))] <- Rain.results.LLNarea[,which(!colnames(Rain.results.LLNarea) %in% c("Species","varLL","varNarea","rho.sig"))]
+# 
+# 
+# ### add into .cwm dataframe
+# all.results.cwmtest <- rbind(all.results.cwm[which(all.results.cwm$Type=="w.inSpp"),], empty, all.results.cwm[which(all.results.cwm$Type!="w.inSpp"),])
+# all.results.cwmtest[which(all.results.cwmtest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LMA.LL", colnames(all.results.cwmtest))] <- Rain.results.LMALL[,which(!colnames(Rain.results.LMALL) %in% c("Species","varLMA","varLL","rho.sig"))]
+# all.results.cwmtest[which(all.results.cwmtest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), c("varLMA","varLL")] <- Rain.results.LMALL[,c("varLMA","varLL")]
+# all.results.cwmtest[which(all.results.cwmtest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LMA.N", colnames(all.results.cwmtest))[1:14]] <- Rain.results.LMAN[,which(!colnames(Rain.results.LMAN) %in% c("Species","varLMA","varNmass","rho.sig"))]
+# all.results.cwmtest[which(all.results.cwmtest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), c("varNmass")] <- Rain.results.LMAN[,c("varNmass")]
+# all.results.cwmtest[which(all.results.cwmtest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LMA.Narea", colnames(all.results.cwmtest))] <- Rain.results.LMANarea[,which(!colnames(Rain.results.LMANarea) %in% c("Species","varLMA","varNarea","rho.sig"))]
+# all.results.cwmtest[which(all.results.cwmtest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), c("varNarea")] <- Rain.results.LMANarea[,c("varNarea")]
+# all.results.cwmtest[which(all.results.cwmtest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LL.N", colnames(all.results.cwmtest))[1:14]] <- Rain.results.LLN[,which(!colnames(Rain.results.LLN) %in% c("Species","varLL","varNmass","rho.sig"))]
+# all.results.cwmtest[which(all.results.cwmtest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LL.Narea", colnames(all.results.cwmtest))] <- Rain.results.LLNarea[,which(!colnames(Rain.results.LLNarea) %in% c("Species","varLL","varNarea","rho.sig"))]
+
+
 
 #write.csv(all.results, "Results_SimpleMAreg_v1_030817.csv")
 #write.csv(all.results, "Results_SimpleMAreg_v2_031417.csv")
@@ -861,9 +906,16 @@ all.results.cwm <- test
 #write.csv(all.results, "Results_SimpleMAreg_v8_051717.csv") # fixed bug that screwed up LL.Narea null model (when taxa had more variance than all families)
 #write.csv(all.results, "Results_SimpleMAreg_v9rawavgs_20170620.csv")
 #write.csv(all.results, "Results_SimpleMAreg_v9rawavgs_20170828_wCWM.csv") # with CWMs now added
-write.csv(all.results, "Results_SimpleMAreg_v10rawavgs_20171120.csv") # added CIs for SMAs.
-write.csv(all.results.cwm, "/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/Results_SimpleMAreg_v10rawavgs_20171120_wCWM.csv") # added CIs for SMAs.
-all.resultsold <- read.csv("Results_SimpleMAreg_v9rawavgs_20170828_wCMW.csv")
+# write.csv(all.results, "Results_SimpleMAreg_v10rawavgs_20171120.csv") # added CIs for SMAs.
+# write.csv(all.results.cwm, "/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/Results_SimpleMAreg_v10rawavgs_20171120_wCWM.csv") # added CIs for SMAs.
+# write.csv(all.resultstest, "Results_SimpleMAreg_v11rawavgs_20171211.csv") # added CIs for SMAs.
+# write.csv(all.results.cwmtest, "/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/Results_SimpleMAreg_v11rawavgs_20171211_wCWM.csv") # added CIs for SMAs.
+ write.csv(all.results, "Results_SimpleMAreg_v12rawavgs_20171220.csv") # added CIs for SMAs.
+ write.csv(all.results.cwm, "/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/Results_SimpleMAreg_v12rawavgs_20171220_wCWM.csv") # added CIs for SMAs.
+
+
+
+all.resultsold <- read.csv("Results_SimpleMAreg_v11rawavgs_20171211_wCWM.csv")
 
 
 
@@ -919,20 +971,30 @@ all.resultsold <- read.csv("Results_SimpleMAreg_v9rawavgs_20170828_wCMW.csv")
 
 # older version without community weighted mean row
 # "Results_SimpleMAreg_v9rawavgs_20170620.csv" - version used in First Submission to Ecology Letters
-#
-all.results <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/Results_SimpleMAreg_v10rawavgs_20171120.csv", row.names = 1)
+# "Results_SimpleMAreg_v10rawavgs_20171120.csv" version used for revision, pre Mt Rainier addition
+all.results <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/Results_SimpleMAreg_v11rawavgs_20171211.csv", row.names = 1)
+all.results <- read.csv("/Users/leeanderegg/Desktop/scratch/20171220_results/SMA_Results_All.csv", row.names=1)
 levels(all.results$Type) <- list(w.inSpp = "w.inSpp", w.inGen = "w.inGen", Sppw.inFam= "Sppw.inFam",Genw.inFam="Genw.inFam", Fam="Fam",Famclean="Famclean", global="global")
-# add in the Mt Rainier Species
-empty <-  data.frame(matrix(NA, nrow = 6, ncol=ncol(all.results.cwm)))
-names(empty) <- names(all.results.cwm)
-empty$Taxo.Unit <- c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")
-empty$Type <- "w.inSpp"
-all.resultstest <- rbind(all.results[which(all.results$Type=="w.inSpp"),], empty, all.results[which(all.results$Type!="w.inSpp"),])
-all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LMA.LL", colnames(all.resultstest))] <- spp.results[,which(!colnames(spp.results) %in% c("Species","varLMA","varLL","rho.sig"))]
-all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), c("varLMA","varLL")] <- spp.results[,c("varLMA","varLL")]
+# # add in the Mt Rainier Species
+# empty <-  data.frame(matrix(NA, nrow = 6, ncol=ncol(all.results.cwm)))
+# names(empty) <- names(all.results.cwm)
+# empty$Taxo.Unit <- c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")
+# empty$Type <- "w.inSpp"
+# all.resultstest <- rbind(all.results[which(all.results$Type=="w.inSpp"),], empty, all.results[which(all.results$Type!="w.inSpp"),])
+# all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LMA.LL", colnames(all.resultstest))] <- Rain.results.LMALL[,which(!colnames(Rain.results.LMALL) %in% c("Species","varLMA","varLL","rho.sig"))]
+# all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), c("varLMA","varLL")] <- Rain.results.LMALL[,c("varLMA","varLL")]
+# all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LMA.N", colnames(all.resultstest))[1:14]] <- Rain.results.LMAN[,which(!colnames(Rain.results.LMAN) %in% c("Species","varLMA","varNmass","rho.sig"))]
+# all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), c("varNmass")] <- Rain.results.LMAN[,c("varNmass")]
+# all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LMA.Narea", colnames(all.resultstest))] <- Rain.results.LMANarea[,which(!colnames(Rain.results.LMANarea) %in% c("Species","varLMA","varNarea","rho.sig"))]
+# all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), c("varNarea")] <- Rain.results.LMANarea[,c("varNarea")]
+# all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LL.N", colnames(all.resultstest))[1:14]] <- Rain.results.LLN[,which(!colnames(Rain.results.LLN) %in% c("Species","varLL","varNmass","rho.sig"))]
+# all.resultstest[which(all.resultstest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LL.Narea", colnames(all.resultstest))] <- Rain.results.LLNarea[,which(!colnames(Rain.results.LLNarea) %in% c("Species","varLL","varNarea","rho.sig"))]
 
 
-all.results.cl <- all.resultstest %>% filter(Type %in% c("w.inSpp","w.inGen","Genw.inFam","Famclean","global"))
+
+
+all.results.cl <- all.results %>% filter(Type %in% c("w.inSpp","w.inGen","Genw.inFam","Famclean","global"))
+all.results <- read.csv("/Users/leeanderegg/Desktop/scratch/20171220_results/SMA_Results_All.csv", row.names=1)
 all.results.cl$Type <- factor(all.results.cl$Type)
 all.results.cl$Taxo.Unit <- factor(all.results.cl$Taxo.Unit)
 # add columns of whether the correlation is significant (useful for plotting)
@@ -944,20 +1006,21 @@ all.results.cl$rho.sig_LL.Narea <- rho.sig(all.results.cl$Rho_LL.Narea, all.resu
 
 # "Results_SimpleMAreg_v9rawavgs_20170620.csv" - version used in First Submission to Ecology Letters
 # "Results_SimpleMAreg_v10rawavgs_20171120_wCWM.csv"
-all.results.cwm <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/Results_SimpleMAreg_v10rawavgs_20171120_wCWM.csv", row.names = 1)
+all.results.cwm <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/Results_SimpleMAreg_v11rawavgs_20171211.csv", row.names = 1)
+all.results.cwm <- read.csv("/Users/leeanderegg/Desktop/scratch/20171220_results/SMA_Results_All_CWM.csv", row.names=1)
 levels(all.results.cwm$Type) <- list(w.inSpp = "w.inSpp", w.inGen = "w.inGen", Sppw.inFam= "Sppw.inFam",Genw.inFam="Genw.inFam", Fam="Fam",Famclean="Famclean", global="global", CWM="CWM")
-  # add in the Mt Rainier Species
-empty <-  data.frame(matrix(NA, nrow = 6, ncol=ncol(all.results.cwm)))
-names(empty) <- names(all.results.cwm)
-empty$Taxo.Unit <- c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")
-empty$Type <- "w.inSpp"
-all.results.cwmtest <- rbind(all.results.cwm[which(all.results.cwm$Type=="w.inSpp"),], empty, all.results.cwm[which(all.results.cwm$Type!="w.inSpp"),])
-all.results.cwmtest[which(all.results.cwmtest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LMA.LL", colnames(all.results.cwmtest))] <- spp.results[,which(!colnames(spp.results) %in% c("Species","varLMA","varLL","rho.sig"))]
-all.results.cwmtest[which(all.results.cwmtest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), c("varLMA","varLL")] <- spp.results[,c("varLMA","varLL")]
+#   # add in the Mt Rainier Species
+# empty <-  data.frame(matrix(NA, nrow = 6, ncol=ncol(all.results.cwm)))
+# names(empty) <- names(all.results.cwm)
+# empty$Taxo.Unit <- c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")
+# empty$Type <- "w.inSpp"
+# all.results.cwmtest <- rbind(all.results.cwm[which(all.results.cwm$Type=="w.inSpp"),], empty, all.results.cwm[which(all.results.cwm$Type!="w.inSpp"),])
+# all.results.cwmtest[which(all.results.cwmtest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), grep("LMA.LL", colnames(all.results.cwmtest))] <- spp.results[,which(!colnames(spp.results) %in% c("Species","varLMA","varLL","rho.sig"))]
+# all.results.cwmtest[which(all.results.cwmtest$Taxo.Unit %in% c("Aster alpigenus","Castilleja parviflora", "Erythronium montanum", "Lupinus arcticus","Valeriana sitchensis","Veratrum viride")), c("varLMA","varLL")] <- spp.results[,c("varLMA","varLL")]
 
 
 # filter out the levels I don't care about
-all.results.cwm.cl <- all.results.cwmtest %>% filter(Type %in% c("w.inSpp","w.inGen","Genw.inFam","Famclean","global", "CWM"))
+all.results.cwm.cl <- all.results.cwm %>% filter(Type %in% c("w.inSpp","w.inGen","Genw.inFam","Famclean","global", "CWM"))
 all.results.cwm.cl$Type <- factor(all.results.cwm.cl$Type)
 all.results.cwm.cl$Taxo.Unit <- factor(all.results.cwm.cl$Taxo.Unit)
   # add columns of whether the correlation is significant (useful for plotting)
@@ -1320,9 +1383,10 @@ LMALL <- lm(Slope_LMA.LL~Type, weights = n_LMA.LL, all.results)
 # on 11.20.2017 updated for Ecol Let manuscript revision.
 # results are updated in Table S3, in SI version v8
 
+
 LMALL <- lm(Slope_LMA.LL~Type, all.results.cl[which(all.results.cl$n_LMA.LL>5),])
 LMALLnull <- lm(Slope_LMA.LL~1, all.results.cl[which(all.results.cl$n_LMA.LL>5),])
-anova(LMALL, LMALLnull) #new average p=0.001475, old p = 0.018 old average of logs:p=0.044
+anova(LMALL, LMALLnull) #newest p=6.511e-05 new average p=0.001475, old p = 0.018 old average of logs:p=0.044
 LMALL <- lm(Slope_LMA.LL~Type, weights = n_LMA.LL, all.results.cl[which(all.results.cl$n_LMA.LL>5),])
 LMALLnull <- lm(Slope_LMA.LL~1, weights = n_LMA.LL, all.results.cl[which(all.results.cl$n_LMA.LL>5),])
 anova(LMALL, LMALLnull) # new p=0.0001136, old p=0.025, old p<0.0001 old

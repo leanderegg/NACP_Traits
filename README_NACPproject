@@ -632,8 +632,31 @@ Take away from rerunning all of these analyses:
 
 
 
+##### Commit 12.08.17
+- committed before I really started revising the figures for Eco Let revision
+- Also crunched the Mt-Rainier data
+12.11.17
+- ran all traits for Mt Rainier in Cd-Mt_Rainier
+- added new rows to all.resutls and all.results.cwm and resaved as v11
+- added species data to all.data in Cd-Initial_Analysis
+- cleanded up Variance Decomp code
+- updated Variance decomp in "VarianceDecompositionResults_GlobalPNWDomcons_20171001.csv"
+and in Supplemental v8 -> didn't change much at all w/ Mt. Rainier. That's good!
+- updated spp.data with Rainier
 
 
+- Now updating figures
+
+
+## updating the z-score analysis to also run with a global environmental z-score
+- this made it obvious that everything I use climPC1 & climPC2 for comes from the pca on traits, which probably isn't as truthful as the pca on biomass.
+However, because I need to crank this out, I'm inclined to just roll with it.
+
+12.17.17
+I added .z funcitons and model fits to Cd-Trait-Environment relationships and refit everything based on the z-scores of the entire biomass dataset (for env variables, traits were still data-subset specific)
+- this shouldn't change things much for the spp or the CWM analysis, but it does change effect sizes a bit for individual species. It also makes the intercept non-zero because some species occur at the extremes of some variables
+- I had to move up the renaming of AG_PROD... (growth) in the CWM calculation, because it gets called for the re-standardization as AG_TGROWTH
+- originally saved everthing as NE_Z_20171217.csv but then resaved over with the corrected CWM for AG_TGROWTH.
 
 
 ############# USEFUL PACKAGES ########################

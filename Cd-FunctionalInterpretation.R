@@ -1,3 +1,7 @@
+####### This is random scratch musings about traits covariation in various species
+# as well as mesophyll conductance 
+
+#------------------ Copied to Cd-SuppSpp_DataCompilation.R -------------------------------------------
 ### arabidopsis data from Blonder et al. 2016
 arab <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/Blonder2015Arabidopsis.csv",header=T)
 colnames(arab)<- c("Type","ID","Genotype","LL","LMA","Nmass","Amass","VD","LDMC")
@@ -80,6 +84,8 @@ Euc$log.Narea <- log(Euc$Narea, base=10)
 Euc$SP.ID <- Euc$Species
 Euc$Species <- "Eucalyptus obliqua"
 Euc$Species[which(Euc$SP.ID=="OVAT")] <- "Eucalyptus ovata"
+write.csv(Euc, "Eucalyptus_LeafTrait_Data.csv")
+
 euc.ind <- Euc %>% select(Species, Treetag.x, Site, LMA, Narea, Nmass, log.LMA, log.Narea, log.Nmass)
 euc.ind$LL <- NA
 euc.ind$log.LL <- NA
@@ -108,6 +114,7 @@ quga.ind$Genus <- "Quercus"
 quga.ind$Family <- "Fagaceae"
 quga.ind$Project <- "CO"
 colnames(quga.ind)[c(2,3,10)] <- c("Indiv","Site","LL")
+write.csv(quga.ind, "Quercus_gambelii_LeafTrait_Data_20180220.csv")
 
 ## average to the stand level for trait covariation analysis
 mquga <- quga %>% group_by(Species, standtag) %>% summarise(LMA = mean(LMA), Narea = mean(Narea), Nmass=mean(Nmass), LL = mean(LLmonths))
@@ -145,6 +152,7 @@ potr.ind$Genus <- "Populus"
 potr.ind$Family <- "Salicaceae"
 potr.ind$Project <- "CO"
 colnames(potr.ind)[c(2,3,10,11)]<- c("Indiv","Site","LL","log.LL")
+write.csv(potr.ind, "Populus_tremuloides_LeafTrait_Data_20180202.csv")
 # stand level averages
 mpotr <- potr %>% group_by(PlotUn) %>% summarise(LMA=mean(LMA, na.rm=T), LLmonths=mean(LLmonthselev))
 mpotr$log.LMA <- log(mpotr$LMA, base=10)
@@ -158,7 +166,7 @@ suppdata <- rbind(data.frame(coffee.ind), data.frame(euc.ind), data.frame(quga.i
 #write.csv(suppdata,"/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/OtherData_Combined_033017.csv")
 write.csv(suppdata,"/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/OtherData_Combined_040117.csv")
 
-
+#------------------ END: Copied to Cd-SuppSpp_DataCompilation.R -------------------------------------------
 
 ### bill's weird potr values
 # bll <- c(244.375,209.1818182,176.6666667,179.6153846,168.6153846,191.9230769,182.3076923,180.1538462,192.8461538)
@@ -176,6 +184,9 @@ write.csv(suppdata,"/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/OtherData_
 
 
 
+
+
+"/Users/leeanderegg/Dropbox/NACP_Traits/Intra-data/OtherData_Combined_040117.csv"
 
 plot(SLA~Nmass, LES, col=Acats, pch=16)
  abline(lm(SLA~Nmass, LES[which(LES$Acats=="H"),]), col=brewer.pal(n=4, "RdYlBu")[1], lwd=2)
@@ -313,13 +324,13 @@ plot.MAR <- function(xvar, yvar, data, method="SMA", linecol, lwd=1) {
 }
 
 
-
+quartz(width=4,height=4.5)
 plot(log.LL~log.LMA, allspp, col="grey", pch=16, ylab="log(LL)", xlab="log(LMA)")
 abline(a=all.results.cl$Int_LMA.LL[nrow(all.results.cl)], b=all.results.cl$Slope_LMA.LL[nrow(all.results.cl)], lwd=3, col="#666666", lty=3)
 #abline(a=all.results.cl$Int_LMA.LL[nrow(all.results.cl)-1], b=all.results.cl$Slope_LMA.LL[nrow(all.results.cl)-1], lwd=3, col="black")
-palette(paste0(genpal,"88"))
+#palette(paste0(genpal,"88"))
 points(log.LL~log.LMA, spp.data[which(spp.data$Species %in% all.results.cl$Taxo.Unit[which(all.results.cl$n_LMA.LL>5 & all.results.cl$Type=="w.inSpp")]),], pch=16)#, col=factor(Species))
-palette(genpal)
+#palette(genpal)
 tax <- "w.inSpp"
 for (j in 1:length(as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.LL>5)]))){
   i <- as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Type==tax & all.results.cl$n_LMA.LL>5)])[j]
@@ -328,7 +339,7 @@ for (j in 1:length(as.character(all.results.cl$Taxo.Unit[which(all.results.cl$Ty
   
 }
 # arabidopsis line
-points(log.LL~log.LMA, arab, pch=1)
+points(log.LL~log.LMA, arab, pch=16, cex=.8, col=paste0(mypal[colchoices[2]],88))
 plot.MAR(xvar="log.LMA", yvar="log.LL", data=arab, linecol=mypal[colchoices[2]],lwd = 3)
 legend("bottomright", legend = c("GLOPNET","w/in SPP geographic", "Blonder 2015"), lwd=c(3,3,3), lty=c(3,1,1), col = c("#666666",mypal[colchoices[1]],mypal[colchoices[2]]), cex=.6,pt.cex = 1, bty="n")
 
