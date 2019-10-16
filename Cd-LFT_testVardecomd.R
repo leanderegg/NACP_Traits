@@ -3,8 +3,16 @@ require(lme4)
 require(lmerTest)
 require(stringr)
 require(RColorBrewer)
-
+require(dplyr)
+require(MuMIn)
+source("/Users/leeanderegg/Desktop/R functions, general/ggplot_helpers.R")
 ##### Variance Decomp of LES dataset for LFT analysis ######
+
+# getting baad data as of 10.25.19
+# devtools::install_github("ropenscilabs/datastorr")
+# install.packages("remotes")
+# remotes::install_github("traitecoevo/baad.data")
+
 
 
 mypal <- brewer.pal(n=9, "Set1")
@@ -97,6 +105,7 @@ legend(xpd=T, x = 11, y=0.7, legend=rev(c("btw Fams","btw Gen","btw Spp")), fill
 
 baad.data::baad_data_version_current()
   # currently 1.0.1 on 10/02/17
+  # still 1.0.1 on 10/26/19
 baad.all <- baad.data::baad_data()
 baad.all$dictionary[,c("variable", "label", "units")]
 
@@ -260,27 +269,122 @@ WDvariance3 <- data.frame(VarCorr(logWDvar3))
 baad$Al.As_type <- NA
 baad$Al.As_type[which(!is.na(baad$Al.As))] <- "direct.dbh"
 baad$Al.As.others <- NA
+
 baad$Al.As.others[which(is.na(baad$a.ssbh) & !is.na(baad$a.ssba))] <- with(baad[which(is.na(baad$a.ssbh) & !is.na(baad$a.ssba)),], a.lf/a.ssba)
 baad$Al.As_type[which(is.na(baad$a.ssbh) & !is.na(baad$a.ssba))] <- "direct.basal"
+
 baad$Al.As_type[which(is.na(baad$a.ssbh) & !is.na(baad$a.stbh) & !is.na(baad$a.lf) & is.na(baad$Al.As.others))] <- "nosw.dbh"
 baad$Al.As.others[which(is.na(baad$a.ssbh) & !is.na(baad$a.stbh) & !is.na(baad$a.lf) & is.na(baad$Al.As.others))] <- with(baad[which(is.na(baad$a.ssbh) & !is.na(baad$a.stbh) & !is.na(baad$a.lf) & is.na(baad$Al.As.others)),], a.lf/(a.stbh))
+
+baad$Al.As_type[which(is.na(baad$Al.As) &
+                        !is.na(baad$a.stba) &
+                        !is.na(baad$a.lf) &
+                        is.na(baad$Al.As.others))] <- "nosw.basal"
+baad$Al.As.others[which(is.na(baad$Al.As) 
+                        & !is.na(baad$a.stba) 
+                        & !is.na(baad$a.lf) 
+                        & baad$Al.As_type=="nosw.basal")] <- with(baad[which(is.na(baad$Al.As) & !is.na(baad$a.stba) & !is.na(baad$a.lf) & baad$Al.As_type=="nosw.basal"),], a.lf/(a.stba))
+
 baad$Al.As.all <- baad$Al.As
 baad$Al.As.all[which(is.na(baad$Al.As))] <- baad$Al.As.others[which(is.na(baad$Al.As))]
 
+# exploring within-species patterns:
+
+quartz(width=4.5, height=4)
+ggplot(baad[which(baad$speciesMatched %in% c("Betula alleghaniensis","Acer saccharum","Fagus grandifolia","Eucalyptus saligna")),], aes(x=log(h.t), y=log(Al.As.all), col=studyName)) + 
+  geom_point() + facet_wrap(facets=~speciesMatched) + xlab("log(Height)") + ylab(expression(paste(log(A[L]:BA))))+ theme(legend.position = "none")
+
+quartz(width=4.5, height=4)
+ggplot(baad[which(baad$speciesMatched %in% c("Pinus taeda","Pinus ponderosa","Pinus contorta","Picea abies")),], aes(x=log(h.t), y=log(Al.As.all), col=studyName)) + 
+  geom_point() + facet_wrap(facets=~speciesMatched) + xlab("log(Height)") + ylab(expression(paste(log(A[L]:BA)))) + theme(legend.position = "none")
+
+
 # this new Al.As.all has 3798 measurements, with 234 species, 68 studies, 136 genera, 62 families
-AlAsvar <- lmer(log(Al.As.all)~ Al.As_type + (1|family/genus/speciesMatched), baad)
-AlAsvariance <- data.frame(VarCorr(AlAsvar))
-AlAsvariance$scaledVar <- AlAsvariance$vcov/ sum(AlAsvariance$vcov)
+# updated: new database has 10409 measurements (9585 with heights)
+# AlAsvar <- lmer(log(Al.As.all)~ Al.As_type + (1|family/genus/speciesMatched), baad)
+# AlAsvariance <- data.frame(VarCorr(AlAsvar))
+# AlAsvariance$scaledVar <- AlAsvariance$vcov/ sum(AlAsvariance$vcov)
+
+### With new datasets, I think I should run:
+  # 1) analysis with only direct.basal and direct.dbh + h.t
+  # 2) analysis with all + h.t
+
+# 1)
+AlAsvar1 <- lmer(log(Al.As.all)~ Al.As_type + (1|family/genus/speciesMatched), baad[which(baad$Al.As_type %in% c("direct.dbh","direct.basal") & baad$h.t>0),])
+AlAsvar2 <- lmer(log(Al.As.all)~ log(h.t) + Al.As_type + (1|family/genus/speciesMatched), baad[which(baad$Al.As_type %in% c("direct.dbh","direct.basal") & baad$h.t>0),])
+AlAsvar3 <- lmer(log(Al.As.all)~ log(h.t) + Al.As_type + log(h.t):family - family + (1|family/genus/speciesMatched), baad[which(baad$Al.As_type %in% c("direct.dbh","direct.basal") & baad$h.t>0),])
+#AlAsvar4 <- lmer(log(Al.As.all)~ log(h.t) * Al.As_type + (log(h.t)|family/genus/speciesMatched), baad[which(baad$Al.As_type %in% c("direct.dbh","direct.basal")),])
+AIC(AlAsvar1, AlAsvar2, AlAsvar3)
+
+AlAsvar.pure <- lmer(log(Al.As.all)~ log(h.t) + Al.As_type + (1|family/genus/speciesMatched), baad[which(baad$Al.As_type %in% c("direct.dbh","direct.basal") & baad$h.t>0),])
+AlAsvariance.pure <- data.frame(VarCorr(AlAsvar.pure))
+AlAsvariance.pure$scaledVar <- AlAsvariance.pure$vcov/ sum(AlAsvariance.pure$vcov)
+
+# 2)
+AlAsvar1 <- lmer(log(Al.As.all)~ Al.As_type + (1|family/genus/speciesMatched), baad[which(baad$h.t>0),])
+AlAsvar2 <- lmer(log(Al.As.all)~ log(h.t) + Al.As_type + (1|family/genus/speciesMatched), baad[which(baad$h.t>0),])
+AlAsvar3 <- lmer(log(Al.As.all)~ log(h.t) + Al.As_type + log(h.t):family - family + (1|family/genus/speciesMatched), baad[which(baad$h.t>0),])
+AlAsvar4 <- lmer(log(Al.As.all)~ log(h.t) + Al.As_type + log(h.t):speciesMatched - speciesMatched + (1|family/genus/speciesMatched), baad[which(baad$h.t>0),])
+#AlAsvar4 <- lmer(log(Al.As.all)~ log(h.t) + Al.As_type + (log(h.t)|family/genus/speciesMatched), baad[which(baad$Al.As_type %in% c("direct.dbh","direct.basal")),])
+AIC(AlAsvar1, AlAsvar2, AlAsvar3, AlAsvar4)
+  #seperate lines per species are actually the best (could do this with random slopes, but then I'm not sure how to interpret the variance decomp)
+
+# pre 08/19/19 version with slopes per family
+#AlAsvar.all <- lmer(log(Al.As.all)~ log(h.t) + Al.As_type + log(h.t):family - family + (1|family/genus/speciesMatched), baad[which(baad$h.t>0),])
+# 08/19/19 version with slopes per species
+AlAsvar.all <- lmer(log(Al.As.all)~ log(h.t) + Al.As_type + log(h.t):speciesMatched - speciesMatched + (1|family/genus/speciesMatched), baad[which(baad$h.t>0),])
+AlAsvariance.all <- data.frame(VarCorr(AlAsvar.all))
+AlAsvariance.all$scaledVar <- AlAsvariance.all$vcov/ sum(AlAsvariance.all$vcov)
 
 
-AlAsvar1 <- lmer(log(Al.As.all)~ Al.As_type + (1|family/genus/speciesMatched), baad[which(!is.na(baad$a.stbh)),])
-AlAsvar2 <- lmer(log(Al.As.all)~ log(a.stbh) + Al.As_type + (1|family/genus/speciesMatched), baad[which(!is.na(baad$a.stbh)),])
-AlAsvar3 <- lmer(log(Al.As.all)~ log(a.stbh) + Al.As_type + (log(a.stbh)|family/genus/speciesMatched), baad[which(!is.na(baad$a.stbh)),])
+effects <- AlAsvar.all@beta[-c(1:5)] # pull out the betas for species, minus the intercept, ref and effects of type
+ref <- AlAsvar.all@beta[2]
+effects.real <- effects + ref
+AlAsvar.all.effects <- c(ref, effects.real)
 
 
-new.vardecomps.forann <- data.frame(rawWDvariance3[c(3,2,1,4),c("grp","scaledVar")], AlAsvariance$scaledVar[c(3,2,1,4)])
+
+AlAsvar.all.noh <- lmer(log(Al.As.all)~ Al.As_type  + (1|family/genus/speciesMatched), baad[which(baad$h.t>0),])
+AlAsvariance.all.noh <- data.frame(VarCorr(AlAsvar.all.noh))
+AlAsvariance.all.noh$scaledVar <- AlAsvariance.all.noh$vcov/ sum(AlAsvariance.all.noh$vcov)
+
+# determining how much variation is due to Height, and whether it primarily comes from w/in species component
+r.squaredGLMM(AlAsvar.all)
+r.squaredGLMM(AlAsvar.all.noh)
+# so 36.298 % is explained in .all
+# 7.65 % is explained in .all.noh (so 7% is Al.As_type)
+# so 36.3 - 7.65 = 28.65% explained by height 
+# (maybe some of that 7 is joint height and Al.As_type, but I think we should attribute it to type for methodological concerns)
+
+
+
+Al.As_pure_n <- c(length(unique(baad$family[which(baad$Al.As_type %in% c("direct.dbh","direct.basal") & baad$h.t>0)])),length(unique(baad$genus[which(baad$Al.As_type %in% c("direct.dbh","direct.basal") & baad$h.t>0)])),length(unique(baad$speciesMatched[which(baad$Al.As_type %in% c("direct.dbh","direct.basal") & baad$h.t>0)])),length(baad$family[which(baad$Al.As_type %in% c("direct.dbh","direct.basal") & baad$h.t>0)]) )
+Al.As_all_n <- c(length(unique(baad$family[which(!is.na(baad$Al.As.all) & baad$h.t>0)])),length(unique(baad$genus[which(!is.na(baad$Al.As.all)& baad$h.t>0)])),length(unique(baad$speciesMatched[which(!is.na(baad$Al.As.all)& baad$h.t>0)])),length(baad$family[which(!is.na(baad$Al.As.all)& baad$h.t>0)]) )
+
+#new.vardecomps.forann <- data.frame(rawWDvariance3[c(3,2,1,4),c("grp","scaledVar")], AlAsvariance$scaledVar[c(3,2,1,4)])
 # note: as of 4/29/19 i just copied the new Al_As column to the old spreadsheet
+#new.vardecomps.forann <- data.frame(rawWDvariance3[c(3,2,1,4),c("grp","scaledVar")], AlAsvariance$scaledVar[c(3,2,1,4)], AlAsvariance.pure$scaledVar[c(3,2,1,4)], Al.As_pure_n, AlAsvariance.all$scaledVar[c(3,2,1,4)], Al.As_all_n, AlAsvariance.all.noh$scaledVar[c(3,2,1,4)])
+# note: as of 5/31/19 I added Al_As.pure and Al_As.all
+new.vardecomps.forann <- data.frame(rawWDvariance3[c(3,2,1,4),c("grp","scaledVar")], AlAsvariance$scaledVar[c(3,2,1,4)], AlAsvariance.pure$scaledVar[c(3,2,1,4)], Al.As_pure_n, Al.As_all_n, AlAsvariance.all$scaledVar[c(3,2,1,4)], AlAsvariance.all.noh$scaledVar[c(3,2,1,4)], AlAsvariance.all$vcov[c(3,2,1,4)], AlAsvariance.all.noh$vcov[c(3,2,1,4)])
+# note: as of 8/19/19 I added unscaled variances and updated the wheight to have a slope per species
 
+colnames(new.vardecomps.forann) <- c("TaxoLeve","WD","Al.As_pure", "Al.As_pure_wheight","pure_wheight_n", "all_wheight_n","Al.As_all_wheight", "Al.As_all_noheight", "Al.As_all_wheight_raw", "Al.As_all_noheight_raw" )
+write.csv(new.vardecomps.forann, file = "/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/Al_As-vardecom-forAnna-20190603.csv" )
+
+
+## figure SX
+quartz(width=4, height=6)
+layout(mat=matrix(c(1,2), nrow=2),heights = c(1,0.5))
+par(mgp=c(2.5,1,0), mar=c(3.5,3.5,1,1))
+smoothScatter(x=log(baad$h.t), y=log(baad$Al.As.all),nrpoints=0, ylab=expression(paste("log(A[L]:BA)")), xlab="log(Height)")
+#points(predict(AlAsvar.all, re.form=~0)~AlAsvar.all@frame$`log(h.t)`, pch=16, cex=.2, col="red")
+#points(predict(AlAsvar.all)~AlAsvar.all@frame$`log(h.t)`, pch=16, cex=.2, col="black")
+points(predict(AlAsvar.all.1)~AlAsvar.all.1@frame$`log(h.t)`, pch=".", col="red")
+mtext("A)", side=3, adj=-0.2)
+hist(AlAsvar.all.effects, breaks=30,main="", xlab="slope of log(A[L]:BA) vs log(Height)")
+mtext("B)", side=3, adj=-0.2)
+
+   
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ######## R:S database (2017) ###########
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
