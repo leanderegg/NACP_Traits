@@ -1,0 +1,357 @@
+---
+title: "NIRv-Exploration-BevsData"
+author: "LDL Anderegg"
+date: "8/28/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Opted to switch to an R Markdown document for reproducibility. This code was ported from 'Cd-BevTraits-v-NIRv.R' - Old comments in this script:
+code originally appended to NACP project 'Cd-Initial_Analysis.R'
+but now outsourced here as of 01.14.17
+revisiting 08.21.19 with Bev's new Al.As data
+08.27.19, gave up with biomass2 that I could never retrace,
+and started from original data in /Data_171220
+
+```{r load packages, echo=FALSE, warning=FALSE, message=FALSE}
+
+require(lme4)
+require(lmerTest)
+require(reshape)
+require(lattice)
+require(RColorBrewer)
+require(mgcv)
+require(dplyr)
+require(rgl) # the plot3d function
+require(scatterplot3d) # scatterplot3d() function
+require(car)
+require(ggplot2)
+require(stringr)
+require(stringi)
+require(MuMIn)
+require(lmodel2)
+# optimized pairs function
+source("/Users/leeanderegg/Desktop/ZuurMixedModelling/AllRCode/HighstatLibV6.R")
+# ggplot funcitons (sets default w/ no background, also greats multiplot() function)
+source("/Users/leeanderegg/Desktop/R functions, general/ggplot_helpers.R")
+
+```
+
+I loaded our plot-level data with community-weighted mean traits, tacked on some soil variables, added in nirv from a long-ago file Grayson sent me, and calcualted some extra things like Relative Growth Rate (RGR = log(Biomass[t2]) - log(Biomass[t1]))
+-note: this is identical to RGR=NPP/Biomass... yay maths
+
+```{r Load Data, echo=FALSE, warning=FALSE}
+## Things I'm going to merge with Biomass
+
+## AL:As data
+alas <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/NIRv_project/Cascades_LAI_Sapwood_20190815.csv")
+
+## joined biomass and nirv data
+biomass.nirv <- read.csv("./old data/PACNW_full.csv")
+# this biomass dataset doesn't have CWMs, so will go all the way back to original to calculate a whole bunch of stuff
+# 
+
+## Species ID lookup table to relate traits and biomass
+speciesID <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/Data_171220/SpeciesNames_lookup_GOOD_031316.csv", header=T)
+## Soil Data
+soil <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/Data_171220/NACP_TERRA_PNW_soil_cleaned.csv", header=T, na.strings = "-9999")
+#### Having to clean some shit up ...
+#soil[which(soil$Layer=="top" & soil$UpperDepth>5),]
+# Plot 252 has two top layers. need to switch the second to 'bottom'
+# Plot 86 has top and bottom layers flipped
+## and something on the order of 9 plots don't have a 'top layer
+soil$Layer[which(soil$PLOT_ID==252)] <- c("top", "middle","bottom")
+soil$Layer[which(soil$PLOT_ID==86)] <- c("top", "bottom")
+#probs1 <- names(xtabs(~PLOT_ID, soil)[which(xtabs(~PLOT_ID, soil)<2)])
+#soil[which(soil$PLOT_ID %in% probs & soil$Layer!="top"),] # all plots with only 1 layer have 'top'
+probs2 <- names(xtabs(~PLOT_ID, soil)[which(xtabs(~PLOT_ID, soil)==2)])
+probs2names <- xtabs(~PLOT_ID, soil[which(soil$PLOT_ID %in% probs2 & soil$Layer != "top"),])
+## 8 plots have 'middle' and 'bottom', but middle starts at 0. I'm going to just make all 'middles' into 'tops
+soil$Layer[which(soil$PLOT_ID %in% names(probs2names[which(probs2names==2)]) & soil$Layer=="middle")] <- "top" # 8 plots have only 2 layers and one of them is not 'top'
+# OK, that seemed to solve it, I think... Everything has a 'top' layer, but below that is unknown. could be 'middle' could be 'bottom'...
+# which(xtabs(~PLOT_ID, soil[which(soil$Layer=='top'),])>1)
+# soiltest <- soil %>% melt(id.vars = 1:16)
+# soiltest$variable <- paste(soiltest$Layer, soiltest$variable,sep=".")
+# soilwide <- soiltest %>% spread(variable, value)
+## tried to spread things out, but we'll try just working with the top layer for shits and giggles...
+soil.top <- soil[which(soil$Layer=="top"), ]
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+biomass <- read.csv("/Users/leeanderegg/Dropbox/NACP_Traits/NACP_Traits_Rcode/FinalExample/DerivedData/PNW_Biomass_data_for_Anderegg_etal_2018_EcolLet.csv")
+
+biomass$soil_N <- soil.top$soil_N[match(biomass$PLOT_ID, soil.top$PLOT_ID)]
+biomass$soil_pH <- soil.top$soil_pH[match(biomass$PLOT_ID, soil.top$PLOT_ID)]
+biomass$RGR <- log(biomass$AG_BIOMASS_TREE_TOTAL_AS_CARBON) - log(biomass$AG_BIOMASS_TREE_TOTAL_AS_CARBON - biomass$AG_PROD_TREE_TOTAL_AS_CARBON)
+## control growth for existing biomass
+growthmod <- lm(AG_PROD_TREE_TOTAL_AS_CARBON~AG_BIOMASS_TREE_TOTAL_AS_CARBON, data=biomass)
+growthmod2 <- gam(AG_PROD_TREE_TOTAL_AS_CARBON~s(AG_BIOMASS_TREE_TOTAL_AS_CARBON), data=biomass)
+growthmod3 <- gam(AG_PROD_TREE_TOTAL_AS_CARBON~s(log(AG_BIOMASS_TREE_TOTAL_AS_CARBON)), data=biomass)
+biomass$logAG_BIOMASS <- log(biomass$AG_BIOMASS_TREE_TOTAL_AS_CARBON)
+# growthmod4 <- gls(AG_PROD_TREE_TOTAL_AS_CARBON~logAG_BIOMASS, data=biomass, weights = varExp(~logAG_BIOMASS))
+# there's actually a better relationship between log(biomass) than regular biomass
+biomass$BIOstGROWTH[which(biomass$AG_PROD_TREE_TOTAL_AS_CARBON>-5)] <- resid(growthmod)
+biomass$BIOstGROWTHgam[which(biomass$AG_PROD_TREE_TOTAL_AS_CARBON>-5)] <- resid(growthmod2)
+biomass$logBIOstGROWTHgam[which(biomass$AG_PROD_TREE_TOTAL_AS_CARBON>-5)] <- resid(growthmod3)
+
+# add leaf mass fraction
+biomass$LeafFrac <- biomass$AG_BIOMASS_TREE_FOLIAGE_AS_CARBON/biomass$AG_BIOMASS_TREE_TOTAL_AS_CARBON
+biomass$LeafAlloc <- biomass$AG_PROD_TREE_FOLIAGE_AS_CARBON/biomass$AG_PROD_TREE_TOTAL_AS_CARBON
+
+
+
+#add in Al.As
+biomass$Al.As <- alas$ALAS_O_AVG[match(biomass$PLOT_ID, alas$PLOT_ID)]
+# add in NIRv
+biomass$nirv <- biomass.nirv$nirv[match(biomass$PLOT_ID, biomass.nirv$PLOT_ID)]
+
+colnames(biomass)[which(colnames(biomass)=="AG_PROD_TREE_TOTAL_AS_CARBON")] <- "NPP"
+
+#write.csv(biomass, "./NIRv_figures/BevsPlots_20190830.csv")
+  # exported for grayson to clean up NIRv
+```
+
+
+
+``` {r simplify dataframe names, echo=FALSE}
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+############ MAKING EASY DF FOR NAMES #####################################
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+easy <- biomass[which(biomass$AG_BIOMASS_TREE_FOLIAGE_AS_CARBON>0 & !is.na(biomass$NPP)),]
+easy$Type <- as.character(easy$SPP_O1_ABBREV)
+easy$Type[-which(easy$SPP_O1_ABBREV %in% c("ABICON","ABIGRA","PINPON","PSEMEN"))] <- "OTHER"
+easy$Type <- factor(easy$Type)
+easy$ASA[which(easy$ASA<0)] <- NA
+# colnames(easy)[c(10:15)] <- c("BioL","BioT","BioW", "PoaL","PoaT","PoaW")
+colnames(easy)[grep("AG", colnames(easy))] <- c("BiomassW","BiomassF","BiomassT", "NPPW","NPPF","log.BiomassT")
+  # renaming AG_BIOMASS as Biomass "W" wood, "F" foliage and "T" total
+  # renaming AG_PROD as 'NPP' (no 'total' NPP because I already renamed it above)
+
+# # depricated 08.27.19
+# ### Calculating el Hat ### (Sombrero)
+# easy$Lhat_d <- with(easy, PoaL * plotSLA)
+# easy$Lhat_e <- with(easy, PoaL *plotLIFE * plotSLA)
+# summary(lm(LAI_O~Lhat_e, easy))
+# plot(Lhat_d~Lhat_e, easy)
+# plot(LAI_O~Lhat_e, easy)
+# plot(LAI_O~BioL, easy)
+# 
+# 
+# ##### function for LMA change over leaf life span
+# leafmort <- function(leaflife){
+#   # Eq. 7 from Niinemets Ecol. Res. review paper 2010
+#   alpha <- 1/leaflife # mortality rate
+#   lambda_max <- qexp(.95, rate=alpha) # max leaf lifespan
+#   x <- seq(1, round(lambda_max), by=1)
+#   sum(exp(-1 * alpha *(x - 1)))
+# }
+# 
+# Lambdas <- seq(from =0.5,to=20, by=.5)
+# modLambdas <- unlist(lapply(Lambdas, FUN=leafmort))
+# ### Take home point: this mostly looks like avg leaf lifespan (and can be approximated as such.)
+
+```
+
+Looking at the relationship between NPP and Biomass, it looks linear, and log-linear.
+*color = dominant species *
+```{r RGR, warning=FALSE, echo=FALSE}
+par(mfrow=c(1,2))
+plot(NPP~BiomassT, easy, col=Type)
+plot(NPP~BiomassT, easy, col=Type, log="xy")
+```
+
+RGR decreases strongly with plot Biomass, and with approx stand age (ASA)
+```{r RGR by biomass age, warning=FALSE, echo=FALSE}
+par(mfrow=c(1,2))
+plot(RGR~BiomassT, easy, col=Type)
+plot(RGR~ASA, easy, col=Type)
+par(mfrow=c(1,2))
+plot(RGR~BiomassT, easy, col=Type, log="xy")
+plot(RGR~ASA, easy, col=Type, log="xy")
+```
+
+But NPP itself does not (after a quick drop in young doug fir stands, light blue)
+```{r NPP, warning=FALSE}
+# UNLOGGED
+par(mfrow=c(1,2))
+plot(NPP~BiomassT, easy, col=Type)
+plot(NPP~ASA, easy, col=Type)
+
+
+par(mfrow=c(1,2))
+# LOG-LOG
+plot(NPP~BiomassT, easy, col=Type, log="xy")
+plot(NPP~ASA, easy, col=Type, log="xy")
+```
+
+Interpretation: this looks a lot like the slowing of growth Philipson et al. 2011 Biotropica highlight and deal with using 'Size-specific RGRs'. Essentially they fit a power-law growth curve M1 = (M0^(1-beta) + alpha(1-beta)*time)^(1/(1-beta))
+
+
+
+Oh shit! contrary to years of Poorter and Lambers work with herbs (Lambers & Poorter 1992; Poorter & Van Der Werf 1998), the leaf mass fraction is actually a much stronger determinant of RGR variation within species than LMA (and presumably Area-based A and R rates, if area based rates are related to Narea)
+
+```{r exp1, warning=FALSE}
+par(mfrow=c(1,3))
+plot(RGR~LeafFrac, easy, log="xy", col=Type, xlab="Leaf Mass Fraction")
+plot(RGR~cw_LMAp_if, easy, log="xy", col=Type, main="Determinants of RGR, all sites", xlab="CW mean LMA")
+plot(RGR~cw_Nareap_if, easy, log="xy", col=Type, xlab="CW mean Narea")
+
+par(mfrow=c(1,2))
+plot(RGR~Al.As, easy, log="xy", col=Type, main="Al:As versus Leaf Mass Fraction")
+plot(RGR~LeafFrac, easy[which(!is.na(easy$Al.As)),], log="xy", col=Type)
+
+
+```
+
+
+# Now looking at NIRv
+
+``` {r Nirv1}
+par(mfrow=c(1,2))
+plot(nirv~Al.As, easy, log="xy", col=Type)
+plot(nirv~LeafFrac, easy, log="xy", col=Type)
+
+
+par(mfrow=c(1,3))
+plot(nirv~I(1-exp(-0.5*LAI_O)), easy, col=Type, xlab="quick fPAR from LAI")
+plot(nirv~LAI_O, easy, col=Type, xlab="LAI")
+plot(nirv~BiomassF, easy, log="xy", col=Type, xlab="foliar biomass")
+
+
+```
+So clearly NIRv is not just fPAR or LAI or # of leaves. However, Grayson and I did some investigations of the lowest LAI/fPAR sites (the ones with remarkably low or high NIRv) and it looks like many of those sites are in logged regions where either things changes since the plot surveys, or there are obvious footprint mismatch problems where the footprint is bleeding into older aged logging blocks nearby that have much higher NIRv
+
+
+
+##Residual NPP after LAI
+I took the NPP~LAI relationship:
+```{r resid NPP, warning=F, echo=FALSE}
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#### Looking at partial relationships following removal of LAI effect on NPP ################
+# to understand what the fuck is going on
+
+test <- lm(NPP~I(sqrt(LAI_O)), easy)
+NPPresid <- resid(lm(NPP~sqrt(LAI_O), easy))
+easy$residNPP <- NA
+easy$residNPP[which(!is.na(easy$LAI_O))] <- NPPresid
+
+# visualize the fit
+plot(NPP~I(sqrt(LAI_O)), easy, col=Type)
+abline(test)
+
+# also make a column for NIRv/LAI_O
+easy$nirv_LAI <- easy$nirv / easy$LAI_O
+easy$log.nirv_LAI <- log(easy$nirv_LAI, base=10)
+
+# ### major axis regression
+# require(lmodel2)
+# test2 <- lmodel2(PoaT~sqrt(LAI_O), easy) ### this actually doesn't fit terribly well. Think we should stick with Type I reg
+
+## allowing for increasin variance with LAI
+#test3 <- gls(NPP~sqrt(LAI_O), easy[which(!is.na(easy$LAI_O)),], weights=varPower(form=~sqrt(LAI_O))) 
+#stProd <- resid(test3, type="pearson")
+```
+
+Then I fit a linear model to it to the square-root transformed NPP~LAI relationship and pulled out the residuals. 
+
+``` {r resid NPP continued, echo=FALSE, warning=FALSE}
+#pairs(data.frame(easy[,c(1,2,3,11,14,16,19,20,30,33)], pProd, stRes), upper.panel = panel.cor)
+
+# pairs(data.frame(easy[,c(1,2,3,11,16,20,30)], pProd, stRes), upper.panel = panel.cor)
+
+Mypairs(easy[,c("NPP","RGR","LAI_O","log.cw_LMAp_if","log.cw_LLp_if","log.cw_Nmassp_if","log.cw_Nareap_if","nirv","residNPP")])
+# "logBIOstGROWTHgam","BiomassT", "ASA","LeafAlloc", "Al.As","LeafFrac"
+
+### figure showing resuidual NPP variation not explained by LAI
+ggplot(easy, aes(x=nirv, y=residNPP, col=SPP_O1_ABBREV))+geom_point()
+
+#quartz(width=4, height=4)
+plot(residNPP~nirv, easy, pch=16, col=Type, xlab="NIRv",ylab="Residual NPP", xlim=c(400,3600))
+for(i in unique(easy$Type)){
+  dataz <- easy[which(easy$Type==i),]
+  abline(lm(residNPP~nirv, dataz), col=dataz$Type, lwd=2)
+}
+abline(lm(residNPP~nirv, easy), lwd=3)
+legend('bottomright', legend=levels(easy$Type), pch=16, col=1:5, lwd=1, bty="n")
+
+
+
+#quartz(width=8, height=3)
+par(mfrow=c(1,3), mar=c(4,4,1,1))
+plot(nirv~cw_LLp_if, easy, pch=16, ylab="NIRv", xlab="Leaf Lifespan")
+abline(lm(nirv~cw_LLp_if, easy), lwd=2)
+plot(nirv~cw_LMAp_if, easy, pch=16, ylab="NIRv", xlab="LMA")
+abline(lm(nirv~cw_LMAp_if, easy), lwd=2)
+plot(residNPP~nirv, easy, pch=16, ylab="NPP unexplained by LAI", xlab="NIRv")
+abline(lm(residNPP~nirv, easy), lwd=2)
+
+
+
+
+```
+
+**Working with only closed Canopies**
+It looks like there is something (understory contamination? footprint mismatch?) going on at low LAIs. When Grayson google earthed low LAI high NIRv sites it looks like they were all in logged places that might have understory or non-representitiveness problems. So while he's reextracting NIRv, I'm going to also work with a dataset that just has plots with LAI_O > 3
+- This leaves 122 plots (removes 102 plots)
+plots with LAI_O >4 leaves 103 plots
+```{r closed}
+closed <- easy[which(easy$LAI_O>4),]
+
+Mypairs(closed[,c("NPP","RGR","LAI_O","log.cw_LMAp_if","log.cw_LLp_if","log.cw_Nmassp_if","log.cw_Nareap_if","LeafFrac","nirv","residNPP", "log.nirv_LAI")])
+```
+
+
+
+
+```{r plotting Grayson's LES ideas}
+
+plot(cw_LLp_if~cw_LMAp_if, closed, col=Type)
+ggplot(closed[-which(closed$Type == "OTHER"),], aes(x=cw_LMAp_if, y=cw_LLp_if, col=nirv, size=nirv)) + geom_point() + geom_smooth(method="lm", se=F) + facet_wrap(facets=~Type)
+
+ggplot(closed[-which(closed$Type == "OTHER"),], aes(x=cw_LMAp_if, y=cw_LLp_if, col=nirv, size=nirv)) + geom_point() + geom_smooth(method="lm", se=F) + facet_wrap(facets=~Type)
+
+
+# now the Narea vs SLA plot
+
+ggplot(closed, aes(x=cw_Nmassp_if, y=1/cw_LMAp_if, col=nirv)) + geom_point() + facet_wrap(~Type)
+ggplot(closed, aes(x=cw_Nmassp_if, y=cw_LLp_if, col=nirv, size=1)) + geom_point() + facet_wrap(~Type)
+
+ggplot(closed[which(closed$Type=="PSEMEN"),], aes(x=cw_Nmassp_if, y=cw_LLp_if, col=nirv, size=1)) + geom_point()
+
+ggplot(closed, aes(x=nirv, y=cw_LLp_if, col=nirv)) + geom_point() 
+
+```
+
+
+
+
+
+
+
+
+
+```{r scratch}
+easy$nirv_LAI <- easy$nirv / easy$LAI_O
+easy$log.nirv_LAI <- log(easy$nirv_LAI, base=10)
+Mypairs(easy[,c("NPP","RGR","LAI_O","log.cw_LMAp_if","log.cw_LLp_if","log.cw_Nmassp_if","log.cw_Nareap_if","Al.As","LeafFrac","nirv","residNPP", "log.nirv_LAI")])
+
+
+closed <- easy[which(easy$LAI_O>3),]
+Mypairs(closed[,c("NPP","RGR","LAI_O","log.cw_LMAp_if","log.cw_LLp_if","log.cw_Nmassp_if","log.cw_Nareap_if","Al.As","LeafFrac","nirv","residNPP", "log.nirv_LAI")])
+
+res <- resid(lm(nirv~LAI_O, easy))
+easy$nirv_lai <- NA
+easy$nirv_lai[which(easy$LAI_O>0 & easy$nirv>0)] <- c(res)
+
+res.lma <- resid(lm(nirv_lai~cw_LMAp_if, easy))
+easy$nirv_lai_lma[which(easy$LAI_O>0 & easy$nirv>0 & easy$cw_LMAp_if>0)] <- c(res.lma)
+
+plot(nirv_lai_lma~cw_LLp_if, easy)
+
+```
